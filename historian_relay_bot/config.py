@@ -5,6 +5,8 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
+import datetime
+
 
 from dotenv import load_dotenv
 
@@ -48,6 +50,42 @@ def _get_optional_int(name: str) -> Optional[int]:
         return int(raw)
     except ValueError:
         return None
+    
+def _get_int_list(key: str, default=None):
+    """Read a CSV/space-separated list of ints from env or config.json."""
+    if default is None:
+        default = []
+
+    raw = os.getenv(key)
+    if raw is None and "data" in globals() and isinstance(data, dict):
+        raw = data.get(key)
+
+    if raw is None:
+        return default
+
+    # allow list already
+    if isinstance(raw, list):
+        out = []
+        for v in raw:
+            try:
+                out.append(int(v))
+            except Exception:
+                pass
+        return out
+
+    # string: "123,456 789"
+    s = str(raw).strip()
+    if not s:
+        return default
+
+    parts = [p.strip() for p in s.replace(" ", ",").split(",") if p.strip()]
+    out = []
+    for p in parts:
+        try:
+            out.append(int(p))
+        except Exception:
+            pass
+    return out
 
 @dataclass(slots=True)
 class BotConfig:
@@ -86,6 +124,20 @@ class BotConfig:
     ])
 
     DATABASE_PATH: str = "historian_relay.sqlite3"
+
+    # --------------------
+    # Guess the Year
+    # --------------------
+    GUESSYEAR_ENABLED: bool = True
+    GUESSYEAR_ALLOWED_CHANNEL_IDS: List[int] = field(default_factory=list)  # empty = allow all
+    GUESSYEAR_ROUND_SECONDS: int = 15
+    GUESSYEAR_COOLDOWN_SECONDS: int = 5
+    GUESSYEAR_MIN_YEAR: int = 1
+    GUESSYEAR_MAX_YEAR: int = 0  # 0 = current year at runtime
+    GUESSYEAR_HINTS_ENABLED: bool = True
+    GUESSYEAR_MAX_HINTS: int = 3
+    GUESSYEAR_GUESS_POLICY: str = "first"  # "first" or "latest"
+
 
 def load_config() -> BotConfig:
     """
@@ -137,5 +189,15 @@ def load_config() -> BotConfig:
         PING_USER_ON_PUBLISH=_get_bool("PING_USER_ON_PUBLISH", bool(data.get("PING_USER_ON_PUBLISH", True))),
         ALLOW_PUBLISH_WITHOUT_CLAIM=_get_bool("ALLOW_PUBLISH_WITHOUT_CLAIM", bool(data.get("ALLOW_PUBLISH_WITHOUT_CLAIM", False))),
         REGION_KEYWORDS=list(data.get("REGION_KEYWORDS", BotConfig.__dataclass_fields__["REGION_KEYWORDS"].default_factory())),
-        DATABASE_PATH=str(env_or_json("DATABASE_PATH", data.get("DATABASE_PATH", "historian_relay.sqlite3")))
+        DATABASE_PATH=str(env_or_json("DATABASE_PATH", data.get("DATABASE_PATH", "historian_relay.sqlite3"))),
+
+        GUESSYEAR_ENABLED=_get_bool("GUESSYEAR_ENABLED", bool(data.get("GUESSYEAR_ENABLED", True))),
+        GUESSYEAR_ALLOWED_CHANNEL_IDS=_get_int_list("GUESSYEAR_ALLOWED_CHANNEL_IDS") or list(map(int, data.get("GUESSYEAR_ALLOWED_CHANNEL_IDS", []) or [])),
+        GUESSYEAR_ROUND_SECONDS=int(env_or_json("GUESSYEAR_ROUND_SECONDS") or data.get("GUESSYEAR_ROUND_SECONDS", 15)),
+        GUESSYEAR_COOLDOWN_SECONDS=int(env_or_json("GUESSYEAR_COOLDOWN_SECONDS") or data.get("GUESSYEAR_COOLDOWN_SECONDS", 5)),
+        GUESSYEAR_MIN_YEAR=int(env_or_json("GUESSYEAR_MIN_YEAR") or data.get("GUESSYEAR_MIN_YEAR", 1)),
+        GUESSYEAR_MAX_YEAR=int(env_or_json("GUESSYEAR_MAX_YEAR") or data.get("GUESSYEAR_MAX_YEAR", 0)),
+        GUESSYEAR_HINTS_ENABLED=_get_bool("GUESSYEAR_HINTS_ENABLED", bool(data.get("GUESSYEAR_HINTS_ENABLED", True))),
+        GUESSYEAR_MAX_HINTS=int(env_or_json("GUESSYEAR_MAX_HINTS") or data.get("GUESSYEAR_MAX_HINTS", 3)),
+        GUESSYEAR_GUESS_POLICY=str(env_or_json("GUESSYEAR_GUESS_POLICY") or data.get("GUESSYEAR_GUESS_POLICY", "first")),
     )

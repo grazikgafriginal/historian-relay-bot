@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
+import sys
+from pathlib import Path
 from typing import Optional
 
 import discord
@@ -18,18 +21,74 @@ logging.basicConfig(
 )
 log = logging.getLogger("historian_relay")
 
+
+class _SingleInstanceLock:
+    """Best-effort single-instance guard.
+
+    If you accidentally leave an old copy of the bot running and then start a
+    new one, Discord will deliver events to both sessions and you'll see
+    duplicated bot messages.
+
+    This lock prevents multiple processes on the same machine from starting.
+    """
+
+    def __init__(self, name: str = "historian_relay_bot"):
+        self.name = name
+        self._fp = None
+
+    def acquire_or_exit(self) -> None:
+        lock_path = Path(os.getenv("BOT_LOCK_PATH") or (Path.home() / f".{self.name}.lock"))
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Keep the file handle open for the lifetime of the process.
+        self._fp = open(lock_path, "a+", encoding="utf-8")
+
+        # POSIX (macOS/Linux): flock
+        try:
+            import fcntl  # type: ignore
+
+            try:
+                fcntl.flock(self._fp.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                self._fp.seek(0)
+                self._fp.truncate(0)
+                self._fp.write(f"pid={os.getpid()}\n")
+                self._fp.flush()
+                return
+            except OSError:
+                print(
+                    "Another instance of the bot is already running on this machine.\n"
+                    "Stop the older process (or change BOT_LOCK_PATH) and try again.",
+                    file=sys.stderr,
+                )
+                raise SystemExit(1)
+        except ImportError:
+            # Windows fallback: best-effort exclusive create.
+            # Not as robust as flock, but better than nothing.
+            try:
+                os.open(str(lock_path) + ".win", os.O_CREAT | os.O_EXCL | os.O_RDWR)
+            except FileExistsError:
+                print(
+                    "Another instance of the bot may already be running on this machine.\n"
+                    "Stop the older process and try again.",
+                    file=sys.stderr,
+                )
+                raise SystemExit(1)
+
 class HistorianRelayBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
-        intents.message_content = False  # not required for slash/buttons
+        intents.message_content = True  # not required for slash/buttons
         intents.guilds = True
         intents.members = False  # role checks
-
         super().__init__(command_prefix="!", intents=intents)
         self.cfg = load_config()
         self.db = Database(self.cfg.DATABASE_PATH)
 
     async def setup_hook(self) -> None:
+        try:
+            log.info("Database path: %s", Path(self.cfg.DATABASE_PATH).expanduser().resolve())
+        except Exception:
+            log.info("Database path: %s", self.cfg.DATABASE_PATH)
         await self.db.connect()
         await self.db.init_schema("schema.sql")
 
@@ -39,6 +98,9 @@ class HistorianRelayBot(commands.Bot):
 
         # Sync commands (global sync can take time; for a single server consider guild-specific sync)
         await self.tree.sync()
+        if self.cfg.GUESSYEAR_ENABLED:
+            await self.load_extension("historian_relay_bot.cogs.guessyear")
+
 
     async def on_ready(self):
         log.info("Logged in as %s (%s)", self.user, self.user.id)
@@ -383,6 +445,8 @@ class HistorianRelayBot(commands.Bot):
                     continue
 
 async def main():
+    # Prevent running two copies of the bot at the same time on the same machine.
+    _SingleInstanceLock().acquire_or_exit()
     bot = HistorianRelayBot()
     async with bot:
         await bot.start(bot.cfg.DISCORD_TOKEN)

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Optional, Tuple
 
 import aiosqlite
+import re
 
 log = logging.getLogger("historian_relay.db")
 
@@ -42,6 +43,13 @@ class Database:
         self._conn: Optional[aiosqlite.Connection] = None
         self._lock = asyncio.Lock()
 
+    @property
+    def conn(self) -> aiosqlite.Connection:
+        assert self._conn is not None
+        return self._conn
+
+
+
     async def connect(self) -> None:
         Path(self.path).parent.mkdir(parents=True, exist_ok=True)
         self._conn = await aiosqlite.connect(self.path)
@@ -58,8 +66,239 @@ class Database:
     async def init_schema(self, schema_path: str) -> None:
         if not self._conn:
             raise RuntimeError("DB not connected.")
+
         sql = Path(schema_path).read_text(encoding="utf-8")
+
+        # The GuessYear feature should only enforce "one ACTIVE round per channel".
+        # Older schema versions used a strict UNIQUE index on (guild_id, channel_id),
+        # which breaks as soon as you have multiple historical rounds in the same channel.
+        sql = self._sanitize_schema_sql(sql)
+        # Prevent UNIQUE index creation from failing due to stale duplicate 'active' rounds.
+        await self._pre_schema_guessyear_cleanup()
+
+
         await self._conn.executescript(sql)
+        await self._conn.commit()
+
+        # Post-migration guardrails (idempotent).
+        await self._ensure_guessyear_constraints()
+
+
+
+    @staticmethod
+    def _sanitize_schema_sql(sql: str) -> str:
+        """Remove the *wrong* GuessYear unique index from schema.sql.
+
+        The GuessYear feature only needs **one ACTIVE round per channel**. A strict
+        UNIQUE index on (guild_id, channel_id) breaks history (you can't store more
+        than one round per channel) and may prevent the bot from starting if the DB
+        already contains historical rounds.
+
+        We intentionally do NOT remove a partial unique index like:
+            CREATE UNIQUE INDEX ... ON guessyear_rounds(guild_id, channel_id) WHERE status='active';
+        """
+        # Match both (guild_id, channel_id) and (channel_id, guild_id), possibly multi-line.
+        patterns = [
+            r"(?is)\bCREATE\s+UNIQUE\s+INDEX\b[^;]*?\bON\s+guessyear_rounds\s*\(\s*guild_id\s*,\s*channel_id\s*\)[^;]*?;\s*",
+            r"(?is)\bCREATE\s+UNIQUE\s+INDEX\b[^;]*?\bON\s+guessyear_rounds\s*\(\s*channel_id\s*,\s*guild_id\s*\)[^;]*?;\s*",
+        ]
+
+        removed = False
+
+        def repl(m: re.Match) -> str:
+            nonlocal removed
+            stmt = m.group(0)
+            # Keep partial indexes.
+            if re.search(r"\bWHERE\b", stmt, flags=re.IGNORECASE):
+                return stmt
+            removed = True
+            return "\n"
+
+        for pat in patterns:
+            sql = re.sub(pat, repl, sql)
+
+        if removed:
+            log.warning(
+                "Schema contained an incompatible GuessYear UNIQUE index; it was removed and will be replaced with a partial unique index (active rounds only)."  # noqa: E501
+            )
+        return sql
+
+
+    async def _pre_schema_guessyear_cleanup(self) -> None:
+        """Best-effort cleanup so schema migrations don't crash on existing DBs.
+
+        If schema.sql contains a UNIQUE index (strict or partial), it can fail when the DB
+        already has multiple ACTIVE rounds for the same channel (e.g., after crashes).
+        This runs before executing schema.sql and ends expired/duplicate active rounds.
+        """
+        assert self._conn
+
+        row = await self.fetchone("SELECT name FROM sqlite_master WHERE type='table' AND name='guessyear_rounds'")
+        if not row:
+            return
+
+        # Ensure required columns exist before we touch them.
+        async with self._conn.execute("PRAGMA table_info('guessyear_rounds')") as cur:
+            cols = {str(r[1]) for r in await cur.fetchall()}
+
+        if "status" not in cols:
+            await self._conn.execute("ALTER TABLE guessyear_rounds ADD COLUMN status TEXT NOT NULL DEFAULT 'active'")
+        if "hints_used" not in cols:
+            await self._conn.execute("ALTER TABLE guessyear_rounds ADD COLUMN hints_used INTEGER NOT NULL DEFAULT 0")
+
+        now = int(time.time())
+        await self._conn.execute(
+            "UPDATE guessyear_rounds SET status='ended' WHERE status='active' AND ends_at<=?",
+            (now,),
+        )
+
+        # End duplicate ACTIVE rounds per (guild_id, channel_id), keeping newest round_id.
+        async with self._conn.execute(
+            "SELECT round_id, guild_id, channel_id FROM guessyear_rounds WHERE status='active' ORDER BY round_id DESC"
+        ) as cur:
+            active = await cur.fetchall()
+
+        seen: set[tuple[str, str]] = set()
+        to_end: list[int] = []
+        for r in active:
+            key = (str(r[1]), str(r[2]))
+            if key in seen:
+                to_end.append(int(r[0]))
+            else:
+                seen.add(key)
+
+        if to_end:
+            log.warning("Ending %d duplicate active GuessYear rounds (pre-schema cleanup)", len(to_end))
+            await self._conn.executemany(
+                "UPDATE guessyear_rounds SET status='ended' WHERE round_id=?",
+                [(rid,) for rid in to_end],
+            )
+
+        await self._conn.commit()
+
+    async def _ensure_guessyear_constraints(self) -> None:
+        """Idempotent post-schema migration for GuessYear tables."""
+        assert self._conn
+
+        # If the GuessYear tables aren't present, nothing to do.
+        row = await self.fetchone(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='guessyear_rounds'"
+        )
+        if not row:
+            return
+
+        # If guessyear_rounds has a table-level UNIQUE constraint on (guild_id, channel_id),
+        # SQLite creates an autoindex we cannot drop. Rebuild the table to remove it.
+        strict_autoindex = False
+
+        async with self._conn.execute("PRAGMA index_list('guessyear_rounds')") as cur:
+            idxs = await cur.fetchall()
+
+        for idx in idxs:
+            # With Row factory, columns are: seq, name, unique, origin, partial
+            name = str(idx[1])
+            unique = int(idx[2])
+            partial = int(idx[4])
+
+            if unique != 1 or partial == 1:
+                continue
+
+            async with self._conn.execute(f"PRAGMA index_info('{name}')") as cur:
+                cols = [r[2] for r in await cur.fetchall()]
+
+            if cols not in (["guild_id", "channel_id"], ["channel_id", "guild_id"]):
+                continue
+
+            if name.startswith("sqlite_autoindex_"):
+                strict_autoindex = True
+            else:
+                log.warning("Dropping incompatible unique index %s on guessyear_rounds", name)
+                await self._conn.execute(f'DROP INDEX IF EXISTS "{name}"')
+
+        if strict_autoindex:
+            await self._rebuild_guessyear_rounds_table()
+
+        # End any duplicate ACTIVE rounds (keep the most recent per channel).
+        async with self._conn.execute(
+            """
+            SELECT round_id, guild_id, channel_id, started_at, ends_at
+            FROM guessyear_rounds
+            WHERE status='active'
+            ORDER BY started_at DESC, round_id DESC
+            """
+        ) as cur:
+            active = await cur.fetchall()
+
+        seen: set[tuple[str, str]] = set()
+        to_end: list[int] = []
+        for r in active:
+            key = (str(r[1]), str(r[2]))
+            if key in seen:
+                to_end.append(int(r[0]))
+            else:
+                seen.add(key)
+
+        if to_end:
+            log.warning("Ending %d duplicate active GuessYear rounds", len(to_end))
+            await self._conn.executemany(
+                "UPDATE guessyear_rounds SET status='ended' WHERE round_id=?",
+                [(rid,) for rid in to_end],
+            )
+
+        # Enforce: at most one ACTIVE round per (guild_id, channel_id).
+        await self._conn.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_guessyear_active_round
+            ON guessyear_rounds(guild_id, channel_id)
+            WHERE status='active'
+            """
+        )
+
+        await self._conn.commit()
+
+    async def _rebuild_guessyear_rounds_table(self) -> None:
+        """Rebuild guessyear_rounds to remove a too-strict table-level UNIQUE constraint."""
+        assert self._conn
+        log.warning("Rebuilding guessyear_rounds to remove incompatible UNIQUE constraint…")
+
+        # Some older DBs might not have the hints_used column yet.
+        async with self._conn.execute("PRAGMA table_info('guessyear_rounds')") as cur:
+            cols = [r[1] for r in await cur.fetchall()]
+        has_hints = "hints_used" in set(map(str, cols))
+        hints_expr = "COALESCE(hints_used, 0)" if has_hints else "0"
+
+        await self._conn.executescript(
+            f"""
+            PRAGMA foreign_keys=OFF;
+            BEGIN;
+
+            CREATE TABLE IF NOT EXISTS guessyear_rounds__new (
+                round_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                guild_id TEXT NOT NULL,
+                channel_id TEXT NOT NULL,
+                started_by_user_id TEXT NOT NULL,
+                event_id TEXT NOT NULL,
+                correct_year INTEGER NOT NULL,
+                started_at INTEGER NOT NULL,
+                ends_at INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'active',
+                hints_used INTEGER NOT NULL DEFAULT 0
+            );
+
+            INSERT INTO guessyear_rounds__new
+            (round_id, guild_id, channel_id, started_by_user_id, event_id, correct_year, started_at, ends_at, status, hints_used)
+            SELECT
+                round_id, guild_id, channel_id, started_by_user_id, event_id, correct_year, started_at, ends_at, status,
+                {hints_expr}
+            FROM guessyear_rounds;
+
+            DROP TABLE guessyear_rounds;
+            ALTER TABLE guessyear_rounds__new RENAME TO guessyear_rounds;
+
+            COMMIT;
+            PRAGMA foreign_keys=ON;
+            """
+        )
         await self._conn.commit()
 
     async def fetchone(self, sql: str, params: Tuple[Any, ...] = ()) -> Optional[aiosqlite.Row]:
@@ -336,3 +575,207 @@ class Database:
             (str(guild_id), str(user_id), last_asked_at, daily_count, daily_reset_at),
         )
         await self.commit()
+
+        ### GUESS THE YEAR BOT
+
+    async def guessyear_create_round(self, guild_id: int, channel_id: int, started_by_user_id: int,
+                                     event_id: str, correct_year: int, started_at: int, ends_at: int) -> int:
+        q = """
+        INSERT INTO guessyear_rounds
+        (guild_id, channel_id, started_by_user_id, event_id, correct_year, started_at, ends_at, status, hints_used)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0)
+        """
+        cur = await self.conn.execute(q, (str(guild_id), str(channel_id), str(started_by_user_id), event_id,
+                                         int(correct_year), int(started_at), int(ends_at)))
+        await self.conn.commit()
+        return cur.lastrowid
+
+    async def guessyear_get_active_round(self, guild_id: int, channel_id: int, now_ts: int):
+        q = """
+        SELECT round_id, guild_id, channel_id, event_id, correct_year, started_at, ends_at, status, hints_used
+        FROM guessyear_rounds
+        WHERE guild_id=? AND channel_id=? AND status='active' AND ends_at>?
+        ORDER BY round_id DESC
+        LIMIT 1
+        """
+        cur = await self.conn.execute(q, (str(guild_id), str(channel_id), int(now_ts)))
+        row = await cur.fetchone()
+        if not row:
+            return None
+        cols = [c[0] for c in cur.description]
+        return dict(zip(cols, row))
+
+    async def guessyear_list_active_rounds(self, now_ts: int):
+        q = """
+        SELECT round_id, guild_id, channel_id, event_id, correct_year, started_at, ends_at, status, hints_used
+        FROM guessyear_rounds
+        WHERE status='active' AND ends_at>?
+        """
+        cur = await self._conn.execute(q, (int(now_ts),))
+        rows = await cur.fetchall()
+        cols = [c[0] for c in cur.description]
+        return [dict(zip(cols, r)) for r in rows]
+
+    async def guessyear_mark_round_ended(self, round_id: int) -> None:
+        await self.conn.execute(
+            "UPDATE guessyear_rounds SET status='ended' WHERE round_id=? AND status='active'",
+            (int(round_id),),
+        )
+        await self.conn.commit()
+
+    async def guessyear_mark_round_cancelled(self, round_id: int) -> None:
+        await self.conn.execute(
+            "UPDATE guessyear_rounds SET status='cancelled' WHERE round_id=? AND status='active'",
+            (int(round_id),),
+        )
+        await self.conn.commit()
+
+    async def guessyear_increment_hints_used(self, round_id: int) -> int:
+        await self.conn.execute(
+            "UPDATE guessyear_rounds SET hints_used = hints_used + 1 WHERE round_id=?",
+            (int(round_id),),
+        )
+        await self.conn.commit()
+        cur = await self.conn.execute("SELECT hints_used FROM guessyear_rounds WHERE round_id=?", (int(round_id),))
+        row = await cur.fetchone()
+        return int(row[0]) if row else 0
+
+    async def guessyear_upsert_guess(self, round_id: int, user_id: int, guess_year: int, guessed_at: int, policy: str):
+        """
+        Returns (ok, already_had_guess)
+        """
+        # Check if already guessed
+        cur = await self.conn.execute(
+            "SELECT guess_year FROM guessyear_guesses WHERE round_id=? AND user_id=?",
+            (int(round_id), str(user_id)),
+        )
+        existing = await cur.fetchone()
+        already = existing is not None
+
+        if already and policy == "first":
+            return True, True
+
+        if policy == "latest":
+            q = """
+            INSERT INTO guessyear_guesses (round_id, user_id, guess_year, guessed_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(round_id, user_id) DO UPDATE SET
+              guess_year=excluded.guess_year,
+              guessed_at=excluded.guessed_at
+            """
+            await self.conn.execute(q, (int(round_id), str(user_id), int(guess_year), int(guessed_at)))
+        else:
+            # first
+            await self.conn.execute(
+                "INSERT OR IGNORE INTO guessyear_guesses (round_id, user_id, guess_year, guessed_at) VALUES (?, ?, ?, ?)",
+                (int(round_id), str(user_id), int(guess_year), int(guessed_at)),
+            )
+
+        await self.conn.commit()
+        return True, already
+
+    async def guessyear_list_guesses(self, round_id: int):
+        q = """
+        SELECT round_id, user_id, guess_year, guessed_at
+        FROM guessyear_guesses
+        WHERE round_id=?
+        """
+        cur = await self.conn.execute(q, (int(round_id),))
+        rows = await cur.fetchall()
+        cols = [c[0] for c in cur.description]
+        return [dict(zip(cols, r)) for r in rows]
+
+    # --- optional stats ---
+    async def guessyear_stats_record_play(self, guild_id: int, user_ids: list[int]) -> None:
+        now = int(time.time())
+        for uid in set(user_ids):
+            await self.conn.execute(
+                """
+                INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, last_played_at)
+                VALUES (?, ?, 0, 1, ?)
+                ON CONFLICT(guild_id, user_id) DO UPDATE SET
+                  plays = plays + 1,
+                  last_played_at = excluded.last_played_at
+                """,
+                (str(guild_id), str(uid), now),
+            )
+        await self.conn.commit()
+
+    async def guessyear_stats_record_win(self, guild_id: int, user_id: int) -> None:
+        now = int(time.time())
+        await self.conn.execute(
+            """
+            INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, last_played_at)
+            VALUES (?, ?, 1, 0, ?)
+            ON CONFLICT(guild_id, user_id) DO UPDATE SET
+              wins = wins + 1,
+              last_played_at = excluded.last_played_at
+            """,
+            (str(guild_id), str(user_id), now),
+        )
+        await self.conn.commit()
+
+    async def guessyear_stats_get_top(self, guild_id: int, limit: int = 10) -> list[dict[str, Any]]:
+        """Return top GuessYear stats rows for a guild.
+
+        Ordering favors wins, then plays, then recency.
+        """
+        q = """
+        SELECT user_id, wins, plays, last_played_at
+        FROM guessyear_stats
+        WHERE guild_id=?
+        ORDER BY wins DESC, plays DESC, last_played_at DESC
+        LIMIT ?
+        """
+        cur = await self.conn.execute(q, (str(guild_id), int(limit)))
+        rows = await cur.fetchall()
+        cols = [c[0] for c in cur.description]
+        return [dict(zip(cols, r)) for r in rows]
+
+    async def guessyear_stats_get_user(self, guild_id: int, user_id: int) -> Optional[dict[str, Any]]:
+        """Return a single user's GuessYear stats plus rank + total.
+
+        Uses window functions (available in modern SQLite).
+        """
+        q = """
+        WITH ranked AS (
+          SELECT
+            user_id,
+            wins,
+            plays,
+            last_played_at,
+            RANK() OVER (ORDER BY wins DESC, plays DESC, last_played_at DESC) AS rank,
+            COUNT(*) OVER () AS total
+          FROM guessyear_stats
+          WHERE guild_id=?
+        )
+        SELECT user_id, wins, plays, last_played_at, rank, total
+        FROM ranked
+        WHERE user_id=?
+        """
+        cur = await self.conn.execute(q, (str(guild_id), str(user_id)))
+        row = await cur.fetchone()
+        if not row:
+            return None
+        cols = [c[0] for c in cur.description]
+        return dict(zip(cols, row))
+
+    async def guessyear_try_end_round(self, round_id: int) -> bool:
+        """
+        Returns True only for the first caller that successfully ends the round.
+        All later callers get False (prevents duplicate end messages).
+        """
+        async with self._lock:
+            cur = await self._conn.execute(
+                """
+                UPDATE guessyear_rounds
+                SET status='ended'
+                WHERE round_id=? AND status='active'
+                """,
+                (int(round_id),),
+            )
+            await self._conn.commit()
+            return (cur.rowcount or 0) > 0
+
+
+

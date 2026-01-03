@@ -39,6 +39,19 @@ python -m historian_relay_bot.bot
   - `/askhist_blacklist user:<user> reason:<optional>`
   - `/askhist_unblacklist user:<user>`
   - `/askhist_config`
+  - `/Put events in historian_relay_bot/data/guessyear_events.json`
+
+Commands:
+
+!guessyear
+
+!guessyear status
+
+!guessyear stop (mods)
+
+!hint
+
+guess by typing 1066 etc
 
 ## Notes
 - Reply-based publish: post your answer as a reply to the forwarded embed in the historians channel, then press “Publish Answer”.
