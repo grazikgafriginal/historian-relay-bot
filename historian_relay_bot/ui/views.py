@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Optional
 from historian_relay_bot.ui.modals import AnswerModal, DenyModal, CloseReasonModal
@@ -125,16 +126,18 @@ class HistorianView(discord.ui.View):
             pass
 
         if answer_text:
-            await interaction.response.defer(delete_after=20, thinking=True)
+            await interaction.response.defer(thinking=True)
             await self.bot.publish_answer(interaction, qid=self.qid, answer_text=answer_text)
             return
 
         # Mode B: modal publish
         async def on_modal_submit(modal_interaction: discord.Interaction, text: str):
-            await modal_interaction.response.defer(delete_after=20, thinking=True)
+            await modal_interaction.response.defer(thinking=True)
             await self.bot.publish_answer(modal_interaction, qid=self.qid, answer_text=text)
 
-        await interaction.response.send_modal(AnswerModal(on_modal_submit))
+        async for msg in interaction.channel.history(limit=50):
+
+            await interaction.response.send_modal(AnswerModal(on_modal_submit))
 
     @discord.ui.button(label="❓ Needs Context", style=discord.ButtonStyle.secondary, custom_id="askhist:needs_context")
     async def needs_context_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -264,7 +267,7 @@ class QueueView(discord.ui.View):
         if not self._is_mod(interaction.user):
             return await interaction.response.send_message("Only moderators can approve.", delete_after=20)
 
-        await interaction.response.defer(delete_after=20, thinking=True)
+        await interaction.response.defer( thinking=True)
         await self.bot.approve_from_queue(interaction.guild_id, self.qid)
         await interaction.followup.send(f"Approved Question #{self.qid} and forwarded to historians.", delete_after=20)
 
@@ -276,7 +279,7 @@ class QueueView(discord.ui.View):
             return await interaction.response.send_message("Only moderators can deny.", delete_after=20)
 
         async def on_deny_submit(modal_interaction: discord.Interaction, reason: str | None):
-            await modal_interaction.response.defer(delete_after=20, thinking=True)
+            await modal_interaction.response.defer(thinking=True)
             await self.bot.deny_from_queue(modal_interaction.guild_id, self.qid, reason=reason)
             await modal_interaction.followup.send(f"Denied Question #{self.qid}.", delete_after=20)
 
