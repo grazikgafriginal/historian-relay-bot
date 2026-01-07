@@ -116,28 +116,30 @@ class HistorianView(discord.ui.View):
         # Mode A: reply-based publish (search recent messages for a reply to the forwarded embed)
         answer_text: Optional[str] = None
         try:
-            async for msg in interaction.channel.history(limit=50):
-                if msg.author.id != interaction.user.id:
-                    continue
-                if msg.reference and msg.reference.message_id == interaction.message.id and msg.content:
-                    answer_text = msg.content.strip()
-                    break
+            # IMPORTANT: don't block opening the modal for too long, otherwise the interaction expires.
+            async with asyncio.timeout(1.0):
+                async for msg in interaction.channel.history(limit=15):
+                    if msg.author.id != interaction.user.id:
+                        continue
+                    if msg.reference and msg.reference.message_id == interaction.message.id and msg.content:
+                        answer_text = msg.content.strip()
+                        break
+        except TimeoutError:
+            pass
         except Exception:
             pass
 
         if answer_text:
-            await interaction.response.defer(thinking=True)
+            await interaction.response.defer()
             await self.bot.publish_answer(interaction, qid=self.qid, answer_text=answer_text)
             return
 
         # Mode B: modal publish
         async def on_modal_submit(modal_interaction: discord.Interaction, text: str):
-            await modal_interaction.response.defer(thinking=True)
+            await modal_interaction.response.defer()
             await self.bot.publish_answer(modal_interaction, qid=self.qid, answer_text=text)
 
-        async for msg in interaction.channel.history(limit=50):
-
-            await interaction.response.send_modal(AnswerModal(on_modal_submit))
+        await interaction.response.send_modal(AnswerModal(on_modal_submit))
 
     @discord.ui.button(label="❓ Needs Context", style=discord.ButtonStyle.secondary, custom_id="askhist:needs_context")
     async def needs_context_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -178,7 +180,7 @@ class HistorianView(discord.ui.View):
 
         async def on_submit(modal_interaction: discord.Interaction, reason: str | None):
             try:
-                await modal_interaction.response.defer(thinking=True)
+                await modal_interaction.response.defer()
 
                 # close + post message to thread/origin
                 await self.bot.db.update_status(modal_interaction.guild_id, self.qid, "closed")
@@ -267,10 +269,11 @@ class QueueView(discord.ui.View):
         if not self._is_mod(interaction.user):
             return await interaction.response.send_message("Only moderators can approve.", delete_after=20)
 
-        await interaction.response.defer( thinking=True)
+        await interaction.response.defer()
         await self.bot.approve_from_queue(interaction.guild_id, self.qid)
         await interaction.followup.send(f"Approved Question #{self.qid} and forwarded to historians.", delete_after=20)
 
+#hmmm
     @discord.ui.button(label="❌ Deny", style=discord.ButtonStyle.danger, custom_id="askhist:deny")
     async def deny_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not interaction.guild or not isinstance(interaction.user, discord.Member):
@@ -279,7 +282,7 @@ class QueueView(discord.ui.View):
             return await interaction.response.send_message("Only moderators can deny.", delete_after=20)
 
         async def on_deny_submit(modal_interaction: discord.Interaction, reason: str | None):
-            await modal_interaction.response.defer(thinking=True)
+            await modal_interaction.response.defer()
             await self.bot.deny_from_queue(modal_interaction.guild_id, self.qid, reason=reason)
             await modal_interaction.followup.send(f"Denied Question #{self.qid}.", delete_after=20)
 

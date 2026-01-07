@@ -100,7 +100,7 @@ class AskHistCog(commands.Cog):
         if not qual.ok:
             return await interaction.response.send_message(qual.reason, delete_after=20)
 
-        await interaction.response.defer(thinking=True, ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
 
         # Post origin message in channel (stable jump URL + thread anchor)
         origin_embed = build_origin_embed(
@@ -175,6 +175,12 @@ class AskHistCog(commands.Cog):
             wait=True
         )
         await msg.delete(delay=20)
+
+        # Clean up the deferred original response so the client doesn't show "thinking…" forever.
+        try:
+            await interaction.delete_original_response()
+        except Exception:
+            pass
 
 
     @app_commands.command(name="askhist_status", description="Check status for a question.")
