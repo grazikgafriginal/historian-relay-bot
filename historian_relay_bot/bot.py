@@ -295,8 +295,9 @@ class HistorianRelayBot(commands.Bot):
 
         if reason:
             msg_text = (
-                f"⚠️ {who} closed this question as **unclear**.\n"
-                f"**Reason:** {reason}"
+                f"⚠️ Staff member {who} closed this question.\n"
+                f"**Reason:** {reason}\n\n"
+                f"*This thread will be closed in **60s**"
             )
         else:
             msg_text = default_text
