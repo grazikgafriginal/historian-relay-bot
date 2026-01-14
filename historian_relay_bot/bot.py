@@ -296,12 +296,7 @@ class HistorianRelayBot(commands.Bot):
         if reason:
             msg_text = (
                 f"⚠️ {who} closed this question as **unclear**.\n"
-                f"**Reason:** {reason}\n\n"
-                "If you'd like to ask again, please include:\n"
-                "• timeframe (year/century)\n"
-                "• region/place\n"
-                "• what you’ve already read/considered\n"
-                "• what kind of explanation you want"
+                f"**Reason:** {reason}"
             )
         else:
             msg_text = default_text
