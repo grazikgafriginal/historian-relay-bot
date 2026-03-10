@@ -33,7 +33,7 @@ class ModerationCog(commands.Cog):
         await self.bot.db.remove_blacklist(interaction.guild_id, user.id)
         await interaction.response.send_message(f"Unblacklisted {user.mention}.", delete_after=20)
 
-    @app_commands.command(name="askhist_config", description="Show current Historian's of the House config.")
+    @app_commands.command(name="askhist_config", description="Show current Historians of the House config.")
     async def config_cmd(self, interaction: discord.Interaction):
         cfg = self.bot.cfg
         text = (

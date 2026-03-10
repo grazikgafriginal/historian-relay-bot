@@ -436,13 +436,22 @@ class GuessYearCog(commands.Cog):
         if not rows:
             return await ctx.send("No GuessYear stats yet. Play a few rounds first!", delete_after=10)
 
-        lines = ["**🏅 GuessYear Leaderboard**"]
+        lines = ["**🏅 Guess Year Leaderboard**"]
         for i, r in enumerate(rows, start=1):
             uid = int(r["user_id"])
             wins = int(r["wins"])
             plays = int(r["plays"])
+            member = ctx.guild.get_member(uid)
+            if not member:
+                try:
+                    member = await ctx.guild.fetch_member(uid)
+                except Exception:
+                    member = None
+            name = member.display_name if member else f"User {uid}"
             rate = (wins / plays * 100.0) if plays > 0 else 0.0
-            lines.append(f"{i}. <@{uid}> — 🏆 **{wins}** wins • 🎲 **{plays}** plays • **{rate:.0f}%** win rate")
+           # lines.append(f"{i}. <@{uid}> — 🏆 **{wins}** wins • 🎲 **{plays}** plays • **{rate:.0f}%** win rate")
+           # lines.append(f"{i}. {name} — 🏆 **{wins}** wins • 🎲 **{plays}** plays • **{rate:.0f}%** win rate")
+            lines.append(f"{i}. {name} `{uid}` — 🏆 **{wins}** wins • 🎲 **{plays}** plays • **{rate:.0f}%** win rate")
 
         await ctx.send("\n".join(lines))
 

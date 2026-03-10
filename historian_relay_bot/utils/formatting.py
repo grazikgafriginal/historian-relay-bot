@@ -32,7 +32,7 @@ def build_forward_embed(
     status: str,
     claimed_by_text: str | None = None,   # <-- NEW
 ) -> discord.Embed:
-    e = discord.Embed(title=f"Historian's of the House Team — Question #{qid}", description=question_text)
+    e = discord.Embed(title=f"Historians of the House Team — Question #{qid}", description=question_text)
     e.add_field(name="Author", value=f"{author.mention}\n`{author.id}`", inline=True)
     e.add_field(name="Origin", value=f"[Jump to submission]({origin_jump_url})", inline=True)
     e.add_field(name="Tag / Era", value=f"{tag or '—'} / {era or '—'}", inline=False)
@@ -69,5 +69,5 @@ def build_answer_embed(
 ) -> discord.Embed:
     e = discord.Embed(title=f"Answer — Question #{qid}", description=answer_text)
     e.add_field(name="Answered by", value=f"{answered_by.mention}\n`{answered_by.id}`", inline=False)
-    e.set_footer(text="Historian's of the House Team")
+    e.set_footer(text="Historians of the House Team")
     return e

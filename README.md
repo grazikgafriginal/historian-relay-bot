@@ -1,4 +1,4 @@
-# Historian's of the House Team Bot (discord.py 2.x)
+# Historians of the House Team Bot (discord.py 2.x)
 
 A Discord bot for history servers:
 - Users submit questions via `/askhist` in approved channels
