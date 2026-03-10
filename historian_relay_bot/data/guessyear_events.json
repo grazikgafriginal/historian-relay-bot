@@ -107,5 +107,77 @@
   {"id":"evt_0097","prompt":"A famous shipwreck is discovered at the bottom of the Atlantic after decades of searching.","year":1985,"hints":["1980s","North Atlantic","Between 1984 and 1986"],"tags":["Science","Discovery"]},
   {"id":"evt_0098","prompt":"A global climate agreement is adopted with national commitments to limit warming.","year":2015,"hints":["2010s","France / global","Between 2014 and 2016"],"tags":["Global","Environment"]},
   {"id":"evt_0099","prompt":"The first iPhone is introduced, accelerating the smartphone era.","year":2007,"hints":["2000s","United States","Between 2006 and 2008"],"tags":["Technology","Global"]},
-  {"id":"evt_0100","prompt":"The printing press spreads through Europe after a major breakthrough in movable type printing.","year":1450,"hints":["15th century","Germany","Between 1440 and 1460"],"tags":["Europe","Technology"]}
+  {"id":"evt_0100","prompt":"The printing press spreads through Europe after a major breakthrough in movable type printing.","year":1450,"hints":["15th century","Germany","Between 1440 and 1460"],"tags":["Europe","Technology"]},
+
+  {"id":"evt_0101","prompt":"A decisive naval battle halts a major attempted invasion of Greece by a Persian king.","year":480,"hints":["5th century BCE (you may treat this as year 480)","Greece / Persian Empire","Between 470 and 490"],"tags":["Ancient","War"]},
+  {"id":"evt_0102","prompt":"A famous ancient volcano eruption buries Roman towns near the Bay of Naples.","year":79,"hints":["1st century","Roman Empire (Italy)","Between 70 and 90"],"tags":["Ancient","Disaster"]},
+  {"id":"evt_0103","prompt":"A Roman general crosses the Rubicon, triggering a civil war.","year":49,"hints":["1st century BCE (treat as year 49)","Roman Republic","Between 45 and 55"],"tags":["Ancient","Politics"]},
+  {"id":"evt_0104","prompt":"A major empire in China is unified under the Qin, ending the Warring States period.","year":221,"hints":["3rd century","China","Between 210 and 230"],"tags":["Asia","Ancient"]},
+  {"id":"evt_0105","prompt":"A famous wall is built across northern Britain by a Roman emperor.","year":122,"hints":["2nd century","Roman Britain","Between 115 and 130"],"tags":["Europe","Ancient"]},
+
+  {"id":"evt_0106","prompt":"A major city in the Americas falls after a siege, ending the Aztec Empire.","year":1521,"hints":["16th century","Mexico","Between 1515 and 1525"],"tags":["Americas","Conquest"]},
+  {"id":"evt_0107","prompt":"A Portuguese royal court relocates to Brazil during the Napoleonic Wars.","year":1808,"hints":["Early 19th century","Portugal / Brazil","Between 1807 and 1810"],"tags":["Americas","Politics"]},
+  {"id":"evt_0108","prompt":"The first permanent English settlement in North America is founded at Jamestown.","year":1607,"hints":["17th century","Virginia (North America)","Between 1605 and 1610"],"tags":["Americas","Colonial"]},
+  {"id":"evt_0109","prompt":"A famous battle ends the independence struggle of a Dutch republic against Spain (Eight Years' War).","year":1648,"hints":["17th century","Netherlands / Spain","Between 1645 and 1650"],"tags":["Europe","War"]},
+  {"id":"evt_0110","prompt":"A major uprising in China topples the Qing dynasty and establishes a republic.","year":1911,"hints":["Early 20th century","China","Between 1910 and 1912"],"tags":["Asia","Politics"]},
+
+  {"id":"evt_0111","prompt":"A famous battle in Italy defeats a Roman army and shocks the Republic during the Punic Wars.","year":216,"hints":["3rd century BCE (treat as year 216)","Rome vs Carthage","Between 210 and 220"],"tags":["Ancient","War"]},
+  {"id":"evt_0112","prompt":"A major plague outbreak devastates parts of Europe, later called the Black Death.","year":1347,"hints":["14th century","Europe","Between 1345 and 1350"],"tags":["Europe","Health"]},
+  {"id":"evt_0113","prompt":"A Mongol leader is proclaimed Great Khan, launching a vast expansion.","year":1206,"hints":["13th century","Central Asia","Between 1200 and 1210"],"tags":["Asia","Empire"]},
+  {"id":"evt_0114","prompt":"A major battle ends the Second Punic War and secures Rome’s dominance.","year":202,"hints":["3rd century BCE (treat as year 202)","North Africa","Between 200 and 205"],"tags":["Ancient","War"]},
+  {"id":"evt_0115","prompt":"A major Christian pilgrimage route becomes famous after a cathedral city rises in prominence (Santiago).","year":1078,"hints":["11th century","Iberian Peninsula","Between 1050 and 1100"],"tags":["Europe","Religion"]},
+
+  {"id":"evt_0116","prompt":"An English king is executed after a civil war, transforming politics temporarily.","year":1649,"hints":["17th century","England","Between 1645 and 1650"],"tags":["Europe","Politics"]},
+  {"id":"evt_0117","prompt":"A major scientific society is founded in Paris to promote research and knowledge.","year":1666,"hints":["17th century","France","Between 1660 and 1670"],"tags":["Europe","Science"]},
+  {"id":"evt_0118","prompt":"A rebellion in India begins that is later seen as a turning point in British colonial rule.","year":1857,"hints":["19th century","India","Between 1855 and 1860"],"tags":["Asia","Rebellion"]},
+  {"id":"evt_0119","prompt":"A major treaty ends the American Revolutionary War recognizing U.S. independence.","year":1783,"hints":["18th century","United States / Britain","Between 1780 and 1785"],"tags":["Americas","Diplomacy"]},
+  {"id":"evt_0120","prompt":"A massive gold rush begins after gold is discovered at Sutter's Mill.","year":1848,"hints":["19th century","California (United States)","Between 1847 and 1850"],"tags":["Americas","Economy"]},
+
+  {"id":"evt_0121","prompt":"A major canal opens connecting the Atlantic and Pacific oceans through Central America.","year":1914,"hints":["Early 20th century","Panama","Between 1912 and 1916"],"tags":["Americas","Engineering"]},
+  {"id":"evt_0122","prompt":"The first successful powered airplane flight is achieved by two brothers.","year":1903,"hints":["Early 20th century","United States","Between 1900 and 1905"],"tags":["Technology","Science"]},
+  {"id":"evt_0123","prompt":"A famous U.S. purchase doubles the nation's territory by acquiring land from France.","year":1803,"hints":["Early 19th century","United States / France","Between 1800 and 1805"],"tags":["Americas","Politics"]},
+  {"id":"evt_0124","prompt":"A major European power abolishes slavery in its colonies during the revolution era.","year":1794,"hints":["18th century","France","Between 1790 and 1796"],"tags":["Europe","Law"]},
+  {"id":"evt_0125","prompt":"A famous speech declares a policy of U.S. opposition to European colonization in the Americas.","year":1823,"hints":["19th century","United States","Between 1820 and 1825"],"tags":["Americas","Politics"]},
+
+  {"id":"evt_0126","prompt":"A major war begins between Britain and China after disputes over trade and opium.","year":1839,"hints":["19th century","China / Britain","Between 1835 and 1842"],"tags":["Asia","War"]},
+  {"id":"evt_0127","prompt":"A world-changing communication breakthrough sends the first transatlantic telegraph message.","year":1858,"hints":["19th century","Atlantic Ocean / UK / US","Between 1855 and 1860"],"tags":["Technology","Communication"]},
+  {"id":"evt_0128","prompt":"A famous ship known for luxury sinks after striking an iceberg.","year":1912,"hints":["Early 20th century","North Atlantic","Between 1910 and 1913"],"tags":["Disaster","Global"]},
+  {"id":"evt_0129","prompt":"A landmark event begins in 1517 that sparks the Protestant Reformation.","year":1517,"hints":["16th century","Germany","Between 1510 and 1520"],"tags":["Europe","Religion"]},
+  {"id":"evt_0130","prompt":"A major city is founded on the Baltic that becomes Russia’s imperial capital.","year":1703,"hints":["18th century","Russia","Between 1700 and 1705"],"tags":["Europe","Politics"]},
+
+  {"id":"evt_0131","prompt":"A famous battle in 732 halts an advancing army in Western Europe.","year":732,"hints":["8th century","France","Between 720 and 740"],"tags":["Europe","War"]},
+  {"id":"evt_0132","prompt":"A major earthquake and fire devastate Lisbon, influencing European thought.","year":1755,"hints":["18th century","Portugal","Between 1750 and 1760"],"tags":["Europe","Disaster"]},
+  {"id":"evt_0133","prompt":"A major revolt in Saint-Domingue begins that leads toward Haitian independence.","year":1791,"hints":["18th century","Caribbean","Between 1790 and 1793"],"tags":["Americas","Revolution"]},
+  {"id":"evt_0134","prompt":"A major European conflict begins that later expands into a global war (Seven Years’ War).","year":1756,"hints":["18th century","Europe / global","Between 1755 and 1758"],"tags":["Global","War"]},
+  {"id":"evt_0135","prompt":"A famous women's rights convention is held at Seneca Falls.","year":1848,"hints":["19th century","United States","Between 1845 and 1850"],"tags":["Americas","Rights"]},
+
+  {"id":"evt_0136","prompt":"A major African kingdom is invaded, leading to a decisive battle at Adwa.","year":1896,"hints":["Late 19th century","Ethiopia / Italy","Between 1895 and 1897"],"tags":["Africa","War"]},
+  {"id":"evt_0137","prompt":"A major uprising in China targets foreign influence and missionaries (Boxer Rebellion).","year":1900,"hints":["Turn of the 20th century","China","Between 1899 and 1901"],"tags":["Asia","Conflict"]},
+  {"id":"evt_0138","prompt":"A peace treaty ends World War I and reshapes Europe.","year":1919,"hints":["Early 20th century","France","Between 1918 and 1920"],"tags":["Europe","Diplomacy"]},
+  {"id":"evt_0139","prompt":"A major civil rights movement milestone occurs when U.S. troops escort students into a school in Little Rock.","year":1957,"hints":["1950s","United States","Between 1956 and 1958"],"tags":["Americas","Civil Rights"]},
+  {"id":"evt_0140","prompt":"A famous speech by Churchill warns of an 'Iron Curtain' across Europe.","year":1946,"hints":["Late 1940s","Europe","Between 1945 and 1947"],"tags":["Europe","Cold War"]},
+
+  {"id":"evt_0141","prompt":"A major conflict begins when Germany invades the Soviet Union during World War II.","year":1941,"hints":["1940s","Eastern Front","Between 1940 and 1942"],"tags":["Europe","War"]},
+  {"id":"evt_0142","prompt":"A major agreement establishes the postwar monetary system, including the IMF and World Bank.","year":1944,"hints":["1940s","United States","Between 1943 and 1945"],"tags":["Global","Economy"]},
+  {"id":"evt_0143","prompt":"A major independence movement achieves success when Algeria gains independence from France.","year":1962,"hints":["1960s","Algeria / France","Between 1960 and 1963"],"tags":["Africa","Politics"]},
+  {"id":"evt_0144","prompt":"A famous U.S. space program launches the first American astronaut into orbit.","year":1962,"hints":["1960s","United States","Between 1961 and 1963"],"tags":["Science","Space"]},
+  {"id":"evt_0145","prompt":"A major protest in Beijing is violently suppressed near Tiananmen Square.","year":1989,"hints":["Late 1980s","China","Between 1988 and 1990"],"tags":["Asia","Politics"]},
+
+  {"id":"evt_0146","prompt":"A major global organization is founded after World War II to promote peace and cooperation.","year":1945,"hints":["1940s","Global","Between 1944 and 1946"],"tags":["Global","Politics"]},
+  {"id":"evt_0147","prompt":"A landmark U.S. Supreme Court decision rules school segregation unconstitutional.","year":1954,"hints":["1950s","United States","Between 1953 and 1955"],"tags":["Americas","Law"]},
+  {"id":"evt_0148","prompt":"A major war ends in Southeast Asia with a peace agreement in Paris (Vietnam War accords era).","year":1973,"hints":["1970s","Vietnam / United States","Between 1972 and 1974"],"tags":["Asia","Diplomacy"]},
+  {"id":"evt_0149","prompt":"A major international sporting event is held in Berlin and used for propaganda.","year":1936,"hints":["1930s","Germany","Between 1935 and 1937"],"tags":["Europe","Culture"]},
+  {"id":"evt_0150","prompt":"A major treaty creates a new international court and organization after World War I (League of Nations era).","year":1919,"hints":["Early 20th century","Europe / global","Between 1918 and 1921"],"tags":["Global","Politics"]},
+
+  {"id":"evt_0151","prompt":"A major volcanic eruption in Indonesia triggers a 'Year Without a Summer' in parts of the world.","year":1815,"hints":["19th century","Indonesia","Between 1814 and 1816"],"tags":["Asia","Disaster"]},
+  {"id":"evt_0152","prompt":"A major scientific breakthrough describes the structure of DNA as a double helix.","year":1953,"hints":["1950s","United Kingdom","Between 1952 and 1954"],"tags":["Science","Biology"]},
+  {"id":"evt_0153","prompt":"A major war begins in Europe after Germany invades Poland.","year":1939,"hints":["1930s","Europe","Between 1938 and 1940"],"tags":["Europe","War"]},
+  {"id":"evt_0154","prompt":"A major strike and movement in Poland forms around Solidarity.","year":1980,"hints":["1980s","Poland","Between 1979 and 1981"],"tags":["Europe","Politics"]},
+  {"id":"evt_0155","prompt":"A major nuclear arms agreement is signed between the U.S. and USSR (INF Treaty).","year":1987,"hints":["1980s","United States / Soviet Union","Between 1986 and 1988"],"tags":["Cold War","Diplomacy"]},
+
+  {"id":"evt_0156","prompt":"A major bridge is completed connecting two boroughs of New York City (Brooklyn Bridge).","year":1883,"hints":["19th century","United States","Between 1880 and 1885"],"tags":["Americas","Engineering"]},
+  {"id":"evt_0157","prompt":"A major scandal forces a U.S. president to resign.","year":1974,"hints":["1970s","United States","Between 1973 and 1975"],"tags":["Americas","Politics"]},
+  {"id":"evt_0158","prompt":"A major global event occurs when the first modern Olympic Games are held in Athens.","year":1896,"hints":["19th century","Greece","Between 1894 and 1898"],"tags":["Europe","Sports"]},
+  {"id":"evt_0159","prompt":"A major agreement in 1993 sets the foundation for a stronger European Union (Maastricht effects era).","year":1993,"hints":["1990s","Europe","Between 1992 and 1994"],"tags":["Europe","Politics"]},
+  {"id":"evt_0160","prompt":"A major banking crisis escalates globally after the collapse of a large investment bank.","year":2008,"hints":["2000s","United States / global","Between 2007 and 2009"],"tags":["Global","Economy"]}
 ]
