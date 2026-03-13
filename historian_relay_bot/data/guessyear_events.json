@@ -178,7 +178,7 @@
   {"id":"evt_0156","prompt":"A major bridge is completed connecting two boroughs of New York City (Brooklyn Bridge).","year":1883,"hints":["19th century","United States","Between 1880 and 1885"],"tags":["Americas","Engineering"]},
   {"id":"evt_0157","prompt":"A major scandal forces a U.S. president to resign.","year":1974,"hints":["1970s","United States","Between 1973 and 1975"],"tags":["Americas","Politics"]},
   {"id":"evt_0158","prompt":"A major global event occurs when the first modern Olympic Games are held in Athens.","year":1896,"hints":["19th century","Greece","Between 1894 and 1898"],"tags":["Europe","Sports"]},
-  {"id":"evt_0159","prompt":"A major agreement in 1993 sets the foundation for a stronger European Union (Maastricht effects era).","year":1993,"hints":["1990s","Europe","Between 1992 and 1994"],"tags":["Europe","Politics"]},
+  {"id":"evt_0159","prompt":"A major agreement sets the foundation for a stronger European Union.","year":1993,"hints":["1990s","Maastricht effects era","Between 1992 and 1994"],"tags":["Europe","Politics"]},
   {"id":"evt_0160","prompt":"A major banking crisis escalates globally after the collapse of a large investment bank.","year":2008,"hints":["2000s","United States / global","Between 2007 and 2009"],"tags":["Global","Economy"]},
   
   {"id":"evt_0160","prompt":"An empire-shaking clash in Anatolia ends with an Ottoman sultan captured by Timur.","year":1402,"hints":["1400s","Middle East","Between 1401 and 1403"],"tags":["Middle East","War"]},
@@ -188,7 +188,7 @@
   {"id":"evt_0164","prompt":"Portugal captures a North African port city in a move often seen as the start of its overseas empire.","year":1415,"hints":["1410s","North Africa","Between 1414 and 1416"],"tags":["Portugal","Empire"]},
   
   {"id":"evt_0165","prompt":"The great imperial complex in Beijing is completed, symbolizing Ming authority.","year":1420,"hints":["1420s","China","Between 1419 and 1421"],"tags":["China","Architecture"]},
-  {"id":"evt_0166","prompt":"A young French heroine helps break a major siege and turns the tide in the Hundred Years’ War.","year":1429,"hints":["1420s","France","Between 1428 and 1430"],"tags":["France","War"]},
+  {"id":"evt_0166","prompt":"A young French heroine helps break a major siege and turns the tide in the Hundred Years' War.","year":1429,"hints":["1420s","France","Between 1428 and 1430"],"tags":["France","War"]},
   {"id":"evt_0167","prompt":"A powerful Andean state begins under a ruler remembered as one of its great founders.","year":1438,"hints":["1430s","South America","Between 1437 and 1439"],"tags":["Inca","Empire"]},
   {"id":"evt_0168","prompt":"A Korean ruler publishes a new phonetic writing system for his people.","year":1443,"hints":["1440s","Korea","Between 1442 and 1444"],"tags":["Korea","Culture"]},
   {"id":"evt_0169","prompt":"The fall of a great city on the Bosporus ends the Byzantine Empire.","year":1453,"hints":["1450s","Eastern Mediterranean","Between 1452 and 1454"],"tags":["Byzantium","War"]},
@@ -201,7 +201,7 @@
   {"id":"evt_0175","prompt":"A Portuguese expedition completes the first direct sea voyage from Europe to India and back.","year":1497,"hints":["1490s","Indian Ocean","Between 1496 and 1499"],"tags":["Portugal","Exploration"]},
   
   {"id":"evt_0176","prompt":"A rising dynasty reunifies Iran and firmly promotes Shi'a Islam as a state identity.","year":1501,"hints":["1500s","Iran","Between 1500 and 1502"],"tags":["Iran","Religion"]},
-  {"id":"evt_0177","prompt":"Portuguese forces seize a key Indian Ocean port on India’s west coast.","year":1510,"hints":["1510s","India","Between 1509 and 1511"],"tags":["Portugal","India"]},
+  {"id":"evt_0177","prompt":"Portuguese forces seize a key Indian Ocean port on India's west coast.","year":1510,"hints":["1510s","India","Between 1509 and 1511"],"tags":["Portugal","India"]},
   {"id":"evt_0178","prompt":"European access to the Pacific expands when a Spanish expedition crosses Panama and sights a vast new ocean.","year":1513,"hints":["1510s","Americas","Between 1512 and 1514"],"tags":["Exploration","Spain"]},
   {"id":"evt_0179","prompt":"Ottoman victories over the Mamluks bring Egypt, the Levant, and Arabia under a new imperial master.","year":1517,"hints":["1510s","Middle East","Between 1516 and 1518"],"tags":["Ottoman Empire","War"]},
   {"id":"evt_0180","prompt":"A long reign begins that marks the high point of Ottoman power under a famously magnificent sultan.","year":1520,"hints":["1520s","Ottoman Empire","Between 1519 and 1521"],"tags":["Ottoman Empire","Politics"]},
