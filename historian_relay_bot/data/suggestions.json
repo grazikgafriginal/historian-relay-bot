@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "guild_id": "917477990122803242",
+    "channel_id": "917489297274314783",
+    "user_id": "557543182787674132",
+    "username": "grazik.gafriginal",
+    "question_text": "test command to see whether the bot is working",
+    "tag": "religion",
+    "era": "medieval",
+    "status": "pending",
+    "created_at": 1773503379
+  },
+  {
+    "id": 2,
+    "guild_id": "917477990122803242",
+    "channel_id": "1481625098539630758",
+    "user_id": "557543182787674132",
+    "username": "grazik.gafriginal",
+    "question_text": "test command to see whether the bot is working",
+    "tag": "economy",
+    "era": "modern",
+    "status": "pending",
+    "created_at": 1773503657
+  }
+]

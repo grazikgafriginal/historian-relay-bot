@@ -95,6 +95,7 @@ class HistorianRelayBot(commands.Bot):
         # Load cogs
         await self.load_extension("historian_relay_bot.cogs.askhist")
         await self.load_extension("historian_relay_bot.cogs.moderation")
+        await self.load_extension("historian_relay_bot.cogs.suggest")
 
         # Sync commands (global sync can take time; for a single server consider guild-specific sync)
         await self.tree.sync()
