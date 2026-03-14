@@ -453,6 +453,7 @@ class GuessYearCog(commands.Cog):
             wins = int(r["wins"])
             plays = int(r["plays"])
             member = ctx.guild.get_member(uid)
+            mention = member.mention if member else f"<@{uid}>"
 
             if not member:
                 try:
@@ -465,7 +466,7 @@ class GuessYearCog(commands.Cog):
             rate = (wins / plays * 100.0) if plays > 0 else 0.0
 
             lines.append(
-                f"{rank_prefix(i)} **{name}**\n"
+                f"{rank_prefix(i)} **{mention}**\n"
                 f"🏆 **{wins}** wins • 🎲 **{plays}** plays • 📈 **{rate:.0f}%** win rate"
             )
 
