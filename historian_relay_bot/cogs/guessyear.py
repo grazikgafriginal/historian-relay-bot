@@ -420,11 +420,13 @@ class GuessYearCog(commands.Cog):
         await ctx.send("Ending the current round…", delete_after=5)
         await self._end_round(ctx.guild.id, ctx.channel.id, forced=True)
 
+    ### Guess Year Leaderboard
     @guessyear.command(name="top")
     async def guessyear_top(self, ctx: commands.Context, limit: int = 10):
         """Show the GuessYear leaderboard for this server."""
         if not ctx.guild:
             return
+
         limit = max(1, min(int(limit), 25))
 
         try:
@@ -436,24 +438,48 @@ class GuessYearCog(commands.Cog):
         if not rows:
             return await ctx.send("No GuessYear stats yet. Play a few rounds first!", delete_after=10)
 
-        lines = ["**🏅 Guess Year Leaderboard**"]
+        def rank_prefix(rank: int) -> str:
+            if rank == 1:
+                return "🥇"
+            if rank == 2:
+                return "🥈"
+            if rank == 3:
+                return "🥉"
+            return f"#{rank}"
+
+        lines = []
         for i, r in enumerate(rows, start=1):
             uid = int(r["user_id"])
             wins = int(r["wins"])
             plays = int(r["plays"])
             member = ctx.guild.get_member(uid)
+
             if not member:
                 try:
                     member = await ctx.guild.fetch_member(uid)
                 except Exception:
                     member = None
-            name = member.display_name if member else f"User {uid}"
-            rate = (wins / plays * 100.0) if plays > 0 else 0.0
-           # lines.append(f"{i}. <@{uid}> — 🏆 **{wins}** wins • 🎲 **{plays}** plays • **{rate:.0f}%** win rate")
-           # lines.append(f"{i}. {name} — 🏆 **{wins}** wins • 🎲 **{plays}** plays • **{rate:.0f}%** win rate")
-            lines.append(f"{i}. {name} `{uid}` — 🏆 **{wins}** wins • 🎲 **{plays}** plays • **{rate:.0f}%** win rate")
 
-        await ctx.send("\n".join(lines))
+            raw_name = member.display_name if member else f"User {uid}"
+            name = discord.utils.escape_markdown(raw_name)
+            rate = (wins / plays * 100.0) if plays > 0 else 0.0
+
+            lines.append(
+                f"{rank_prefix(i)} **{name}**\n"
+                f"🏆 **{wins}** wins • 🎲 **{plays}** plays • 📈 **{rate:.0f}%** win rate"
+            )
+
+        embed = discord.Embed(
+            title="🏅 Guess Year Leaderboard",
+            description="\n\n".join(lines),
+            color=discord.Color.gold(),
+        )
+
+        embed.set_footer(
+            text=f"Server: {ctx.guild.name} • Top {min(len(rows), limit)} players"
+        )
+
+        await ctx.send(embed=embed)
 
     @guessyear.command(name="me")
     async def guessyear_me(self, ctx: commands.Context):
