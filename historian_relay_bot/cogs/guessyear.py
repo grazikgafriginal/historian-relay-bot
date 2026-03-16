@@ -34,6 +34,20 @@ class RoundState:
     hints_used: int
 
 
+@dataclass(slots=True)
+class BonusState:
+    guild_id: int
+    channel_id: int
+    event_id: str
+    source_round_id: int
+    winner_user_id: int
+    mode: str  # month / person
+    prompt: str
+    answers: List[str]
+    started_at: int
+    ends_at: int
+
+
 class GuessYearCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -44,6 +58,9 @@ class GuessYearCog(commands.Cog):
 
         self._events_by_id: Dict[str, Dict[str, Any]] = {}
         self._events: List[Dict[str, Any]] = []
+
+        self._recent_finished: Dict[Tuple[int, int], Dict[str, Any]] = {}
+        self._bonus_active: Dict[Tuple[int, int], BonusState] = {}
 
         self._restore_started = False
 
@@ -199,6 +216,96 @@ class GuessYearCog(commands.Cog):
         self._schedule_end(state)
         return state
 
+    def _cleanup_expired_bonus(self, guild_id: Optional[int] = None, channel_id: Optional[int] = None) -> None:
+        now = int(time.time())
+        for key, bonus in list(self._bonus_active.items()):
+            if guild_id is not None and key[0] != guild_id:
+                continue
+            if channel_id is not None and key[1] != channel_id:
+                continue
+            if bonus.ends_at <= now:
+                self._bonus_active.pop(key, None)
+
+        max_age = 15 * 60
+        for key, recent in list(self._recent_finished.items()):
+            if guild_id is not None and key[0] != guild_id:
+                continue
+            if channel_id is not None and key[1] != channel_id:
+                continue
+            if int(recent.get("unlocked_at", 0)) + max_age <= now:
+                self._recent_finished.pop(key, None)
+
+    def _normalize_bonus_text(self, text: str) -> str:
+        cleaned = re.sub(r"[^a-z0-9\s]+", " ", (text or "").strip().lower())
+        return " ".join(cleaned.split())
+
+    def _pick_bonus_definition(
+        self,
+        evt: Dict[str, Any],
+        requested_mode: Optional[str] = None,
+    ) -> Optional[Tuple[str, Dict[str, Any]]]:
+        bonus = evt.get("bonus")
+        if not isinstance(bonus, dict):
+            return None
+
+        available: Dict[str, Dict[str, Any]] = {}
+        for mode in ("month", "person"):
+            data = bonus.get(mode)
+            if isinstance(data, dict) and data.get("prompt") and isinstance(data.get("answers"), list) and data["answers"]:
+                available[mode] = data
+
+        if not available:
+            return None
+
+        if requested_mode:
+            data = available.get(requested_mode)
+            if not data:
+                return None
+            return requested_mode, data
+
+        if len(available) == 1:
+            mode, data = next(iter(available.items()))
+            return mode, data
+
+        return None
+
+    def _bonus_modes_for_event(self, evt: Dict[str, Any]) -> List[str]:
+        bonus = evt.get("bonus")
+        if not isinstance(bonus, dict):
+            return []
+
+        modes: List[str] = []
+        for mode in ("month", "person"):
+            data = bonus.get(mode)
+            if isinstance(data, dict) and data.get("prompt") and isinstance(data.get("answers"), list) and data["answers"]:
+                modes.append(mode)
+        return modes
+
+    def _bonus_matches(self, answer: str, valid_answers: List[str]) -> bool:
+        normalized = self._normalize_bonus_text(answer)
+        valid = {self._normalize_bonus_text(a) for a in valid_answers}
+        return normalized in valid
+
+    def _format_member_label(self, guild: discord.Guild, uid: int, member: Optional[discord.Member]) -> str:
+        mention = member.mention if member else f"<@{uid}>"
+        raw_name = member.display_name if member else f"User {uid}"
+        safe_name = discord.utils.escape_markdown(raw_name)
+        return f"**{safe_name}** • {mention}"
+
+    def _build_bonus_embed(self, bonus: BonusState, guild: discord.Guild, member: Optional[discord.Member]) -> discord.Embed:
+        owner = self._format_member_label(guild, bonus.winner_user_id, member)
+        embed = discord.Embed(
+            title="🎁 GuessYear Bonus Round",
+            description=bonus.prompt,
+            color=discord.Color.blurple(),
+        )
+        embed.add_field(name="Unlocked by", value=owner, inline=False)
+        embed.add_field(name="Bonus type", value=bonus.mode.title(), inline=True)
+        embed.add_field(name="Round", value=f"#{bonus.source_round_id}", inline=True)
+        embed.add_field(name="How to answer", value="Use `!bonus <answer>`", inline=False)
+        embed.set_footer(text=f"Time limit: {max(0, bonus.ends_at - int(time.time()))} seconds")
+        return embed
+
     # ---------- round end / announce ----------
 
     async def _end_round(self, guild_id: int, channel_id: int, forced: bool) -> None:
@@ -254,6 +361,18 @@ class GuessYearCog(commands.Cog):
             # Stats are optional; never fail the round end.
             pass
 
+        evt = self._events_by_id.get(state.event_id)
+        if winner_user_id is not None and winner_diff == 0 and evt and self._bonus_modes_for_event(evt):
+            self._recent_finished[key] = {
+                "round_id": state.round_id,
+                "event_id": state.event_id,
+                "winner_user_id": int(winner_user_id),
+                "unlocked_at": int(time.time()),
+            }
+        else:
+            self._recent_finished.pop(key, None)
+            self._bonus_active.pop(key, None)
+
         # Fetch channel
         channel = self.bot.get_channel(channel_id)
         if channel is None:
@@ -283,16 +402,24 @@ class GuessYearCog(commands.Cog):
                     f"\n🏆 **Winner:** <@{winner_user_id}> (guessed **{winner_guess}**, off by **{winner_diff}**){perfect}"
                 )
 
-                # Top 3 closest
                 top = scored[:3]
                 lines.append("\n**Top 3 closest:**")
-                for i, (diff, ts, uid, gy) in enumerate(top, start=1):
-                    delta = gy - state.correct_year
-                    sign = "+" if delta > 0 else ""  # negative already has '-'
+                for i, (diff, _ts, uid, gy) in enumerate(top, start=1):
                     lines.append(f"{i}. <@{uid}> — **{gy}** (off by **{diff}**)")
 
             msg = f"**🕰️ Guess the Year — Round #{state.round_id} ended**\n\n" + "\n".join(lines)
             await channel.send(msg)
+
+            if winner_user_id is not None and winner_diff == 0 and evt and self._bonus_modes_for_event(evt):
+                modes = self._bonus_modes_for_event(evt)
+                if len(modes) == 1:
+                    modes_text = f"`!bonus {modes[0]}`"
+                else:
+                    modes_text = "`!bonus month` or `!bonus person`"
+                await channel.send(
+                    f"🎁 <@{winner_user_id}> unlocked a bonus round for this event. "
+                    f"Start it with {modes_text}."
+                )
 
         # Cleanup memory + timer
         self._active.pop(key, None)
@@ -313,6 +440,16 @@ class GuessYearCog(commands.Cog):
 
         if not self._is_allowed_channel(ctx.channel.id):
             return await ctx.send("Guess the Year is not enabled in this channel.", delete_after=10)
+
+        self._cleanup_expired_bonus(ctx.guild.id, ctx.channel.id)
+        active_bonus = self._bonus_active.get((ctx.guild.id, ctx.channel.id))
+        if active_bonus and active_bonus.ends_at > int(time.time()):
+            rem = self._remaining(active_bonus.ends_at)
+            return await ctx.send(
+                f"A bonus round is active here. **{rem}s** remaining. "
+                f"Finish it with `!bonus <answer>` before starting a new round.",
+                delete_after=12,
+            )
 
         state = await self._ensure_state_loaded(ctx.guild.id, ctx.channel.id)
         if state and state.ends_at > int(time.time()):
@@ -557,6 +694,99 @@ class GuessYearCog(commands.Cog):
         # Explicit command form: !guess 1789
         await self._handle_guess(ctx.message, override_text=year)
 
+    @commands.command(name="bonus")
+    async def bonus(self, ctx: commands.Context, *, arg: Optional[str] = None):
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+        if not self.bot.cfg.GUESSYEAR_ENABLED:
+            return
+
+        key = (ctx.guild.id, ctx.channel.id)
+        now = int(time.time())
+        self._cleanup_expired_bonus(ctx.guild.id, ctx.channel.id)
+
+        active = self._bonus_active.get(key)
+        requested = (arg or "").strip()
+
+        # Active bonus: answer it or re-show it
+        if active and active.ends_at > now:
+            if ctx.author.id != active.winner_user_id:
+                return await ctx.send("Only the exact-year winner can answer this bonus round.", delete_after=8)
+
+            if not requested:
+                member = ctx.guild.get_member(active.winner_user_id)
+                return await ctx.send(embed=self._build_bonus_embed(active, ctx.guild, member))
+
+            if self._bonus_matches(requested, active.answers):
+                self._bonus_active.pop(key, None)
+                embed = discord.Embed(
+                    title="🎉 Bonus Correct!",
+                    description=f"{ctx.author.mention} got the bonus question right.",
+                    color=discord.Color.green(),
+                )
+                embed.add_field(name="Accepted answer", value=f"**{requested}**", inline=False)
+                embed.set_footer(text=f"From GuessYear round #{active.source_round_id}")
+                return await ctx.send(embed=embed)
+
+            return await ctx.send("❌ Not quite. Try `!bonus <answer>` again before time runs out.", delete_after=8)
+
+        recent = self._recent_finished.get(key)
+        if not recent:
+            return await ctx.send("No recent exact-year win with a bonus is available in this channel.", delete_after=10)
+
+        if ctx.author.id != int(recent["winner_user_id"]):
+            return await ctx.send("Only the winner of the previous exact-year round can start the bonus.", delete_after=10)
+
+        evt = self._events_by_id.get(str(recent["event_id"]))
+        if not evt:
+            return await ctx.send("The previous event could not be loaded.", delete_after=10)
+
+        modes = self._bonus_modes_for_event(evt)
+        if not modes:
+            self._recent_finished.pop(key, None)
+            return await ctx.send("This event does not have bonus data configured.", delete_after=10)
+
+        requested_mode = requested.lower() if requested else None
+        if requested_mode and requested_mode not in ("month", "person"):
+            return await ctx.send(
+                "Use `!bonus month` or `!bonus person` to start the bonus, then `!bonus <answer>` to answer it.",
+                delete_after=10,
+            )
+
+        picked = self._pick_bonus_definition(evt, requested_mode=requested_mode)
+        if picked is None:
+            if requested_mode:
+                return await ctx.send(f"This event does not have a `{requested_mode}` bonus.", delete_after=10)
+
+            if len(modes) > 1:
+                return await ctx.send(
+                    "Choose a bonus type with `!bonus month` or `!bonus person`.",
+                    delete_after=12,
+                )
+
+            picked = self._pick_bonus_definition(evt, requested_mode=modes[0])
+
+        if picked is None:
+            return await ctx.send("Could not start the bonus round for this event.", delete_after=10)
+
+        mode, info = picked
+        bonus_state = BonusState(
+            guild_id=ctx.guild.id,
+            channel_id=ctx.channel.id,
+            event_id=str(recent["event_id"]),
+            source_round_id=int(recent["round_id"]),
+            winner_user_id=int(recent["winner_user_id"]),
+            mode=mode,
+            prompt=str(info["prompt"]),
+            answers=[str(x) for x in info.get("answers", [])],
+            started_at=now,
+            ends_at=now + 60,
+        )
+        self._bonus_active[key] = bonus_state
+
+        member = ctx.guild.get_member(bonus_state.winner_user_id)
+        await ctx.send(embed=self._build_bonus_embed(bonus_state, ctx.guild, member))
+
     # ---------- message listener (guesses) ----------
 
     @commands.Cog.listener()
@@ -628,7 +858,12 @@ class GuessYearCog(commands.Cog):
             return
 
         try:
-            await message.channel.send(f"✅ {message.author.mention} guessed **{guess_year}**.")
+            if guess_year == state.correct_year:
+                await message.channel.send(
+                    f"✅ {message.author.mention} guessed **{guess_year}**."
+                )
+            else:
+                await message.channel.send(f"✅ {message.author.mention} guessed **{guess_year}**.")
         except Exception:
             pass
 
