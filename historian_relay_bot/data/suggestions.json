@@ -34,5 +34,65 @@
     "era": "early_modern",
     "status": "pending",
     "created_at": 1773691417
+  },
+  {
+    "id": 4,
+    "guild_id": "917477990122803242",
+    "channel_id": "1481625098539630758",
+    "user_id": "1167010231348363335",
+    "username": "heraclitus22",
+    "question_text": "A Persian invasion of a famous Greek beach is stopped by a joint force of Athens and Plataea",
+    "tag": null,
+    "era": "ancient",
+    "status": "pending",
+    "created_at": 1773736459
+  },
+  {
+    "id": 5,
+    "guild_id": "917477990122803242",
+    "channel_id": "1481625098539630758",
+    "user_id": "1105942163860230194",
+    "username": "adagsa",
+    "question_text": "Ottoman achieves victory over Hungary in a decisive battle, causing the collapse of Hungary and start of Habsburg rule in Bohemia",
+    "tag": "military",
+    "era": "early_modern",
+    "status": "pending",
+    "created_at": 1773762054
+  },
+  {
+    "id": 6,
+    "guild_id": "917477990122803242",
+    "channel_id": "1481625098539630758",
+    "user_id": "1105942163860230194",
+    "username": "adagsa",
+    "question_text": "The navy of the Holy League under Andrea Doria was defeated by a smaller Ottoman fleet led by Hayreddin Barbarossa at the Battle of Preveza.",
+    "tag": "military",
+    "era": "early_modern",
+    "status": "pending",
+    "created_at": 1773762480
+  },
+  {
+    "id": 7,
+    "guild_id": "917477990122803242",
+    "channel_id": "1481625098539630758",
+    "user_id": "1105942163860230194",
+    "username": "adagsa",
+    "question_text": "A naval battle took place between the navy of the Holy League, led by Andrea Doria, and the Ottoman fleet near Djerba. The battle secured Ottoman control of North Africa.",
+    "tag": "military",
+    "era": "early_modern",
+    "status": "pending",
+    "created_at": 1773762641
+  },
+  {
+    "id": 8,
+    "guild_id": "917477990122803242",
+    "channel_id": "1481625098539630758",
+    "user_id": "1105942163860230194",
+    "username": "adagsa",
+    "question_text": "During the war between the Ottomans and Venice over Cyprus, a naval battle took place in which the Ottomans were defeated by the united navy of the Holy League. Although the battle had little practical impact, it provided a significant boost to European spirit against the Ottomans",
+    "tag": "military",
+    "era": "early_modern",
+    "status": "pending",
+    "created_at": 1773763363
   }
 ]

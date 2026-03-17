@@ -48,6 +48,122 @@ class BonusState:
     ends_at: int
 
 
+CATEGORY_DEFINITIONS: List[Dict[str, Any]] = [
+    {"key": "ancient", "label": "Ancient", "emoji": "🏺", "description": "Rome, Greece, early empires", "tags": {"Ancient", "Rome"}},
+    {"key": "medieval", "label": "Medieval", "emoji": "⚔️", "description": "Middle Ages and kingdoms", "tags": {"Medieval"}},
+    {"key": "europe", "label": "Europe", "emoji": "🇪🇺", "description": "European history", "tags": {"Europe", "England", "Britain", "France", "Netherlands", "Portugal", "Spain", "Italy", "Poland", "Byzantium", "Prussia", "Russia", "Ireland"}},
+    {"key": "americas", "label": "Americas", "emoji": "🌎", "description": "North and South America", "tags": {"Americas", "America", "North America", "Caribbean", "California", "Canada", "Mexico", "Hawaii", "Inca"}},
+    {"key": "asia", "label": "Asia", "emoji": "🌏", "description": "Asian history", "tags": {"Asia", "China", "India", "Japan", "Korea", "Southeast Asia", "Samurai", "Dynasty", "Afghanistan", "Nepal"}},
+    {"key": "africa", "label": "Africa", "emoji": "🌍", "description": "African history", "tags": {"Africa"}},
+    {"key": "middle_east", "label": "Middle East", "emoji": "🕌", "description": "Middle Eastern history", "tags": {"Middle East", "Ottoman Empire", "Ottoman", "Arabia", "Iran"}},
+    {"key": "war", "label": "War", "emoji": "🪖", "description": "Battles, conflicts, conquests", "tags": {"War", "Conflict", "Rebellion", "Naval", "Conquest", "Terrorism"}},
+    {"key": "politics", "label": "Politics", "emoji": "🏛️", "description": "Leaders, states, power", "tags": {"Politics", "State Formation", "Monarchy", "Empire", "Constitution", "Rights", "Independence"}},
+    {"key": "science", "label": "Science", "emoji": "🔬", "description": "Discoveries and research", "tags": {"Science", "Mathematics", "Biology", "Physics", "Medicine", "Discovery", "Engineering"}},
+    {"key": "exploration", "label": "Exploration", "emoji": "🧭", "description": "Voyages and expansion", "tags": {"Exploration", "Navigation", "Migration"}},
+    {"key": "economy", "label": "Economy", "emoji": "💰", "description": "Trade, money, industry", "tags": {"Economy", "Economics", "Industry", "Trade", "Taxation"}},
+    {"key": "religion", "label": "Religion", "emoji": "⛪", "description": "Faith and religious change", "tags": {"Religion"}},
+    {"key": "revolution", "label": "Revolution", "emoji": "🔥", "description": "Revolution and protest", "tags": {"Revolution", "Protest"}},
+    {"key": "law", "label": "Law", "emoji": "📜", "description": "Laws and legal change", "tags": {"Law", "Rights", "Constitution"}},
+    {"key": "disaster", "label": "Disaster", "emoji": "🌋", "description": "Disasters and crises", "tags": {"Disaster"}},
+    {"key": "cold_war", "label": "Cold War", "emoji": "🧊", "description": "Superpower rivalry", "tags": {"Cold War"}},
+    {"key": "technology", "label": "Technology", "emoji": "⚙️", "description": "Inventions and tech change", "tags": {"Technology", "Communication", "Publishing", "Invention"}},
+    {"key": "space", "label": "Space", "emoji": "🚀", "description": "Spaceflight and astronomy", "tags": {"Space"}},
+    {"key": "civil_rights", "label": "Civil Rights", "emoji": "✊", "description": "Rights movements", "tags": {"Civil Rights", "Rights"}},
+    {"key": "diplomacy", "label": "Diplomacy", "emoji": "🤝", "description": "Treaties and negotiations", "tags": {"Diplomacy"}},
+    {"key": "colonial", "label": "Colonial", "emoji": "🚢", "description": "Empires and colonial rule", "tags": {"Colonial", "Colonialism", "Indigenous"}},
+    {"key": "culture", "label": "Culture", "emoji": "🎭", "description": "Culture, sports, ideas", "tags": {"Culture", "Sports", "Architecture", "Cities", "Ideas", "Memorial"}},
+    {"key": "health", "label": "Health", "emoji": "🩺", "description": "Disease and public health", "tags": {"Health", "Medicine"}},
+]
+
+CATEGORY_LOOKUP: Dict[str, Dict[str, Any]] = {item["key"]: item for item in CATEGORY_DEFINITIONS}
+
+
+class CategorySelect(discord.ui.Select):
+    def __init__(self, cog: "GuessYearCog", owner_id: int, guild_id: int, channel_id: int):
+        self.cog = cog
+        self.owner_id = owner_id
+        self.guild_id = guild_id
+        self.channel_id = channel_id
+
+        current = set(cog._channel_categories.get((guild_id, channel_id), []))
+        options = [
+            discord.SelectOption(
+                label=item["label"],
+                value=item["key"],
+                description=item["description"],
+                emoji=item["emoji"],
+                default=item["key"] in current,
+            )
+            for item in CATEGORY_DEFINITIONS
+        ]
+        super().__init__(
+            placeholder="Choose one or more categories for this channel",
+            min_values=1,
+            max_values=len(options),
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("Only the person who opened this menu can change the categories.", ephemeral=True)
+            return
+
+        selected = list(self.values)
+        matched = self.cog._count_events_for_categories(selected)
+        if matched <= 0:
+            await interaction.response.send_message("Those categories do not match any events. Try a broader selection.", ephemeral=True)
+            return
+
+        self.cog._channel_categories[(self.guild_id, self.channel_id)] = selected
+        for option in self.options:
+            option.default = option.value in set(selected)
+
+        embed = self.cog._build_categories_embed(self.guild_id, self.channel_id, interaction.user)
+        await interaction.response.edit_message(embed=embed, view=self.view)
+
+
+class CategoryResetButton(discord.ui.Button):
+    def __init__(self, cog: "GuessYearCog", owner_id: int, guild_id: int, channel_id: int):
+        super().__init__(label="Reset to all", style=discord.ButtonStyle.secondary)
+        self.cog = cog
+        self.owner_id = owner_id
+        self.guild_id = guild_id
+        self.channel_id = channel_id
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("Only the person who opened this menu can change the categories.", ephemeral=True)
+            return
+
+        self.cog._channel_categories.pop((self.guild_id, self.channel_id), None)
+        view = GuessYearCategoriesView(self.cog, self.owner_id, self.guild_id, self.channel_id)
+        view.message = interaction.message
+        embed = self.cog._build_categories_embed(self.guild_id, self.channel_id, interaction.user)
+        await interaction.response.edit_message(embed=embed, view=view)
+
+
+class GuessYearCategoriesView(discord.ui.View):
+    def __init__(self, cog: "GuessYearCog", owner_id: int, guild_id: int, channel_id: int):
+        super().__init__(timeout=180)
+        self.cog = cog
+        self.owner_id = owner_id
+        self.guild_id = guild_id
+        self.channel_id = channel_id
+        self.message: Optional[discord.Message] = None
+
+        self.add_item(CategorySelect(cog, owner_id, guild_id, channel_id))
+        self.add_item(CategoryResetButton(cog, owner_id, guild_id, channel_id))
+
+    async def on_timeout(self) -> None:
+        for child in self.children:
+            child.disabled = True
+        if self.message is not None:
+            try:
+                await self.message.edit(view=self)
+            except Exception:
+                pass
+
+
 class GuessYearCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -61,6 +177,7 @@ class GuessYearCog(commands.Cog):
 
         self._recent_finished: Dict[Tuple[int, int], Dict[str, Any]] = {}
         self._bonus_active: Dict[Tuple[int, int], BonusState] = {}
+        self._channel_categories: Dict[Tuple[int, int], List[str]] = {}
 
         self._restore_started = False
 
@@ -150,13 +267,68 @@ class GuessYearCog(commands.Cog):
         mx = int(getattr(self.bot.cfg, "GUESSYEAR_MAX_YEAR", 0) or 0)
         return mx if mx > 0 else datetime.datetime.utcnow().year
 
-    def _pick_event(self) -> Optional[Dict[str, Any]]:
-        if not self._events:
+    def _pick_event(self, guild_id: Optional[int] = None, channel_id: Optional[int] = None) -> Optional[Dict[str, Any]]:
+        pool = self._events
+        if guild_id is not None and channel_id is not None:
+            pool = self._events_for_channel(guild_id, channel_id)
+        if not pool:
             return None
-        return random.choice(self._events)
+        return random.choice(pool)
 
     def _remaining(self, ends_at: int) -> int:
         return max(0, ends_at - int(time.time()))
+
+    def _categories_for_channel(self, guild_id: int, channel_id: int) -> List[str]:
+        raw = self._channel_categories.get((guild_id, channel_id), [])
+        return [key for key in raw if key in CATEGORY_LOOKUP]
+
+    def _events_for_channel(self, guild_id: int, channel_id: int) -> List[Dict[str, Any]]:
+        selected = self._categories_for_channel(guild_id, channel_id)
+        if not selected:
+            return list(self._events)
+
+        allowed_tags = set()
+        for key in selected:
+            allowed_tags.update(CATEGORY_LOOKUP[key]["tags"])
+
+        return [
+            evt for evt in self._events
+            if allowed_tags.intersection({str(tag) for tag in evt.get("tags", [])})
+        ]
+
+    def _count_events_for_categories(self, category_keys: List[str]) -> int:
+        selected = [key for key in category_keys if key in CATEGORY_LOOKUP]
+        if not selected:
+            return len(self._events)
+
+        allowed_tags = set()
+        for key in selected:
+            allowed_tags.update(CATEGORY_LOOKUP[key]["tags"])
+
+        return sum(1 for evt in self._events if allowed_tags.intersection({str(tag) for tag in evt.get("tags", [])}))
+
+    def _format_category_list(self, category_keys: List[str]) -> str:
+        selected = [key for key in category_keys if key in CATEGORY_LOOKUP]
+        if not selected:
+            return "All categories"
+        return ", ".join(f"**{CATEGORY_LOOKUP[key]['label']}**" for key in selected)
+
+    def _build_categories_embed(self, guild_id: int, channel_id: int, user: discord.abc.User) -> discord.Embed:
+        selected = self._categories_for_channel(guild_id, channel_id)
+        count = len(self._events_for_channel(guild_id, channel_id))
+        embed = discord.Embed(
+            title="🎛️ GuessYear Categories",
+            description=(
+                "Choose the categories this channel should use for future GuessYear rounds.\n"
+                "Events match **any** selected category. Changing categories does not affect a round already in progress."
+            ),
+            color=discord.Color.blurple(),
+        )
+        embed.add_field(name="Current filter", value=self._format_category_list(selected), inline=False)
+        embed.add_field(name="Matching events", value=f"**{count}** available event(s)", inline=True)
+        embed.add_field(name="Changed by", value=user.mention, inline=True)
+        embed.set_footer(text="Use !categories reset to go back to all events.")
+        return embed
 
     def _schedule_end(self, state: RoundState) -> None:
         key = (state.guild_id, state.channel_id)
@@ -460,9 +632,12 @@ class GuessYearCog(commands.Cog):
                 delete_after=12,
             )
 
-        evt = self._pick_event()
+        evt = self._pick_event(ctx.guild.id, ctx.channel.id)
         if not evt:
-            return await ctx.send("Sorry — the GuessYear dataset is missing or empty.", delete_after=12)
+            return await ctx.send(
+                "No GuessYear events match this channel's selected categories. Use `!categories reset` or choose more categories.",
+                delete_after=12,
+            )
 
         min_year = int(self.bot.cfg.GUESSYEAR_MIN_YEAR)
         max_year = self._resolve_max_year()
@@ -513,9 +688,11 @@ class GuessYearCog(commands.Cog):
         self._active[(ctx.guild.id, ctx.channel.id)] = state
         self._schedule_end(state)
 
+        category_text = self._format_category_list(self._categories_for_channel(ctx.guild.id, ctx.channel.id))
         await ctx.send(
             f"**🕰️ Guess the Year #{round_id}**\n"
-            f"**Prompt:** {state.prompt}\n\n"
+            f"**Prompt:** {state.prompt}\n"
+            f"**Categories:** {category_text}\n\n"
             f"Submit your guess as a year (e.g., `1066`).\n"
             f"Time: **{self.bot.cfg.GUESSYEAR_ROUND_SECONDS}s**. Use `!hint` for clues."
         )
@@ -529,9 +706,11 @@ class GuessYearCog(commands.Cog):
             return await ctx.send("No active Guess the Year round in this channel.", delete_after=10)
 
         rem = self._remaining(state.ends_at)
+        cats = self._format_category_list(self._categories_for_channel(ctx.guild.id, ctx.channel.id))
         await ctx.send(
             f"🕰️ Round #{state.round_id} is active. **{rem}s** remaining.\n"
             f"Hints used: **{state.hints_used}/{self.bot.cfg.GUESSYEAR_MAX_HINTS}**.\n"
+            f"Categories: {cats}.\n"
             f"Guess by typing a year like `1789`."
         )
 
@@ -656,6 +835,38 @@ class GuessYearCog(commands.Cog):
                 ]
             )
         )
+
+
+    @commands.group(name="categories", invoke_without_command=True)
+    async def categories(self, ctx: commands.Context):
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+        if not self.bot.cfg.GUESSYEAR_ENABLED:
+            return await ctx.send("Guess the Year is disabled on this server.", delete_after=10)
+        if not self._is_allowed_channel(ctx.channel.id):
+            return await ctx.send("Guess the Year is not enabled in this channel.", delete_after=10)
+
+        view = GuessYearCategoriesView(self, ctx.author.id, ctx.guild.id, ctx.channel.id)
+        embed = self._build_categories_embed(ctx.guild.id, ctx.channel.id, ctx.author)
+        message = await ctx.send(embed=embed, view=view)
+        view.message = message
+
+    @categories.command(name="show")
+    async def categories_show(self, ctx: commands.Context):
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+        embed = self._build_categories_embed(ctx.guild.id, ctx.channel.id, ctx.author)
+        await ctx.send(embed=embed)
+
+    @categories.command(name="reset")
+    async def categories_reset(self, ctx: commands.Context):
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+
+        self._channel_categories.pop((ctx.guild.id, ctx.channel.id), None)
+        embed = self._build_categories_embed(ctx.guild.id, ctx.channel.id, ctx.author)
+        embed.description = "This channel has been reset to **all categories** for future GuessYear rounds."
+        await ctx.send(embed=embed)
 
     @commands.command(name="hint")
     async def hint(self, ctx: commands.Context):
