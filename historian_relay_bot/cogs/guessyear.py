@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 import asyncio
@@ -8,7 +9,7 @@ import random
 import re
 import sqlite3
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -46,6 +47,30 @@ class BonusState:
     answers: List[str]
     started_at: int
     ends_at: int
+
+
+@dataclass(slots=True)
+class DuelChallengeState:
+    guild_id: int
+    channel_id: int
+    challenger_user_id: int
+    opponent_user_id: int
+    created_at: int
+    expires_at: int
+
+
+@dataclass(slots=True)
+class DuelState:
+    guild_id: int
+    channel_id: int
+    challenger_user_id: int
+    opponent_user_id: int
+    event_id: str
+    correct_year: int
+    prompt: str
+    started_at: int
+    ends_at: int
+    guesses: Dict[int, Tuple[int, int]] = field(default_factory=dict)  # user_id -> (guess_year, guessed_at)
 
 
 CATEGORY_DEFINITIONS: List[Dict[str, Any]] = [
@@ -164,6 +189,94 @@ class GuessYearCategoriesView(discord.ui.View):
                 pass
 
 
+class DuelChallengeView(discord.ui.View):
+    def __init__(self, cog: "GuessYearCog", state: DuelChallengeState):
+        super().__init__(timeout=max(1, state.expires_at - int(time.time())))
+        self.cog = cog
+        self.state = state
+        self.message: Optional[discord.Message] = None
+
+    async def on_timeout(self) -> None:
+        key = (self.state.guild_id, self.state.channel_id)
+        current = self.cog._duel_challenges.get(key)
+        if not current or current.opponent_user_id != self.state.opponent_user_id or current.challenger_user_id != self.state.challenger_user_id:
+            return
+
+        self.cog._duel_challenges.pop(key, None)
+        for child in self.children:
+            child.disabled = True
+        if self.message is not None:
+            try:
+                embed = self.message.embeds[0] if self.message.embeds else None
+                if embed:
+                    embed = embed.copy()
+                    embed.color = discord.Color.dark_grey()
+                    embed.set_footer(text="Challenge expired.")
+                    await self.message.edit(embed=embed, view=self)
+                else:
+                    await self.message.edit(view=self)
+            except Exception:
+                pass
+
+    @discord.ui.button(label="Accept", style=discord.ButtonStyle.success)
+    async def accept(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if interaction.user.id != self.state.opponent_user_id:
+            await interaction.response.send_message("Only the challenged player can accept this duel.", ephemeral=True)
+            return
+        await self.cog._accept_duel(interaction, self.state, self)
+
+    @discord.ui.button(label="Decline", style=discord.ButtonStyle.danger)
+    async def decline(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if interaction.user.id not in (self.state.opponent_user_id, self.state.challenger_user_id):
+            await interaction.response.send_message("Only the challenger or challenged player can decline this duel.", ephemeral=True)
+            return
+        await self.cog._decline_duel(interaction, self.state, self)
+
+
+class DuelGuessModal(discord.ui.Modal, title="Submit hidden duel guess"):
+    guess = discord.ui.TextInput(
+        label="Year",
+        placeholder="Enter a year like 1789",
+        min_length=1,
+        max_length=4,
+        required=True,
+    )
+
+    def __init__(self, cog: "GuessYearCog", state: DuelState):
+        super().__init__(timeout=120)
+        self.cog = cog
+        self.state = state
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        await self.cog._submit_duel_guess(interaction, self.state, str(self.guess))
+
+
+class DuelRoundView(discord.ui.View):
+    def __init__(self, cog: "GuessYearCog", state: DuelState):
+        super().__init__(timeout=None)
+        self.cog = cog
+        self.state = state
+        self.message: Optional[discord.Message] = None
+
+    @discord.ui.button(label="Submit hidden guess", style=discord.ButtonStyle.primary, emoji="🕵️")
+    async def submit_hidden_guess(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if interaction.user.id not in (self.state.challenger_user_id, self.state.opponent_user_id):
+            await interaction.response.send_message("Only the two duel participants can submit a hidden guess.", ephemeral=True)
+            return
+
+        key = (self.state.guild_id, self.state.channel_id)
+        active = self.cog._duel_active.get(key)
+        if not active or active is not self.state:
+            await interaction.response.send_message("This duel is no longer active.", ephemeral=True)
+            return
+
+        if interaction.user.id in active.guesses:
+            await interaction.response.send_message("You have already locked in your hidden guess for this duel.", ephemeral=True)
+            return
+
+        await interaction.response.send_modal(DuelGuessModal(self.cog, active))
+
+
 class GuessYearCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -178,6 +291,12 @@ class GuessYearCog(commands.Cog):
         self._recent_finished: Dict[Tuple[int, int], Dict[str, Any]] = {}
         self._bonus_active: Dict[Tuple[int, int], BonusState] = {}
         self._channel_categories: Dict[Tuple[int, int], List[str]] = {}
+
+        self._duel_challenges: Dict[Tuple[int, int], DuelChallengeState] = {}
+        self._duel_challenge_views: Dict[Tuple[int, int], DuelChallengeView] = {}
+        self._duel_active: Dict[Tuple[int, int], DuelState] = {}
+        self._duel_round_views: Dict[Tuple[int, int], DuelRoundView] = {}
+        self._duel_tasks: Dict[Tuple[int, int], asyncio.Task] = {}
 
         self._restore_started = False
 
@@ -478,6 +597,420 @@ class GuessYearCog(commands.Cog):
         embed.set_footer(text=f"Time limit: {max(0, bonus.ends_at - int(time.time()))} seconds")
         return embed
 
+    def _can_manage_rounds(self, member: discord.Member) -> bool:
+        is_mod_role = any(r.id == self.bot.cfg.MOD_ROLE_ID for r in member.roles)
+        has_perm = member.guild_permissions.manage_messages
+        return is_mod_role or has_perm
+
+    def _duel_busy_message(self, guild_id: int, channel_id: int) -> Optional[str]:
+        key = (guild_id, channel_id)
+
+        challenge = self._duel_challenges.get(key)
+        if challenge and challenge.expires_at > int(time.time()):
+            return "A duel challenge is already pending in this channel."
+
+        duel = self._duel_active.get(key)
+        if duel and duel.ends_at > int(time.time()):
+            rem = self._remaining(duel.ends_at)
+            return f"A duel is already active here. **{rem}s** remaining."
+
+        return None
+
+    def _build_duel_challenge_embed(self, guild: discord.Guild, state: DuelChallengeState) -> discord.Embed:
+        challenger = guild.get_member(state.challenger_user_id)
+        opponent = guild.get_member(state.opponent_user_id)
+        categories = self._format_category_list(self._categories_for_channel(state.guild_id, state.channel_id))
+        embed = discord.Embed(
+            title="⚔️ GuessYear Duel Challenge",
+            description=f"{challenger.mention if challenger else f'<@{state.challenger_user_id}>'} challenged {opponent.mention if opponent else f'<@{state.opponent_user_id}>'} to a hidden-guess duel.",
+            color=discord.Color.orange(),
+        )
+        embed.add_field(name="Format", value="One hidden guess each. Guesses are revealed only when the duel ends.", inline=False)
+        embed.add_field(name="Categories", value=categories, inline=False)
+        embed.add_field(name="Accept by", value=f"<t:{state.expires_at}:R>", inline=True)
+        embed.add_field(name="Round time", value=f"**{self.bot.cfg.GUESSYEAR_ROUND_SECONDS}s**", inline=True)
+        embed.set_footer(text="Only the challenged player can accept.")
+        return embed
+
+    def _build_duel_round_embed(self, guild: discord.Guild, state: DuelState) -> discord.Embed:
+        challenger = guild.get_member(state.challenger_user_id)
+        opponent = guild.get_member(state.opponent_user_id)
+
+        def status(uid: int) -> str:
+            return "✅ Locked in" if uid in state.guesses else "⌛ Waiting"
+
+        categories = self._format_category_list(self._categories_for_channel(state.guild_id, state.channel_id))
+        embed = discord.Embed(
+            title="⚔️ GuessYear Duel",
+            description=state.prompt,
+            color=discord.Color.red(),
+        )
+        embed.add_field(
+            name="Players",
+            value=(
+                f"{self._format_member_label(guild, state.challenger_user_id, challenger)} — {status(state.challenger_user_id)}\n"
+                f"{self._format_member_label(guild, state.opponent_user_id, opponent)} — {status(state.opponent_user_id)}"
+            ),
+            inline=False,
+        )
+        embed.add_field(name="Categories", value=categories, inline=False)
+        embed.add_field(name="Locked in", value=f"**{len(state.guesses)}/2**", inline=True)
+        embed.add_field(name="Time remaining", value=f"**{max(0, state.ends_at - int(time.time()))}s**", inline=True)
+        embed.add_field(name="How to guess", value="Click **Submit hidden guess** below. Each player gets one hidden guess.", inline=False)
+        return embed
+
+    def _build_duel_result_embed(
+        self,
+        guild: discord.Guild,
+        state: DuelState,
+        forced: bool,
+    ) -> discord.Embed:
+        challenger = guild.get_member(state.challenger_user_id)
+        opponent = guild.get_member(state.opponent_user_id)
+
+        def guess_line(uid: int, member: Optional[discord.Member]) -> str:
+            if uid not in state.guesses:
+                return f"{self._format_member_label(guild, uid, member)} — _No guess submitted_"
+            guess_year, _ts = state.guesses[uid]
+            diff = abs(guess_year - state.correct_year)
+            perfect = " 🎯" if diff == 0 else ""
+            return f"{self._format_member_label(guild, uid, member)} — **{guess_year}** (off by **{diff}**){perfect}"
+
+        scored: List[Tuple[int, int, int, int]] = []
+        for uid, (guess_year, guessed_at) in state.guesses.items():
+            diff = abs(guess_year - state.correct_year)
+            scored.append((diff, guessed_at, uid, guess_year))
+        scored.sort(key=lambda x: (x[0], x[1]))
+
+        winner_user_id: Optional[int] = None
+        winner_guess: Optional[int] = None
+        winner_diff: Optional[int] = None
+        if scored:
+            winner_diff, _ts, winner_user_id, winner_guess = scored[0]
+
+        embed = discord.Embed(
+            title="⚔️ Duel Result",
+            description=state.prompt,
+            color=discord.Color.gold(),
+        )
+        embed.add_field(name="Correct year", value=f"**{state.correct_year}**", inline=False)
+        embed.add_field(name="Challenger", value=guess_line(state.challenger_user_id, challenger), inline=False)
+        embed.add_field(name="Opponent", value=guess_line(state.opponent_user_id, opponent), inline=False)
+
+        if winner_user_id is None:
+            embed.add_field(name="Winner", value="No valid guesses were submitted.", inline=False)
+        else:
+            winner_member = guild.get_member(winner_user_id)
+            winner_text = self._format_member_label(guild, winner_user_id, winner_member)
+            suffix = f" with **{winner_guess}** (off by **{winner_diff}**)"
+            if winner_diff == 0:
+                suffix += " 🎯"
+            embed.add_field(name="Winner", value=winner_text + suffix, inline=False)
+
+        if forced:
+            embed.set_footer(text="Duel was cancelled by a moderator or participant.")
+        elif len(state.guesses) == 2:
+            embed.set_footer(text="Both hidden guesses were submitted.")
+        else:
+            embed.set_footer(text="Duel timer expired before both hidden guesses were submitted.")
+
+        return embed
+
+    def _schedule_duel_end(self, state: DuelState) -> None:
+        key = (state.guild_id, state.channel_id)
+        old = self._duel_tasks.get(key)
+        if old and not old.done():
+            old.cancel()
+        self._duel_tasks[key] = asyncio.create_task(self._end_duel_when_ready(state))
+
+    async def _end_duel_when_ready(self, state: DuelState) -> None:
+        delay = max(0, state.ends_at - int(time.time()))
+        try:
+            await asyncio.sleep(delay)
+        except asyncio.CancelledError:
+            return
+
+        key = (state.guild_id, state.channel_id)
+        current = self._duel_active.get(key)
+        if not current or current is not state:
+            return
+
+        await self._finish_duel(state.guild_id, state.channel_id, forced=False)
+
+    async def _refresh_duel_message(self, guild_id: int, channel_id: int) -> None:
+        key = (guild_id, channel_id)
+        state = self._duel_active.get(key)
+        view = self._duel_round_views.get(key)
+        if not state or not view or view.message is None:
+            return
+        try:
+            guild = self.bot.get_guild(guild_id)
+            if guild is None:
+                return
+            embed = self._build_duel_round_embed(guild, state)
+            await view.message.edit(embed=embed, view=view)
+        except Exception:
+            pass
+
+    async def _accept_duel(
+        self,
+        interaction: discord.Interaction,
+        challenge: DuelChallengeState,
+        view: DuelChallengeView,
+    ) -> None:
+        key = (challenge.guild_id, challenge.channel_id)
+        current = self._duel_challenges.get(key)
+        if not current or current is not challenge:
+            await interaction.response.send_message("This duel challenge is no longer active.", ephemeral=True)
+            return
+
+        guild = interaction.guild
+        channel = interaction.channel
+        if guild is None or not isinstance(channel, (discord.TextChannel, discord.Thread)):
+            await interaction.response.send_message("This duel can only be accepted in a server text channel.", ephemeral=True)
+            return
+
+        state = await self._ensure_state_loaded(guild.id, channel.id)
+        if state and state.ends_at > int(time.time()):
+            self._duel_challenges.pop(key, None)
+            self._duel_challenge_views.pop(key, None)
+            await interaction.response.edit_message(
+                embed=discord.Embed(
+                    title="⚔️ GuessYear Duel Challenge",
+                    description="This duel could not start because a normal GuessYear round is already active here.",
+                    color=discord.Color.dark_red(),
+                ),
+                view=None,
+            )
+            return
+
+        self._cleanup_expired_bonus(guild.id, channel.id)
+        active_bonus = self._bonus_active.get(key)
+        if active_bonus and active_bonus.ends_at > int(time.time()):
+            self._duel_challenges.pop(key, None)
+            self._duel_challenge_views.pop(key, None)
+            await interaction.response.edit_message(
+                embed=discord.Embed(
+                    title="⚔️ GuessYear Duel Challenge",
+                    description="This duel could not start because a bonus round is active in this channel.",
+                    color=discord.Color.dark_red(),
+                ),
+                view=None,
+            )
+            return
+
+        if key in self._duel_active:
+            self._duel_challenges.pop(key, None)
+            self._duel_challenge_views.pop(key, None)
+            await interaction.response.send_message("A duel is already active in this channel.", ephemeral=True)
+            return
+
+        evt = self._pick_event(guild.id, channel.id)
+        if not evt:
+            self._duel_challenges.pop(key, None)
+            self._duel_challenge_views.pop(key, None)
+            await interaction.response.edit_message(
+                embed=discord.Embed(
+                    title="⚔️ GuessYear Duel Challenge",
+                    description="No GuessYear events match this channel's selected categories.",
+                    color=discord.Color.dark_red(),
+                ),
+                view=None,
+            )
+            return
+
+        min_year = int(self.bot.cfg.GUESSYEAR_MIN_YEAR)
+        max_year = self._resolve_max_year()
+        correct_year = int(evt["year"])
+        if correct_year < min_year or correct_year > max_year:
+            self._duel_challenges.pop(key, None)
+            self._duel_challenge_views.pop(key, None)
+            await interaction.response.edit_message(
+                embed=discord.Embed(
+                    title="⚔️ GuessYear Duel Challenge",
+                    description="A dataset event had an out-of-range year. Please fix the dataset.",
+                    color=discord.Color.dark_red(),
+                ),
+                view=None,
+            )
+            return
+
+        now = int(time.time())
+        duel_state = DuelState(
+            guild_id=guild.id,
+            channel_id=channel.id,
+            challenger_user_id=challenge.challenger_user_id,
+            opponent_user_id=challenge.opponent_user_id,
+            event_id=str(evt["id"]),
+            correct_year=correct_year,
+            prompt=str(evt["prompt"]),
+            started_at=now,
+            ends_at=now + int(self.bot.cfg.GUESSYEAR_ROUND_SECONDS),
+        )
+
+        self._duel_challenges.pop(key, None)
+        self._duel_challenge_views.pop(key, None)
+        self._duel_active[key] = duel_state
+        self._schedule_duel_end(duel_state)
+
+        accepted_embed = self._build_duel_challenge_embed(guild, challenge)
+        accepted_embed.color = discord.Color.green()
+        accepted_embed.set_footer(text="Challenge accepted.")
+        await interaction.response.edit_message(embed=accepted_embed, view=None)
+
+        round_view = DuelRoundView(self, duel_state)
+        round_embed = self._build_duel_round_embed(guild, duel_state)
+        msg = await channel.send(embed=round_embed, view=round_view)
+        round_view.message = msg
+        self._duel_round_views[key] = round_view
+
+    async def _decline_duel(
+        self,
+        interaction: discord.Interaction,
+        challenge: DuelChallengeState,
+        view: DuelChallengeView,
+    ) -> None:
+        key = (challenge.guild_id, challenge.channel_id)
+        current = self._duel_challenges.get(key)
+        if not current or current is not challenge:
+            await interaction.response.send_message("This duel challenge is no longer active.", ephemeral=True)
+            return
+
+        self._duel_challenges.pop(key, None)
+        self._duel_challenge_views.pop(key, None)
+
+        guild = interaction.guild
+        desc = "The duel challenge was declined."
+        if guild:
+            user = guild.get_member(interaction.user.id)
+            if user:
+                desc = f"{user.mention} declined the duel challenge."
+
+        embed = discord.Embed(
+            title="⚔️ GuessYear Duel Challenge",
+            description=desc,
+            color=discord.Color.dark_red(),
+        )
+        await interaction.response.edit_message(embed=embed, view=None)
+        view.stop()
+
+    async def _submit_duel_guess(
+        self,
+        interaction: discord.Interaction,
+        state: DuelState,
+        guess_text: str,
+    ) -> None:
+        key = (state.guild_id, state.channel_id)
+        active = self._duel_active.get(key)
+        if not active or active is not state:
+            await interaction.response.send_message("This duel is no longer active.", ephemeral=True)
+            return
+
+        if interaction.user.id not in (active.challenger_user_id, active.opponent_user_id):
+            await interaction.response.send_message("Only the duel participants can submit a hidden guess.", ephemeral=True)
+            return
+
+        if interaction.user.id in active.guesses:
+            await interaction.response.send_message("You have already locked in your hidden guess.", ephemeral=True)
+            return
+
+        m = YEAR_RE.match(guess_text or "")
+        if not m:
+            await interaction.response.send_message("Please enter a valid year like `1789`.", ephemeral=True)
+            return
+
+        guess_year = int(m.group(1))
+        min_year = int(self.bot.cfg.GUESSYEAR_MIN_YEAR)
+        max_year = self._resolve_max_year()
+        if guess_year < min_year or guess_year > max_year:
+            await interaction.response.send_message(f"That year is out of range. Valid range: {min_year}–{max_year}.", ephemeral=True)
+            return
+
+        now = int(time.time())
+        if active.ends_at <= now:
+            await interaction.response.send_message("This duel has already ended.", ephemeral=True)
+            return
+
+        active.guesses[interaction.user.id] = (guess_year, now)
+        await interaction.response.send_message(
+            f"Your hidden guess **{guess_year}** has been locked in.",
+            ephemeral=True,
+        )
+
+        await self._refresh_duel_message(active.guild_id, active.channel_id)
+
+        if len(active.guesses) >= 2:
+            await self._finish_duel(active.guild_id, active.channel_id, forced=False)
+
+    async def _finish_duel(self, guild_id: int, channel_id: int, forced: bool) -> None:
+        key = (guild_id, channel_id)
+        state = self._duel_active.get(key)
+        if not state:
+            return
+
+        task = self._duel_tasks.pop(key, None)
+        if task and not task.done():
+            task.cancel()
+
+        view = self._duel_round_views.pop(key, None)
+        if view and view.message is not None:
+            try:
+                await view.message.edit(view=None)
+            except Exception:
+                pass
+
+        self._duel_active.pop(key, None)
+
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            return
+
+        channel = self.bot.get_channel(channel_id)
+        if channel is None:
+            try:
+                channel = await self.bot.fetch_channel(channel_id)
+            except Exception:
+                channel = None
+
+        evt = self._events_by_id.get(state.event_id)
+
+        scored: List[Tuple[int, int, int, int]] = []
+        for uid, (guess_year, guessed_at) in state.guesses.items():
+            diff = abs(guess_year - state.correct_year)
+            scored.append((diff, guessed_at, uid, guess_year))
+        scored.sort(key=lambda x: (x[0], x[1]))
+
+        winner_user_id: Optional[int] = None
+        winner_diff: Optional[int] = None
+        if scored:
+            winner_diff, _ts, winner_user_id, _winner_guess = scored[0]
+
+        if winner_user_id is not None and winner_diff == 0 and evt and self._bonus_modes_for_event(evt):
+            self._recent_finished[key] = {
+                "round_id": 0,
+                "event_id": state.event_id,
+                "winner_user_id": int(winner_user_id),
+                "unlocked_at": int(time.time()),
+            }
+        else:
+            self._recent_finished.pop(key, None)
+            self._bonus_active.pop(key, None)
+
+        if isinstance(channel, (discord.TextChannel, discord.Thread)):
+            embed = self._build_duel_result_embed(guild, state, forced=forced)
+            await channel.send(embed=embed)
+
+            if winner_user_id is not None and winner_diff == 0 and evt and self._bonus_modes_for_event(evt):
+                modes = self._bonus_modes_for_event(evt)
+                if len(modes) == 1:
+                    modes_text = f"`!bonus {modes[0]}`"
+                else:
+                    modes_text = "`!bonus month` or `!bonus person`"
+                await channel.send(
+                    f"🎁 <@{winner_user_id}> unlocked a bonus round for this duel event. "
+                    f"Start it with {modes_text}."
+                )
+
     # ---------- round end / announce ----------
 
     async def _end_round(self, guild_id: int, channel_id: int, forced: bool) -> None:
@@ -613,6 +1146,10 @@ class GuessYearCog(commands.Cog):
         if not self._is_allowed_channel(ctx.channel.id):
             return await ctx.send("Guess the Year is not enabled in this channel.", delete_after=10)
 
+        busy = self._duel_busy_message(ctx.guild.id, ctx.channel.id)
+        if busy:
+            return await ctx.send(f"{busy} Finish or cancel it before starting a normal round.", delete_after=12)
+
         self._cleanup_expired_bonus(ctx.guild.id, ctx.channel.id)
         active_bonus = self._bonus_active.get((ctx.guild.id, ctx.channel.id))
         if active_bonus and active_bonus.ends_at > int(time.time()):
@@ -719,14 +1256,7 @@ class GuessYearCog(commands.Cog):
         if not ctx.guild:
             return
 
-        # mod role or Manage Messages
-        is_mod_role = False
-        has_perm = False
-        if isinstance(ctx.author, discord.Member):
-            is_mod_role = any(r.id == self.bot.cfg.MOD_ROLE_ID for r in ctx.author.roles)
-            has_perm = ctx.author.guild_permissions.manage_messages
-
-        if not (is_mod_role or has_perm):
+        if not isinstance(ctx.author, discord.Member) or not self._can_manage_rounds(ctx.author):
             return await ctx.send("You don't have permission to stop the round.", delete_after=10)
 
         state = await self._ensure_state_loaded(ctx.guild.id, ctx.channel.id)
@@ -735,6 +1265,127 @@ class GuessYearCog(commands.Cog):
 
         await ctx.send("Ending the current round…", delete_after=5)
         await self._end_round(ctx.guild.id, ctx.channel.id, forced=True)
+
+    @commands.command(name="duel")
+    async def duel(self, ctx: commands.Context, opponent: discord.Member):
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+
+        if not self.bot.cfg.GUESSYEAR_ENABLED:
+            return await ctx.send("Guess the Year is disabled on this server.", delete_after=10)
+
+        if not self._is_allowed_channel(ctx.channel.id):
+            return await ctx.send("Guess the Year is not enabled in this channel.", delete_after=10)
+
+        if opponent.bot:
+            return await ctx.send("You cannot duel a bot.", delete_after=10)
+        if opponent.id == ctx.author.id:
+            return await ctx.send("You cannot duel yourself.", delete_after=10)
+
+        self._cleanup_expired_bonus(ctx.guild.id, ctx.channel.id)
+        active_bonus = self._bonus_active.get((ctx.guild.id, ctx.channel.id))
+        if active_bonus and active_bonus.ends_at > int(time.time()):
+            return await ctx.send("A bonus round is active here. Finish it before starting a duel.", delete_after=10)
+
+        state = await self._ensure_state_loaded(ctx.guild.id, ctx.channel.id)
+        if state and state.ends_at > int(time.time()):
+            return await ctx.send("A normal GuessYear round is active here. Finish it before starting a duel.", delete_after=10)
+
+        busy = self._duel_busy_message(ctx.guild.id, ctx.channel.id)
+        if busy:
+            return await ctx.send(busy, delete_after=10)
+
+        if not self._events_for_channel(ctx.guild.id, ctx.channel.id):
+            return await ctx.send(
+                "No GuessYear events match this channel's selected categories. Use `!categories reset` or choose more categories.",
+                delete_after=12,
+            )
+
+        now = int(time.time())
+        challenge = DuelChallengeState(
+            guild_id=ctx.guild.id,
+            channel_id=ctx.channel.id,
+            challenger_user_id=ctx.author.id,
+            opponent_user_id=opponent.id,
+            created_at=now,
+            expires_at=now + 60,
+        )
+        key = (ctx.guild.id, ctx.channel.id)
+        self._duel_challenges[key] = challenge
+
+        view = DuelChallengeView(self, challenge)
+        self._duel_challenge_views[key] = view
+        embed = self._build_duel_challenge_embed(ctx.guild, challenge)
+        message = await ctx.send(content=opponent.mention, embed=embed, view=view)
+        view.message = message
+
+    @commands.command(name="duelstatus")
+    async def duelstatus(self, ctx: commands.Context):
+        if not ctx.guild:
+            return
+
+        key = (ctx.guild.id, ctx.channel.id)
+
+        challenge = self._duel_challenges.get(key)
+        if challenge and challenge.expires_at > int(time.time()):
+            embed = self._build_duel_challenge_embed(ctx.guild, challenge)
+            return await ctx.send(embed=embed)
+
+        duel = self._duel_active.get(key)
+        if duel and duel.ends_at > int(time.time()):
+            embed = self._build_duel_round_embed(ctx.guild, duel)
+            return await ctx.send(embed=embed)
+
+        return await ctx.send("No duel challenge or active duel in this channel.", delete_after=10)
+
+    @commands.command(name="duelcancel")
+    async def duelcancel(self, ctx: commands.Context):
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+
+        key = (ctx.guild.id, ctx.channel.id)
+        member = ctx.author if isinstance(ctx.author, discord.Member) else None
+
+        challenge = self._duel_challenges.get(key)
+        if challenge:
+            allowed = (
+                member is not None and (
+                    member.id in (challenge.challenger_user_id, challenge.opponent_user_id)
+                    or self._can_manage_rounds(member)
+                )
+            )
+            if not allowed:
+                return await ctx.send("Only the duel participants or a moderator can cancel this duel challenge.", delete_after=10)
+
+            self._duel_challenges.pop(key, None)
+            view = self._duel_challenge_views.pop(key, None)
+            if view and view.message is not None:
+                try:
+                    embed = discord.Embed(
+                        title="⚔️ GuessYear Duel Challenge",
+                        description="The duel challenge was cancelled.",
+                        color=discord.Color.dark_red(),
+                    )
+                    await view.message.edit(embed=embed, view=None)
+                except Exception:
+                    pass
+            return await ctx.send("Duel challenge cancelled.", delete_after=8)
+
+        duel = self._duel_active.get(key)
+        if duel:
+            allowed = (
+                member is not None and (
+                    member.id in (duel.challenger_user_id, duel.opponent_user_id)
+                    or self._can_manage_rounds(member)
+                )
+            )
+            if not allowed:
+                return await ctx.send("Only the duel participants or a moderator can cancel this duel.", delete_after=10)
+
+            await self._finish_duel(ctx.guild.id, ctx.channel.id, forced=True)
+            return
+
+        await ctx.send("No duel challenge or active duel to cancel in this channel.", delete_after=10)
 
     ### Guess Year Leaderboard
     @guessyear.command(name="top")
@@ -778,7 +1429,7 @@ class GuessYearCog(commands.Cog):
                     member = None
 
             raw_name = member.display_name if member else f"User {uid}"
-            name = discord.utils.escape_markdown(raw_name)
+            discord.utils.escape_markdown(raw_name)
             rate = (wins / plays * 100.0) if plays > 0 else 0.0
 
             lines.append(
@@ -836,7 +1487,6 @@ class GuessYearCog(commands.Cog):
             )
         )
 
-
     @commands.group(name="categories", invoke_without_command=True)
     async def categories(self, ctx: commands.Context):
         if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
@@ -874,6 +1524,9 @@ class GuessYearCog(commands.Cog):
             return
         if not self.bot.cfg.GUESSYEAR_HINTS_ENABLED:
             return await ctx.send("Hints are disabled.", delete_after=8)
+
+        if (ctx.guild.id, ctx.channel.id) in self._duel_active:
+            return await ctx.send("Hints are not available during hidden duel rounds.", delete_after=10)
 
         state = await self._ensure_state_loaded(ctx.guild.id, ctx.channel.id)
         if not state or state.ends_at <= int(time.time()):
@@ -936,7 +1589,10 @@ class GuessYearCog(commands.Cog):
                     color=discord.Color.green(),
                 )
                 embed.add_field(name="Accepted answer", value=f"**{requested}**", inline=False)
-                embed.set_footer(text=f"From GuessYear round #{active.source_round_id}")
+                if active.source_round_id:
+                    embed.set_footer(text=f"From GuessYear round #{active.source_round_id}")
+                else:
+                    embed.set_footer(text="From a GuessYear duel")
                 return await ctx.send(embed=embed)
 
             return await ctx.send("❌ Not quite. Try `!bonus <answer>` again before time runs out.", delete_after=8)
@@ -1022,6 +1678,9 @@ class GuessYearCog(commands.Cog):
         if not self._is_allowed_channel(message.channel.id):
             return
 
+        if (message.guild.id, message.channel.id) in self._duel_active:
+            return
+
         state = await self._ensure_state_loaded(message.guild.id, message.channel.id)
         if not state or state.ends_at <= int(time.time()):
             return
@@ -1069,12 +1728,7 @@ class GuessYearCog(commands.Cog):
             return
 
         try:
-            if guess_year == state.correct_year:
-                await message.channel.send(
-                    f"✅ {message.author.mention} guessed **{guess_year}**."
-                )
-            else:
-                await message.channel.send(f"✅ {message.author.mention} guessed **{guess_year}**.")
+            await message.channel.send(f"✅ {message.author.mention} guessed **{guess_year}**.")
         except Exception:
             pass
 
