@@ -2345,7 +2345,7 @@
   {
     "id": "evt_0101",
     "prompt": "A decisive naval battle halts a major attempted invasion of Greece by a Persian king.",
-    "year": 480,
+    "year": -480,
     "hints": [
       "One nearby event: Clovis I converting to Christianity. That was 16 years after this event.",
       "One nearby event: the traditional fall of the Western Roman Empire. That was 4 years before this event.",
@@ -2420,7 +2420,7 @@
   {
     "id": "evt_0104",
     "prompt": "A major empire in China is unified under the Qin, ending the Warring States period.",
-    "year": 221,
+    "year": -221,
     "hints": [
       "One nearby event: the Battle of Zama. That was 19 years before this event.",
       "One nearby event: A major battle ends the Second Punic War and secures Rome’s dominance. That was 19 years before this event.",
@@ -2590,7 +2590,7 @@
   {
     "id": "evt_0111",
     "prompt": "A famous battle in Italy defeats a Roman army and shocks the Republic during the Punic Wars.",
-    "year": 216,
+    "year": -216,
     "hints": [
       "One nearby event: Qin unification of China. That was 5 years after this event.",
       "One nearby event: A major empire in China is unified under the Qin, ending the Warring States period. That was 5 years after this event.",
@@ -2660,7 +2660,7 @@
   {
     "id": "evt_0114",
     "prompt": "A major battle ends the Second Punic War and secures Rome’s dominance.",
-    "year": 202,
+    "year": -202,
     "hints": [
       "One nearby event: A famous battle in Italy defeats a Roman army and shocks the Republic during the Punic Wars. That was 14 years after this event.",
       "One nearby event: Qin unification of China. That was 19 years after this event.",
@@ -7453,7 +7453,7 @@
   {
     "id": "evt_0397",
     "prompt": "A decisive naval battle halts a major attempted invasion of Greece by a Persian king.",
-    "year": 480,
+    "year": -480,
     "hints": [
       "One nearby event: the traditional fall of the Western Roman Empire. That was 4 years before this event.",
       "One nearby event: the Council of Chalcedon. That was 29 years before this event.",
@@ -7495,7 +7495,7 @@
   {
     "id": "evt_0400",
     "prompt": "A major empire in China is unified under the Qin, ending the Warring States period.",
-    "year": 221,
+    "year": -221,
     "hints": [
       "One nearby event: the Antonine Plague beginning. That was 56 years before this event.",
       "One nearby event: A famous battle in Italy defeats a Roman army and shocks the Republic during the Punic Wars. That was 5 years before this event.",
@@ -7593,7 +7593,7 @@
   {
     "id": "evt_0407",
     "prompt": "A famous battle in Italy defeats a Roman army and shocks the Republic during the Punic Wars.",
-    "year": 216,
+    "year": -216,
     "hints": [
       "One nearby event: Qin unification of China. That was 5 years after this event.",
       "One nearby event: A major battle ends the Second Punic War and secures Rome’s dominance. That was 14 years before this event.",
@@ -7635,7 +7635,7 @@
   {
     "id": "evt_0410",
     "prompt": "A major battle ends the Second Punic War and secures Rome’s dominance.",
-    "year": 202,
+    "year": -202,
     "hints": [
       "One nearby event: Mount Vesuvius erupts and buries Pompeii and Herculaneum in ash. That was 123 years before this event.",
       "One nearby event: Hadrian's Wall beginning in Roman Britain. That was 80 years before this event.",
