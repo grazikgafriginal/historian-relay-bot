@@ -12589,5 +12589,4234 @@
       "Middle East",
       "Crusade"
     ]
+  },
+  {
+    "id": "evt_0724",
+    "prompt": "A new dynasty is proclaimed in North China after the last Tang emperor is deposed.",
+    "year": 907,
+    "hints": [
+      "One nearby event: A new caliphate arises in North Africa among the Kutama Berbers. That was 2 years after this event.",
+      "One nearby event: A Viking leader is granted lands around Rouen, marking the official foundation of Normandy. That was 4 years after this event.",
+      "One nearby event: Gunpowder is first used in battle as incendiary weapons help burn an enemy fleet in China. That was 12 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Dynasty"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler who founded the Later Liang dynasty.",
+        "answers": [
+          "zhu quanzhong",
+          "zhu wen"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0725",
+    "prompt": "Hungarian forces annihilate invading armies at a battle that secures their hold on the Carpathian Basin.",
+    "year": 907,
+    "hints": [
+      "One nearby event: A new caliphate arises in North Africa among the Kutama Berbers. That was 2 years after this event.",
+      "One nearby event: A Viking leader is granted lands around Rouen, marking the official foundation of Normandy. That was 4 years after this event.",
+      "One nearby event: A medieval Croatian state becomes a unified kingdom under King Tomislav. That was 18 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0726",
+    "prompt": "A new caliphate arises in North Africa among the Kutama Berbers.",
+    "year": 909,
+    "hints": [
+      "One nearby event: A Viking leader is granted lands around Rouen, marking the official foundation of Normandy. That was 2 years after this event.",
+      "One nearby event: Gunpowder is first used in battle as incendiary weapons help burn an enemy fleet in China. That was 10 years after this event.",
+      "One nearby event: A city destined to become one of the great capitals of the Islamic world is founded near Fustat. That was 60 years after this event."
+    ],
+    "tags": [
+      "North Africa",
+      "Caliphate"
+    ]
+  },
+  {
+    "id": "evt_0727",
+    "prompt": "A Viking leader is granted lands around Rouen, marking the official foundation of Normandy.",
+    "year": 911,
+    "hints": [
+      "One nearby event: Gunpowder is first used in battle as incendiary weapons help burn an enemy fleet in China. That was 8 years after this event.",
+      "One nearby event: A medieval Croatian state becomes a unified kingdom under King Tomislav. That was 14 years after this event.",
+      "One nearby event: England becomes a unified kingdom under a single ruler. That was 16 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "State Formation"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Viking leader associated with the founding of Normandy.",
+        "answers": [
+          "rollo"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0728",
+    "prompt": "Gunpowder is first used in battle as incendiary weapons help burn an enemy fleet in China.",
+    "year": 919,
+    "hints": [
+      "One nearby event: A medieval Croatian state becomes a unified kingdom under King Tomislav. That was 6 years after this event.",
+      "One nearby event: England becomes a unified kingdom under a single ruler. That was 8 years after this event.",
+      "One nearby event: A new Korean dynasty unifies the Later Three Kingdoms. That was 17 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Military Technology"
+    ]
+  },
+  {
+    "id": "evt_0729",
+    "prompt": "A medieval Croatian state becomes a unified kingdom under King Tomislav.",
+    "year": 925,
+    "hints": [
+      "One nearby event: England becomes a unified kingdom under a single ruler. That was 2 years after this event.",
+      "One nearby event: A new Korean dynasty unifies the Later Three Kingdoms. That was 11 years after this event.",
+      "One nearby event: A river battle ends nearly a thousand years of Chinese imperial domination in Vietnam. That was 13 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Monarchy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Croatian ruler associated with this unification.",
+        "answers": [
+          "tomislav",
+          "king tomislav"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0730",
+    "prompt": "England becomes a unified kingdom under a single ruler.",
+    "year": 927,
+    "hints": [
+      "One nearby event: A new Korean dynasty unifies the Later Three Kingdoms. That was 9 years after this event.",
+      "One nearby event: A river battle ends nearly a thousand years of Chinese imperial domination in Vietnam. That was 11 years after this event.",
+      "One nearby event: A kingdom traditionally begins in southeastern Nigeria under Eze Nri. That was 21 years after this event."
+    ],
+    "tags": [
+      "England",
+      "State Formation"
+    ]
+  },
+  {
+    "id": "evt_0731",
+    "prompt": "A new Korean dynasty unifies the Later Three Kingdoms.",
+    "year": 936,
+    "hints": [
+      "One nearby event: A river battle ends nearly a thousand years of Chinese imperial domination in Vietnam. That was 2 years after this event.",
+      "One nearby event: A kingdom traditionally begins in southeastern Nigeria under Eze Nri. That was 12 years after this event.",
+      "One nearby event: Otto the Great defeats the Hungarians in a battle that reshapes central Europe. That was 19 years after this event."
+    ],
+    "tags": [
+      "Korea",
+      "Dynasty"
+    ]
+  },
+  {
+    "id": "evt_0732",
+    "prompt": "A river battle ends nearly a thousand years of Chinese imperial domination in Vietnam.",
+    "year": 938,
+    "hints": [
+      "One nearby event: A kingdom traditionally begins in southeastern Nigeria under Eze Nri. That was 10 years after this event.",
+      "One nearby event: Otto the Great defeats the Hungarians in a battle that reshapes central Europe. That was 17 years after this event.",
+      "One nearby event: A general seizes power and founds the Song dynasty in China. That was 22 years after this event."
+    ],
+    "tags": [
+      "Vietnam",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Vietnamese leader associated with the victory at Bạch Đằng.",
+        "answers": [
+          "ngo quyen",
+          "ngô quyền"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0733",
+    "prompt": "A kingdom traditionally begins in southeastern Nigeria under Eze Nri.",
+    "year": 948,
+    "hints": [
+      "One nearby event: Otto the Great defeats the Hungarians in a battle that reshapes central Europe. That was 7 years after this event.",
+      "One nearby event: A general seizes power and founds the Song dynasty in China. That was 12 years after this event.",
+      "One nearby event: A city destined to become one of the great capitals of the Islamic world is founded near Fustat. That was 21 years after this event."
+    ],
+    "tags": [
+      "West Africa",
+      "Kingdom"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler traditionally associated with this kingdom's beginning.",
+        "answers": [
+          "eze nri"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0734",
+    "prompt": "Otto the Great defeats the Hungarians in a battle that reshapes central Europe.",
+    "year": 955,
+    "hints": [
+      "One nearby event: A general seizes power and founds the Song dynasty in China. That was 5 years after this event.",
+      "One nearby event: The first ruler of Poland is baptized as Christianity spreads into the Polish state. That was 11 years after this event.",
+      "One nearby event: A city destined to become one of the great capitals of the Islamic world is founded near Fustat. That was 14 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the Battle of Lechfeld fought?",
+        "answers": [
+          "august",
+          "aug"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the ruler associated with the victory at Lechfeld.",
+        "answers": [
+          "otto i",
+          "otto the great",
+          "otto"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0735",
+    "prompt": "A general seizes power and founds the Song dynasty in China.",
+    "year": 960,
+    "hints": [
+      "One nearby event: The Seljuks convert to Islam, a major turning point in Turkic and Islamic history. That was the same year as this event.",
+      "One nearby event: The Khazar kingdom is defeated by Kievan Rus. That was 5 years after this event.",
+      "One nearby event: The first ruler of Poland is baptized as Christianity spreads into the Polish state. That was 6 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Dynasty"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the founder of the Song dynasty.",
+        "answers": [
+          "zhao kuangyin",
+          "emperor taizu of song",
+          "taizu",
+          "song taizu"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0736",
+    "prompt": "The Seljuks convert to Islam, a major turning point in Turkic and Islamic history.",
+    "year": 960,
+    "hints": [
+      "One nearby event: The Khazar kingdom is defeated by Kievan Rus. That was 5 years after this event.",
+      "One nearby event: The first ruler of Poland is baptized as Christianity spreads into the Polish state. That was 6 years after this event.",
+      "One nearby event: A new Turkic sultanate is founded in Central Asia under the Ghaznavids. That was 15 years after this event."
+    ],
+    "tags": [
+      "Central Asia",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0737",
+    "prompt": "The Khazar kingdom is defeated by Kievan Rus.",
+    "year": 965,
+    "hints": [
+      "One nearby event: The first ruler of Poland is baptized as Christianity spreads into the Polish state. That was 1 year after this event.",
+      "One nearby event: A city destined to become one of the great capitals of the Islamic world is founded near Fustat. That was 4 years after this event.",
+      "One nearby event: A new Turkic sultanate is founded in Central Asia under the Ghaznavids. That was 10 years after this event."
+    ],
+    "tags": [
+      "Eastern Europe",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0738",
+    "prompt": "The first ruler of Poland is baptized as Christianity spreads into the Polish state.",
+    "year": 966,
+    "hints": [
+      "One nearby event: A city destined to become one of the great capitals of the Islamic world is founded near Fustat. That was 3 years after this event.",
+      "One nearby event: A new Turkic sultanate is founded in Central Asia under the Ghaznavids. That was 9 years after this event.",
+      "One nearby event: China is largely reunified after a long era of division under the Song. That was 13 years after this event."
+    ],
+    "tags": [
+      "Poland",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Polish ruler baptized in 966.",
+        "answers": [
+          "mieszko i",
+          "mieszko",
+          "duke mieszko i"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0739",
+    "prompt": "A city destined to become one of the great capitals of the Islamic world is founded near Fustat.",
+    "year": 969,
+    "hints": [
+      "One nearby event: A new Turkic sultanate is founded in Central Asia under the Ghaznavids. That was 6 years after this event.",
+      "One nearby event: China is largely reunified after a long era of division under the Song. That was 10 years after this event.",
+      "One nearby event: A major center of learning is established in Cairo under the Fatimids. That was 11 years after this event."
+    ],
+    "tags": [
+      "Egypt",
+      "Cities"
+    ]
+  },
+  {
+    "id": "evt_0740",
+    "prompt": "A new Turkic sultanate is founded in Central Asia under the Ghaznavids.",
+    "year": 975,
+    "hints": [
+      "One nearby event: China is largely reunified after a long era of division under the Song. That was 4 years after this event.",
+      "One nearby event: A major center of learning is established in Cairo under the Fatimids. That was 5 years after this event.",
+      "One nearby event: Norse settlers begin colonizing Greenland under a famous outlawed explorer. That was 10 years after this event."
+    ],
+    "tags": [
+      "Central Asia",
+      "Sultanate"
+    ]
+  },
+  {
+    "id": "evt_0741",
+    "prompt": "China is largely reunified after a long era of division under the Song.",
+    "year": 979,
+    "hints": [
+      "One nearby event: A major center of learning is established in Cairo under the Fatimids. That was 1 year after this event.",
+      "One nearby event: Queen Gudit leads a rebellion against the Aksumite dynasty in Abyssinia. That was 1 year after this event.",
+      "One nearby event: Norse settlers begin colonizing Greenland under a famous outlawed explorer. That was 6 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Unification"
+    ]
+  },
+  {
+    "id": "evt_0742",
+    "prompt": "A major center of learning is established in Cairo under the Fatimids.",
+    "year": 980,
+    "hints": [
+      "One nearby event: Queen Gudit leads a rebellion against the Aksumite dynasty in Abyssinia. That was the same year as this event.",
+      "One nearby event: Norse settlers begin colonizing Greenland under a famous outlawed explorer. That was 5 years after this event.",
+      "One nearby event: A Maya ruler unites Uxmal, Mayapan, and Chichen Itza into the League of Mayapan. That was 7 years after this event."
+    ],
+    "tags": [
+      "Egypt",
+      "Learning"
+    ]
+  },
+  {
+    "id": "evt_0743",
+    "prompt": "Queen Gudit leads a rebellion against the Aksumite dynasty in Abyssinia.",
+    "year": 980,
+    "hints": [
+      "One nearby event: Norse settlers begin colonizing Greenland under a famous outlawed explorer. That was 5 years after this event.",
+      "One nearby event: A Maya ruler unites Uxmal, Mayapan, and Chichen Itza into the League of Mayapan. That was 7 years after this event.",
+      "One nearby event: Vladimir I of Kievan Rus' is baptized, helping Christianize his realm. That was 8 years after this event."
+    ],
+    "tags": [
+      "Ethiopia",
+      "Rebellion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the queen associated with this rebellion.",
+        "answers": [
+          "gudit",
+          "queen gudit",
+          "yodit",
+          "judith"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0744",
+    "prompt": "Norse settlers begin colonizing Greenland under a famous outlawed explorer.",
+    "year": 985,
+    "hints": [
+      "One nearby event: A Maya ruler unites Uxmal, Mayapan, and Chichen Itza into the League of Mayapan. That was 2 years after this event.",
+      "One nearby event: Vladimir I of Kievan Rus' is baptized, helping Christianize his realm. That was 3 years after this event.",
+      "One nearby event: The Samanid dynasty falls to the Ghaznavids. That was 14 years after this event."
+    ],
+    "tags": [
+      "North Atlantic",
+      "Exploration"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Norse explorer associated with the colonization of Greenland.",
+        "answers": [
+          "erik the red",
+          "erik",
+          "eirik the red",
+          "eirikr rauoi"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0745",
+    "prompt": "A Maya ruler unites Uxmal, Mayapan, and Chichen Itza into the League of Mayapan.",
+    "year": 987,
+    "hints": [
+      "One nearby event: Vladimir I of Kievan Rus' is baptized, helping Christianize his realm. That was 1 year after this event.",
+      "One nearby event: The Samanid dynasty falls to the Ghaznavids. That was 12 years after this event.",
+      "One nearby event: A major center of learning is established in Cairo under the Fatimids. That was 7 years before this event."
+    ],
+    "tags": [
+      "Maya",
+      "Mesoamerica"
+    ]
+  },
+  {
+    "id": "evt_0746",
+    "prompt": "Vladimir I of Kievan Rus' is baptized, helping Christianize his realm.",
+    "year": 988,
+    "hints": [
+      "One nearby event: The Samanid dynasty falls to the Ghaznavids. That was 11 years after this event.",
+      "One nearby event: A Maya ruler unites Uxmal, Mayapan, and Chichen Itza into the League of Mayapan. That was 1 year before this event.",
+      "One nearby event: Norse settlers begin colonizing Greenland under a famous outlawed explorer. That was 3 years before this event."
+    ],
+    "tags": [
+      "Eastern Europe",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler of Kievan Rus' baptized in 988.",
+        "answers": [
+          "vladimir i",
+          "vladimir the great",
+          "volodymyr",
+          "saint vladimir"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0747",
+    "prompt": "The Samanid dynasty falls to the Ghaznavids.",
+    "year": 999,
+    "hints": [
+      "One nearby event: Vladimir I of Kievan Rus' is baptized, helping Christianize his realm. That was 11 years before this event.",
+      "One nearby event: Norse settlers begin colonizing Greenland under a famous outlawed explorer. That was 14 years before this event.",
+      "One nearby event: A new Turkic sultanate is founded in Central Asia under the Ghaznavids. That was 24 years before this event."
+    ],
+    "tags": [
+      "Central Asia",
+      "Dynasty"
+    ]
+  },
+  {
+    "id": "evt_0748",
+    "prompt": "A Khmer ruler founds a new empire in Cambodia and begins the Angkorian era.",
+    "year": 802,
+    "hints": [
+      "One nearby event: Construction on a colossal cliff-carved Buddha in China is completed. That was 1 year after this event.",
+      "One nearby event: Bulgarian forces destroy a Byzantine army and kill an emperor at Pliska. That was 9 years after this event.",
+      "One nearby event: The Bulgarians heavily defeat the Byzantines again at Versinikia. That was 11 years after this event."
+    ],
+    "tags": [
+      "Cambodia",
+      "Empire"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Khmer ruler associated with founding this empire.",
+        "answers": [
+          "jayavarman ii",
+          "jayavarman 2",
+          "jayavarman"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0749",
+    "prompt": "Construction on a colossal cliff-carved Buddha in China is completed after many decades of work.",
+    "year": 803,
+    "hints": [
+      "One nearby event: A Khmer ruler founds a new empire in Cambodia and begins the Angkorian era. That was 1 year before this event.",
+      "One nearby event: Bulgarian forces destroy a Byzantine army and kill an emperor at Pliska. That was 8 years after this event.",
+      "One nearby event: The Bulgarians heavily defeat the Byzantines again at Versinikia. That was 10 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Architecture"
+    ]
+  },
+  {
+    "id": "evt_0750",
+    "prompt": "Bulgarian forces destroy a Byzantine army and kill an emperor at a disastrous mountain battle.",
+    "year": 811,
+    "hints": [
+      "One nearby event: The Bulgarians heavily defeat the Byzantines again at Versinikia. That was 2 years after this event.",
+      "One nearby event: Charlemagne dies in Aachen. That was 3 years after this event.",
+      "One nearby event: Construction on a colossal cliff-carved Buddha in China is completed after many decades of work. That was 8 years before this event."
+    ],
+    "tags": [
+      "Bulgaria",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Byzantine emperor killed in this campaign.",
+        "answers": [
+          "nicephorus i",
+          "nikephoros i",
+          "nicephorus",
+          "nikephoros"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0751",
+    "prompt": "The Bulgarians inflict another major defeat on the Byzantines at Versinikia.",
+    "year": 813,
+    "hints": [
+      "One nearby event: Charlemagne dies in Aachen. That was 1 year after this event.",
+      "One nearby event: Bulgarian forces destroy a Byzantine army and kill an emperor at a disastrous mountain battle. That was 2 years before this event.",
+      "One nearby event: A foundational Arabic treatise on algebra is written. That was 7 years after this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0752",
+    "prompt": "Charlemagne dies in Aachen, closing one of the most famous reigns of the early Middle Ages.",
+    "year": 814,
+    "hints": [
+      "One nearby event: The Bulgarians inflict another major defeat on the Byzantines at Versinikia. That was 1 year before this event.",
+      "One nearby event: Bulgarian forces destroy a Byzantine army and kill an emperor at a disastrous mountain battle. That was 3 years before this event.",
+      "One nearby event: A foundational Arabic treatise on algebra is written. That was 6 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Monarchy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor who died in 814.",
+        "answers": [
+          "charlemagne",
+          "charles the great",
+          "karl der grosse"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0753",
+    "prompt": "A foundational Arabic treatise on algebra is written by a scholar working in the Abbasid world.",
+    "year": 820,
+    "hints": [
+      "One nearby event: Wessex defeats Mercia in a battle that shifts power in England. That was 5 years after this event.",
+      "One nearby event: A great Buddhist monument in Java is completed. That was 5 years after this event.",
+      "One nearby event: Charlemagne dies in Aachen. That was 6 years before this event."
+    ],
+    "tags": [
+      "Islamic World",
+      "Mathematics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the mathematician associated with this algebra treatise.",
+        "answers": [
+          "al-khwarizmi",
+          "al khwarizmi",
+          "muhammad ibn musa al-khwarizmi"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0754",
+    "prompt": "Wessex defeats Mercia in a battle that makes it the leading kingdom in England.",
+    "year": 825,
+    "hints": [
+      "One nearby event: The Ghana Empire is established in West Africa. That was 5 years after this event.",
+      "One nearby event: A foundational Arabic treatise on algebra is written by a scholar working in the Abbasid world. That was 5 years before this event.",
+      "One nearby event: A failed court coup in Tang China leaves the eunuchs dominant. That was 10 years after this event."
+    ],
+    "tags": [
+      "England",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the king of Wessex associated with this victory.",
+        "answers": [
+          "egbert",
+          "ecgberht",
+          "king egbert"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0755",
+    "prompt": "A vast Buddhist monument in central Java is completed during the Sailendra period.",
+    "year": 825,
+    "hints": [
+      "One nearby event: The Ghana Empire is established in West Africa. That was 5 years after this event.",
+      "One nearby event: A foundational Arabic treatise on algebra is written by a scholar working in the Abbasid world. That was 5 years before this event.",
+      "One nearby event: A failed court coup in Tang China leaves the eunuchs dominant. That was 10 years after this event."
+    ],
+    "tags": [
+      "Indonesia",
+      "Architecture"
+    ]
+  },
+  {
+    "id": "evt_0756",
+    "prompt": "A major West African empire is established in the Sahel.",
+    "year": 830,
+    "hints": [
+      "One nearby event: A failed court coup in Tang China leaves the eunuchs dominant. That was 5 years after this event.",
+      "One nearby event: Wessex defeats Mercia in a battle that makes it the leading kingdom in England. That was 5 years before this event.",
+      "One nearby event: Vikings found a major settlement on Ireland’s east coast. That was 11 years after this event."
+    ],
+    "tags": [
+      "West Africa",
+      "Empire"
+    ]
+  },
+  {
+    "id": "evt_0757",
+    "prompt": "A failed court coup in Tang China leaves powerful eunuchs firmly in control of the palace.",
+    "year": 835,
+    "hints": [
+      "One nearby event: Vikings found a major settlement on Ireland’s east coast. That was 6 years after this event.",
+      "One nearby event: The Carolingian Empire is divided into three realms by treaty. That was 8 years after this event.",
+      "One nearby event: A major West African empire is established in the Sahel. That was 5 years before this event."
+    ],
+    "tags": [
+      "China",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0758",
+    "prompt": "Vikings found a major settlement on Ireland’s east coast that becomes an important city.",
+    "year": 841,
+    "hints": [
+      "One nearby event: The Carolingian Empire is divided into three realms by treaty. That was 2 years after this event.",
+      "One nearby event: Buddhism is persecuted and banned under Tang rule. That was 4 years after this event.",
+      "One nearby event: A failed court coup in Tang China leaves powerful eunuchs firmly in control of the palace. That was 6 years before this event."
+    ],
+    "tags": [
+      "Ireland",
+      "Cities"
+    ]
+  },
+  {
+    "id": "evt_0759",
+    "prompt": "A treaty divides the Carolingian Empire into three major realms.",
+    "year": 843,
+    "hints": [
+      "One nearby event: Buddhism is persecuted and banned under Tang rule. That was 2 years after this event.",
+      "One nearby event: Vikings found a major settlement on Ireland’s east coast that becomes an important city. That was 2 years before this event.",
+      "One nearby event: A failed court coup in Tang China leaves powerful eunuchs firmly in control of the palace. That was 8 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Treaty"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name one of the sons of Louis the Pious who took part in this division.",
+        "answers": [
+          "louis the german",
+          "charles the bald",
+          "lothair i",
+          "lothair"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0760",
+    "prompt": "Buddhism is persecuted and banned under Tang rule in China.",
+    "year": 845,
+    "hints": [
+      "One nearby event: The Carolingian Empire is divided into three realms by treaty. That was 2 years before this event.",
+      "One nearby event: A great Hindu temple complex in Java is completed. That was 11 years after this event.",
+      "One nearby event: Vikings found a major settlement on Ireland’s east coast that becomes an important city. That was 4 years before this event."
+    ],
+    "tags": [
+      "China",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0761",
+    "prompt": "A great Hindu temple complex in Java is completed.",
+    "year": 856,
+    "hints": [
+      "One nearby event: A major center of learning is established in Fez. That was 3 years after this event.",
+      "One nearby event: An Abbasid caliph is assassinated, deepening the empire’s troubles. That was 5 years after this event.",
+      "One nearby event: Buddhism is persecuted and banned under Tang rule in China. That was 11 years before this event."
+    ],
+    "tags": [
+      "Indonesia",
+      "Architecture"
+    ]
+  },
+  {
+    "id": "evt_0762",
+    "prompt": "A major center of learning is established in Fez.",
+    "year": 859,
+    "hints": [
+      "One nearby event: An Abbasid caliph is assassinated, deepening the empire’s troubles. That was 2 years after this event.",
+      "One nearby event: A great Hindu temple complex in Java is completed. That was 3 years before this event.",
+      "One nearby event: The Rurik dynasty begins in Rus'. That was 3 years after this event."
+    ],
+    "tags": [
+      "Morocco",
+      "Learning"
+    ]
+  },
+  {
+    "id": "evt_0763",
+    "prompt": "An Abbasid caliph is assassinated, accelerating the decline of central caliphal authority.",
+    "year": 861,
+    "hints": [
+      "One nearby event: The Rurik dynasty begins in Rus'. That was 1 year after this event.",
+      "One nearby event: Bulgaria adopts Christianity under Boris I. That was 3 years after this event.",
+      "One nearby event: A major center of learning is established in Fez. That was 2 years before this event."
+    ],
+    "tags": [
+      "Abbasid Caliphate",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the caliph assassinated in 861.",
+        "answers": [
+          "al-mutawakkil",
+          "al mutawakkil"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0764",
+    "prompt": "A famous ruling house begins in Rus'.",
+    "year": 862,
+    "hints": [
+      "One nearby event: Bulgaria adopts Christianity under Boris I. That was 2 years after this event.",
+      "One nearby event: An Abbasid caliph is assassinated, accelerating the decline of central caliphal authority. That was 1 year before this event.",
+      "One nearby event: A major center of learning is established in Fez. That was 3 years before this event."
+    ],
+    "tags": [
+      "Eastern Europe",
+      "Dynasty"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler traditionally associated with the start of this dynasty.",
+        "answers": [
+          "rurik"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0765",
+    "prompt": "Bulgaria adopts Christianity under its ruler Boris I.",
+    "year": 864,
+    "hints": [
+      "One nearby event: The Rurik dynasty begins in Rus'. That was 2 years before this event.",
+      "One nearby event: An independent dynasty is founded in Egypt by Ahmad ibn Tulun. That was 4 years after this event.",
+      "One nearby event: An Abbasid caliph is assassinated, accelerating the decline of central caliphal authority. That was 3 years before this event."
+    ],
+    "tags": [
+      "Bulgaria",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Bulgarian ruler associated with this conversion.",
+        "answers": [
+          "boris i",
+          "boris",
+          "boris michael"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0766",
+    "prompt": "An independent dynasty is founded in Egypt by Ahmad ibn Tulun.",
+    "year": 868,
+    "hints": [
+      "One nearby event: A devastating earthquake and tsunami strike Japan’s Sanriku coast. That was 1 year after this event.",
+      "One nearby event: A major slave revolt begins against the Abbasids in southern Iraq. That was 1 year after this event.",
+      "One nearby event: Bulgaria adopts Christianity under its ruler Boris I. That was 4 years before this event."
+    ],
+    "tags": [
+      "Egypt",
+      "Dynasty"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the founder of this Egyptian dynasty.",
+        "answers": [
+          "ahmad ibn tulun",
+          "ibn tulun",
+          "ahmad ibn tulun"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0767",
+    "prompt": "A devastating earthquake and tsunami strike Japan’s Sanriku coast.",
+    "year": 869,
+    "hints": [
+      "One nearby event: The Serbs are Christianized. That was 1 year after this event.",
+      "One nearby event: Prague Castle is founded. That was 1 year after this event.",
+      "One nearby event: An independent dynasty is founded in Egypt by Ahmad ibn Tulun. That was 1 year before this event."
+    ],
+    "tags": [
+      "Japan",
+      "Disaster"
+    ]
+  },
+  {
+    "id": "evt_0768",
+    "prompt": "A major slave revolt begins against the Abbasids in southern Iraq.",
+    "year": 869,
+    "hints": [
+      "One nearby event: The Serbs are Christianized. That was 1 year after this event.",
+      "One nearby event: Prague Castle is founded. That was 1 year after this event.",
+      "One nearby event: An independent dynasty is founded in Egypt by Ahmad ibn Tulun. That was 1 year before this event."
+    ],
+    "tags": [
+      "Iraq",
+      "Rebellion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name this revolt.",
+        "answers": [
+          "zanj rebellion",
+          "the zanj rebellion",
+          "zanj revolt"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0769",
+    "prompt": "The Serbs are Christianized.",
+    "year": 870,
+    "hints": [
+      "One nearby event: Prague Castle is founded. That was the same year as this event.",
+      "One nearby event: Iceland is settled by Ingólfur Arnarson. That was 2 years after this event.",
+      "One nearby event: A devastating earthquake and tsunami strike Japan’s Sanriku coast. That was 1 year before this event."
+    ],
+    "tags": [
+      "Serbia",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0770",
+    "prompt": "Prague Castle is founded.",
+    "year": 870,
+    "hints": [
+      "One nearby event: The Serbs are Christianized. That was the same year as this event.",
+      "One nearby event: Iceland is settled by Ingólfur Arnarson. That was 2 years after this event.",
+      "One nearby event: A major slave revolt begins against the Abbasids in southern Iraq. That was 1 year before this event."
+    ],
+    "tags": [
+      "Bohemia",
+      "Cities"
+    ]
+  },
+  {
+    "id": "evt_0771",
+    "prompt": "Iceland is settled by Ingólfur Arnarson from Norway.",
+    "year": 872,
+    "hints": [
+      "One nearby event: Alfred the Great defeats Guthrum in a decisive battle in England. That was 6 years after this event.",
+      "One nearby event: The Serbs are Christianized. That was 2 years before this event.",
+      "One nearby event: Prague Castle is founded. That was 2 years before this event."
+    ],
+    "tags": [
+      "Iceland",
+      "Settlement"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Norse settler associated with this event.",
+        "answers": [
+          "ingolfur arnarson",
+          "ingolfr arnarson",
+          "ingolfur",
+          "ingolfr"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0772",
+    "prompt": "Alfred the Great defeats Guthrum in a decisive battle against the Danes.",
+    "year": 878,
+    "hints": [
+      "One nearby event: The arrival of the disciples of Cyril and Methodius in Bulgaria helps spread a new alphabet. That was 7 years after this event.",
+      "One nearby event: Iceland is settled by Ingólfur Arnarson from Norway. That was 6 years before this event.",
+      "One nearby event: The Carolingian Empire collapses after the death of Charles the Fat. That was 10 years after this event."
+    ],
+    "tags": [
+      "England",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the English ruler associated with this victory.",
+        "answers": [
+          "alfred the great",
+          "alfred",
+          "king alfred"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0773",
+    "prompt": "The arrival of the disciples of Cyril and Methodius in Bulgaria helps spread the Cyrillic alphabet.",
+    "year": 885,
+    "hints": [
+      "One nearby event: The Carolingian Empire collapses after the death of Charles the Fat. That was 3 years after this event.",
+      "One nearby event: The Council of Preslav enthrones Simeon I and makes Old Bulgarian official. That was 8 years after this event.",
+      "One nearby event: Alfred the Great defeats Guthrum in a decisive battle against the Danes. That was 7 years before this event."
+    ],
+    "tags": [
+      "Bulgaria",
+      "Language"
+    ]
+  },
+  {
+    "id": "evt_0774",
+    "prompt": "The Carolingian Empire collapses after the death of Charles the Fat.",
+    "year": 888,
+    "hints": [
+      "One nearby event: The Council of Preslav enthrones Simeon I and makes Old Bulgarian official. That was 5 years after this event.",
+      "One nearby event: The Magyars complete their landtaking in Pannonia. That was 8 years after this event.",
+      "One nearby event: The arrival of the disciples of Cyril and Methodius in Bulgaria helps spread the Cyrillic alphabet. That was 3 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Empire"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler whose death is linked here to the empire's collapse.",
+        "answers": [
+          "charles the fat",
+          "charles iii",
+          "charles"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0775",
+    "prompt": "The Council of Preslav enthrones Simeon I, moves Bulgaria’s capital, and makes Old Bulgarian official.",
+    "year": 893,
+    "hints": [
+      "One nearby event: The Magyars complete their landtaking in Pannonia. That was 3 years after this event.",
+      "One nearby event: The Laguna Copperplate Inscription is produced in Luzon. That was 7 years after this event.",
+      "One nearby event: The Carolingian Empire collapses after the death of Charles the Fat. That was 5 years before this event."
+    ],
+    "tags": [
+      "Bulgaria",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Bulgarian ruler elevated at this council.",
+        "answers": [
+          "simeon i",
+          "simeon",
+          "simeon the great"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0776",
+    "prompt": "The Magyars complete their landtaking in Pannonia, beginning a new era in Hungarian history.",
+    "year": 896,
+    "hints": [
+      "One nearby event: The Laguna Copperplate Inscription is produced in Luzon. That was 4 years after this event.",
+      "One nearby event: The Council of Preslav enthrones Simeon I, moves Bulgaria’s capital, and makes Old Bulgarian official. That was 3 years before this event.",
+      "One nearby event: The Carolingian Empire collapses after the death of Charles the Fat. That was 8 years before this event."
+    ],
+    "tags": [
+      "Hungary",
+      "Migration"
+    ]
+  },
+  {
+    "id": "evt_0777",
+    "prompt": "The oldest known written document from the Philippines is inscribed on a copperplate in Luzon.",
+    "year": 900,
+    "hints": [
+      "One nearby event: The Magyars complete their landtaking in Pannonia, beginning a new era in Hungarian history. That was 4 years before this event.",
+      "One nearby event: The Council of Preslav enthrones Simeon I, moves Bulgaria’s capital, and makes Old Bulgarian official. That was 7 years before this event.",
+      "One nearby event: The Carolingian Empire collapses after the death of Charles the Fat. That was 12 years before this event."
+    ],
+    "tags": [
+      "Philippines",
+      "Document"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was this copperplate document dated?",
+        "answers": [
+          "april",
+          "apr"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0778",
+    "prompt": "A legal code (Taihō Code) is enacted in Japan to strengthen a centralized imperial state.",
+    "year": 701,
+    "hints": [
+      "One nearby event: China's only reigning empress is overthrown, ending her extraordinary rule. That was 4 years after this event.",
+      "One nearby event: Japan's imperial capital moves to Heijo-kyo, beginning the Nara period. That was 9 years after this event.",
+      "One nearby event: An army crosses the Strait of Gibraltar and begins the Muslim conquest of Iberia. That was 10 years after this event."
+    ],
+    "tags": [
+      "Japan",
+      "Law"
+    ]
+  },
+  {
+    "id": "evt_0779",
+    "prompt": "China's only reigning empress (Wu Zetian) is overthrown, ending her extraordinary rule.",
+    "year": 705,
+    "hints": [
+      "One nearby event: A legal code is enacted in Japan to strengthen a centralized imperial state. That was 4 years before this event.",
+      "One nearby event: Japan's imperial capital moves to Heijo-kyo, beginning the Nara period. That was 5 years after this event.",
+      "One nearby event: An army crosses the Strait of Gibraltar and begins the Muslim conquest of Iberia. That was 6 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Chinese empress whose rule ended in 705.",
+        "answers": [
+          "wu zetian",
+          "empress wu",
+          "wu"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0780",
+    "prompt": "Japan's imperial capital moves to Heijo-kyo, beginning the Nara period.",
+    "year": 710,
+    "hints": [
+      "One nearby event: China's only reigning empress is overthrown, ending her extraordinary rule. That was 5 years before this event.",
+      "One nearby event: An army crosses the Strait of Gibraltar and begins the Muslim conquest of Iberia. That was 1 year after this event.",
+      "One nearby event: Byzantines and Bulgarians break a great Arab siege and save Constantinople. That was 8 years after this event."
+    ],
+    "tags": [
+      "Japan",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0781",
+    "prompt": "Muslim army crosses the Strait of Gibraltar and begins the Muslim conquest of Iberia.",
+    "year": 711,
+    "hints": [
+      "One nearby event: Japan's imperial capital moves to Heijo-kyo, beginning the Nara period. That was 1 year before this event.",
+      "One nearby event: A ruler ascends the throne as the first king of the Mataram kingdom in Java. That was 5 years after this event.",
+      "One nearby event: Byzantines and Bulgarians break a great Arab siege and save Constantinople. That was 7 years after this event."
+    ],
+    "tags": [
+      "Iberia",
+      "Conquest"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the commander associated with crossing into Iberia in 711.",
+        "answers": [
+          "tariq ibn ziyad",
+          "tariq",
+          "ṭāriq ibn ziyād"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0782",
+    "prompt": "Sanjaya ascends the throne to be the first king of the Mataram kingdom.",
+    "year": 716,
+    "hints": [
+      "One nearby event: An army crosses the Strait of Gibraltar and begins the Muslim conquest of Iberia. That was 5 years before this event.",
+      "One nearby event: Byzantines and Bulgarians break a great Arab siege and save Constantinople. That was 2 years after this event.",
+      "One nearby event: A Byzantine emperor removes a sacred image in Constantinople, beginning the first Iconoclasm. That was 10 years after this event."
+    ],
+    "tags": [
+      "Indonesia",
+      "Kingdom"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler associated with the rise of early Mataram in 716.",
+        "answers": [
+          "sanjaya"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0783",
+    "prompt": "Byzantines and Bulgarians break a great Arab siege and save Constantinople.",
+    "year": 718,
+    "hints": [
+      "One nearby event: A ruler ascends the throne as the first king of the Mataram kingdom in Java. That was 2 years before this event.",
+      "One nearby event: A Byzantine emperor removes a sacred image in Constantinople, beginning the first Iconoclasm. That was 8 years after this event.",
+      "One nearby event: Bede completes a history that becomes foundational for early English history. That was 13 years after this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0784",
+    "prompt": "Byzantine Emperor Leo III the Isaurian destroys the icon of Christ above the Chalke Gate in the capital city of Constantinople, beginning the first phase of the Byzantine Iconoclasm.",
+    "year": 726,
+    "hints": [
+      "One nearby event: Byzantines and Bulgarians break a great Arab siege and save Constantinople. That was 8 years before this event.",
+      "One nearby event: Bede completes a history that becomes foundational for early English history. That was 5 years after this event.",
+      "One nearby event: The Byzantines win a major field victory over Arab forces at Akroinon. That was 14 years after this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Byzantine emperor associated with the opening of Iconoclasm.",
+        "answers": [
+          "leo iii",
+          "leo iii the isaurian",
+          "leo"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0785",
+    "prompt": "Bede completes his Historia ecclesiastica gentis Anglorum (Ecclesiastical History of the English People).",
+    "year": 731,
+    "hints": [
+      "One nearby event: A Byzantine emperor removes a sacred image in Constantinople, beginning the first Iconoclasm. That was 5 years before this event.",
+      "One nearby event: A Maya city breaks free from the dominance of Copan. That was 7 years after this event.",
+      "One nearby event: The Umayyad Caliphate is overthrown and the Abbasid era begins. That was 19 years after this event."
+    ],
+    "tags": [
+      "England",
+      "Literature"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the scholar who completed this history in 731.",
+        "answers": [
+          "bede",
+          "the venerable bede",
+          "saint bede"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0786",
+    "prompt": "A Maya city (Quiriguá) breaks free from the dominance of Copan.",
+    "year": 738,
+    "hints": [
+      "One nearby event: Bede completes a history that becomes foundational for early English history. That was 7 years before this event.",
+      "One nearby event: The Byzantines win a major field victory over Arab forces at Akroinon. That was 2 years after this event.",
+      "One nearby event: Arab forces defeat Tang troops at the Battle of Talas, helping end Tang expansion westward. That was 13 years after this event."
+    ],
+    "tags": [
+      "Maya",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0787",
+    "prompt": "The Byzantines win a major field victory over Arab forces at Akroinon (Battle of Akroinon).",
+    "year": 740,
+    "hints": [
+      "One nearby event: A Maya city breaks free from the dominance of Copan. That was 2 years before this event.",
+      "One nearby event: The Umayyad Caliphate is overthrown and the Abbasid era begins. That was 10 years after this event.",
+      "One nearby event: A devastating rebellion erupts against Tang rule in China. That was 15 years after this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0788",
+    "prompt": "The Umayyad Caliphate is overthrown and the Abbasid era begins.",
+    "year": 750,
+    "hints": [
+      "One nearby event: The Byzantines win a major field victory over Arab forces at Akroinon. That was 10 years before this event.",
+      "One nearby event: Arab forces defeat Tang troops at the Battle of Talas, helping end Tang expansion westward. That was 1 year after this event.",
+      "One nearby event: A devastating rebellion erupts against Tang rule in China. That was 5 years after this event."
+    ],
+    "tags": [
+      "Islamic World",
+      "Revolution"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the first Abbasid caliph associated with this revolution.",
+        "answers": [
+          "abu al abbas al saffah",
+          "abu al-abbas al-saffah",
+          "al saffah",
+          "al-saffah"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0789",
+    "prompt": "Arab forces defeat Tang troops at the Battle of Talas, helping end Tang expansion westward.",
+    "year": 751,
+    "hints": [
+      "One nearby event: The Umayyad Caliphate is overthrown and the Abbasid era begins. That was 1 year before this event.",
+      "One nearby event: A devastating rebellion erupts against Tang rule in China. That was 4 years after this event.",
+      "One nearby event: Construction begins on Borobudur, the great Buddhist monument in Java. That was 9 years after this event."
+    ],
+    "tags": [
+      "Central Asia",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0790",
+    "prompt": "A devastating rebellion (An Shi Rebellion) erupts against Tang rule in China.",
+    "year": 755,
+    "hints": [
+      "One nearby event: Arab forces defeat Tang troops at the Battle of Talas, helping end Tang expansion westward. That was 4 years before this event.",
+      "One nearby event: Offa becomes the dominant ruler in England, elevating Mercia to new power. That was 2 years after this event.",
+      "One nearby event: Construction begins on Borobudur, the great Buddhist monument in Java. That was 5 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Rebellion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the rebel leader associated with this uprising.",
+        "answers": [
+          "an lushan",
+          "an lushan"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0791",
+    "prompt": "King Offa of Mercia becomes dominant ruler in England.",
+    "year": 757,
+    "hints": [
+      "One nearby event: A devastating rebellion erupts against Tang rule in China. That was 2 years before this event.",
+      "One nearby event: Arab and Persian raiders sack the Chinese port of Guangzhou. That was 1 year after this event.",
+      "One nearby event: Charlemagne becomes king of the Franks. That was 11 years after this event."
+    ],
+    "tags": [
+      "England",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Mercian ruler associated with this rise.",
+        "answers": [
+          "offa",
+          "offa of mercia"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0792",
+    "prompt": "Arab and Persian pirates and travelers burn and loot the Chinese city of Guangzhou, while the Tang Dynasty authorities shut the port down for the next five decades.",
+    "year": 758,
+    "hints": [
+      "One nearby event: Offa becomes the dominant ruler in England, elevating Mercia to new power. That was 1 year before this event.",
+      "One nearby event: Construction begins on Borobudur, the great Buddhist monument in Java. That was 2 years after this event.",
+      "One nearby event: Charlemagne begins a long war against the Saxons. That was 14 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Raid"
+    ]
+  },
+  {
+    "id": "evt_0793",
+    "prompt": "Construction begins on Borobudur, the great Buddhist monument in Java.",
+    "year": 760,
+    "hints": [
+      "One nearby event: Arab and Persian raiders sack the Chinese port of Guangzhou. That was 2 years before this event.",
+      "One nearby event: Charlemagne becomes king of the Franks. That was 8 years after this event.",
+      "One nearby event: A famous temple is built in Java according to the Kalasan inscription. That was 18 years after this event."
+    ],
+    "tags": [
+      "Indonesia",
+      "Architecture"
+    ]
+  },
+  {
+    "id": "evt_0794",
+    "prompt": "Charlemagne becomes king of the Franks.",
+    "year": 768,
+    "hints": [
+      "One nearby event: Construction begins on Borobudur, the great Buddhist monument in Java. That was 8 years before this event.",
+      "One nearby event: Charlemagne begins a long war against the Saxons. That was 4 years after this event.",
+      "One nearby event: The Xi'an Stele is erected in China, recording the history of early Christianity there. That was 13 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Monarchy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Frankish ruler who became king in 768.",
+        "answers": [
+          "charlemagne",
+          "charles the great",
+          "charles"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0795",
+    "prompt": "Charlemagne begins a long war against the Saxons.",
+    "year": 772,
+    "hints": [
+      "One nearby event: Charlemagne becomes king of the Franks. That was 4 years before this event.",
+      "One nearby event: A famous temple is built in Java according to the Kalasan inscription. That was 6 years after this event.",
+      "One nearby event: A great church council restores the veneration of icons in the Byzantine world. That was 15 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0796",
+    "prompt": "Kalasan temple is built in Java according to the Kalasan inscription.",
+    "year": 778,
+    "hints": [
+      "One nearby event: Charlemagne begins a long war against the Saxons. That was 6 years before this event.",
+      "One nearby event: The Xi'an Stele is erected in China, recording the history of early Christianity there. That was 3 years after this event.",
+      "One nearby event: Bulgaria defeats the Byzantines at Marcellae and stabilizes its power. That was 14 years after this event."
+    ],
+    "tags": [
+      "Indonesia",
+      "Architecture"
+    ]
+  },
+  {
+    "id": "evt_0797",
+    "prompt": "The Xi'an Stele is erected in China, recording the history of early Christianity there.",
+    "year": 781,
+    "hints": [
+      "One nearby event: A famous temple is built in Java according to the Kalasan inscription. That was 3 years before this event.",
+      "One nearby event: A great church council restores the veneration of icons in the Byzantine world. That was 6 years after this event.",
+      "One nearby event: A Viking raid on Lindisfarne shocks Christian Europe. That was 12 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0798",
+    "prompt": "A great church council restores the veneration of icons in the Byzantine world.",
+    "year": 787,
+    "hints": [
+      "One nearby event: The Xi'an Stele is erected in China, recording the history of early Christianity there. That was 6 years before this event.",
+      "One nearby event: Bulgaria defeats the Byzantines at Marcellae and stabilizes its power. That was 5 years after this event.",
+      "One nearby event: Japan's capital moves to Heian-kyo, beginning the Heian period. That was 7 years after this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Byzantine ruler associated with this council.",
+        "answers": [
+          "irene of athens",
+          "empress irene",
+          "irene"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0799",
+    "prompt": "Bulgaria defeats the Byzantines at Marcellae and stabilizes its power.",
+    "year": 792,
+    "hints": [
+      "One nearby event: A great church council restores the veneration of icons in the Byzantine world. That was 5 years before this event.",
+      "One nearby event: A Viking raid on Lindisfarne shocks Christian Europe. That was 1 year after this event.",
+      "One nearby event: Charlemagne is crowned emperor in Rome on Christmas Day. That was 8 years after this event."
+    ],
+    "tags": [
+      "Bulgaria",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0800",
+    "prompt": "The first written account of a Viking raid carried out on the abbey of Lindisfarne in northern England.",
+    "year": 793,
+    "hints": [
+      "One nearby event: Bulgaria defeats the Byzantines at Marcellae and stabilizes its power. That was 1 year before this event.",
+      "One nearby event: Japan's capital moves to Heian-kyo, beginning the Heian period. That was 1 year after this event.",
+      "One nearby event: Charlemagne is crowned emperor in Rome on Christmas Day. That was 7 years after this event."
+    ],
+    "tags": [
+      "England",
+      "Viking"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the raid on Lindisfarne take place?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0801",
+    "prompt": "Japan's capital moves to Heian-kyo, beginning the Heian period.",
+    "year": 794,
+    "hints": [
+      "One nearby event: A Viking raid on Lindisfarne shocks Christian Europe. That was 1 year before this event.",
+      "One nearby event: Charlemagne is crowned emperor in Rome on Christmas Day. That was 6 years after this event.",
+      "One nearby event: A great church council restores the veneration of icons in the Byzantine world. That was 7 years before this event."
+    ],
+    "tags": [
+      "Japan",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0802",
+    "prompt": "Charlemagne is crowned emperor in Rome on Christmas Day.",
+    "year": 800,
+    "hints": [
+      "One nearby event: Japan's capital moves to Heian-kyo, beginning the Heian period. That was 6 years before this event.",
+      "One nearby event: Bulgaria defeats the Byzantines at Marcellae and stabilizes its power. That was 8 years before this event.",
+      "One nearby event: A Viking raid on Lindisfarne shocks Christian Europe. That was 7 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Empire"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was Charlemagne crowned emperor in 800?",
+        "answers": [
+          "december",
+          "dec"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the ruler crowned emperor in Rome in 800.",
+        "answers": [
+          "charlemagne",
+          "charles the great",
+          "charles"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0803",
+    "prompt": "Heraclius sails from Carthage to Constantinople, overthrows Phocas, and becomes Byzantine emperor.",
+    "year": 610,
+    "tags": [
+      "Byzantium",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Byzantine emperor who seized the throne in 610.",
+        "answers": [
+          "heraclius"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Shah Khosrow II's Sasanian forces sack Jerusalem and carry off the relic of the True Cross. That was 5 years after this event.",
+      "One nearby event: Pacal the Great becomes king of the Maya city-state of Palenque. That was 5 years after this event.",
+      "One nearby event: Li Yuan founds the Tang dynasty in China. That was 8 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0804",
+    "prompt": "Shah Khosrow II's Sasanian forces sack Jerusalem and carry off the relic of the True Cross.",
+    "year": 615,
+    "tags": [
+      "Persia",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Sasanian ruler whose forces sacked Jerusalem in 615.",
+        "answers": [
+          "khosrow ii",
+          "khosrau ii",
+          "khosrow",
+          "khosrau"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Pacal the Great becomes king of the Maya city-state of Palenque. That was the same year as this event.",
+      "One nearby event: Li Yuan founds the Tang dynasty in China. That was 3 years after this event.",
+      "One nearby event: Heraclius sails from Carthage to Constantinople, overthrows Phocas, and becomes Byzantine emperor. That was 5 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0805",
+    "prompt": "Pacal the Great becomes king of the Maya city-state of Palenque.",
+    "year": 615,
+    "tags": [
+      "Maya",
+      "Monarchy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Maya ruler who began his reign at Palenque in 615.",
+        "answers": [
+          "pacal the great",
+          "pacal",
+          "k'inich janaab pakal",
+          "kinich janaab pakal"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Shah Khosrow II's Sasanian forces sack Jerusalem and carry off the relic of the True Cross. That was the same year as this event.",
+      "One nearby event: Li Yuan founds the Tang dynasty in China. That was 3 years after this event.",
+      "One nearby event: Heraclius sails from Carthage to Constantinople, overthrows Phocas, and becomes Byzantine emperor. That was 5 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0806",
+    "prompt": "Li Yuan founds the Tang dynasty in China.",
+    "year": 618,
+    "tags": [
+      "China",
+      "Dynasty"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the founder of the Tang dynasty.",
+        "answers": [
+          "li yuan",
+          "emperor gaozu of tang",
+          "gaozu"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Shah Khosrow II's Sasanian forces sack Jerusalem and carry off the relic of the True Cross. That was 3 years before this event.",
+      "One nearby event: Pacal the Great becomes king of the Maya city-state of Palenque. That was 3 years before this event.",
+      "One nearby event: Muhammad's Hijrah from Mecca to Medina begins the Islamic calendar. That was 4 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0807",
+    "prompt": "Muhammad's Hijrah from Mecca to Medina begins the Islamic calendar.",
+    "year": 622,
+    "tags": [
+      "Islamic World",
+      "Religion"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Hijrah occur according to the page's event list?",
+        "answers": [
+          "september",
+          "sep"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the prophet associated with the Hijrah.",
+        "answers": [
+          "muhammad",
+          "mohammed"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: The Frankish merchant Samo becomes ruler of the first known Slav state in Central Europe. That was 1 year after this event.",
+      "One nearby event: Li Yuan founds the Tang dynasty in China. That was 4 years before this event.",
+      "One nearby event: Avars, Slavs, and Persians fail to capture Constantinople in a great siege. That was 4 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0808",
+    "prompt": "The Frankish merchant Samo becomes ruler of the first known Slav state in Central Europe.",
+    "year": 623,
+    "tags": [
+      "Central Europe",
+      "State Formation"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the merchant who became ruler of this early Slav state.",
+        "answers": [
+          "samo"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Muhammad's Hijrah from Mecca to Medina begins the Islamic calendar. That was 1 year before this event.",
+      "One nearby event: Avars, Slavs, and Persians fail to capture Constantinople in a great siege. That was 3 years after this event.",
+      "One nearby event: Emperor Heraclius defeats the Persians, ending the long Roman-Persian Wars. That was 4 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0809",
+    "prompt": "Avars, Slavs, and Persians fail to capture Constantinople in a great siege.",
+    "year": 626,
+    "tags": [
+      "Byzantium",
+      "War"
+    ],
+    "hints": [
+      "One nearby event: Emperor Heraclius defeats the Persians, ending the long Roman-Persian Wars. That was 1 year after this event.",
+      "One nearby event: The Frankish merchant Samo becomes ruler of the first known Slav state in Central Europe. That was 3 years before this event.",
+      "One nearby event: Tang commanders Li Jing and Li Shiji destroy the Eastern Turkic Khaganate. That was 3 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0810",
+    "prompt": "Emperor Heraclius defeats the Persians, ending the long Roman-Persian Wars.",
+    "year": 627,
+    "tags": [
+      "Byzantium",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Byzantine emperor who defeated the Persians in 627.",
+        "answers": [
+          "heraclius"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Avars, Slavs, and Persians fail to capture Constantinople in a great siege. That was 1 year before this event.",
+      "One nearby event: Tang commanders Li Jing and Li Shiji destroy the Eastern Turkic Khaganate. That was 2 years after this event.",
+      "One nearby event: The Frankish merchant Samo becomes ruler of the first known Slav state in Central Europe. That was 4 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0811",
+    "prompt": "Tang commanders Li Jing and Li Shiji destroy the Eastern Turkic Khaganate.",
+    "year": 629,
+    "tags": [
+      "China",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name one Tang commander associated with the destruction of the Eastern Turkic Khaganate.",
+        "answers": [
+          "li jing",
+          "li shiji"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Emperor Heraclius defeats the Persians, ending the long Roman-Persian Wars. That was 2 years before this event.",
+      "One nearby event: Avars, Slavs, and Persians fail to capture Constantinople in a great siege. That was 3 years before this event.",
+      "One nearby event: The Frankish merchant Samo becomes ruler of the first known Slav state in Central Europe. That was 6 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0812",
+    "prompt": "The Persian priest Alopen introduces Nestorian Christianity into Tang China.",
+    "year": 635,
+    "tags": [
+      "China",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the priest associated with introducing Nestorian Christianity into China.",
+        "answers": [
+          "alopen"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Sa'd ibn Abi Waqqas leads the Muslim victory at al-Qadisiyyah during the conquest of Persia. That was 1 year after this event.",
+      "One nearby event: Tang commanders Li Jing and Li Shiji destroy the Eastern Turkic Khaganate. That was 6 years before this event.",
+      "One nearby event: Christian Nubians defeat Arab armies at the First Battle of Dongola. That was 7 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0813",
+    "prompt": "Sa'd ibn Abi Waqqas leads the Muslim victory at al-Qadisiyyah during the conquest of Persia.",
+    "year": 636,
+    "tags": [
+      "Middle East",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the commander associated with the Muslim victory at al-Qadisiyyah.",
+        "answers": [
+          "sa'd ibn abi waqqas",
+          "sad ibn abi waqqas",
+          "saad ibn abi waqqas",
+          "sa'd"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: The Persian priest Alopen introduces Nestorian Christianity into Tang China. That was 1 year before this event.",
+      "One nearby event: Christian Nubians defeat Arab armies at the First Battle of Dongola. That was 6 years after this event.",
+      "One nearby event: Tang commanders Li Jing and Li Shiji destroy the Eastern Turkic Khaganate. That was 7 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0814",
+    "prompt": "Christian Nubians defeat Arab armies at the First Battle of Dongola.",
+    "year": 642,
+    "tags": [
+      "Nubia",
+      "War"
+    ],
+    "hints": [
+      "One nearby event: Sa'd ibn Abi Waqqas leads the Muslim victory at al-Qadisiyyah during the conquest of Persia. That was 6 years before this event.",
+      "One nearby event: The Persian priest Alopen introduces Nestorian Christianity into Tang China. That was 7 years before this event.",
+      "One nearby event: Yazdegerd III is murdered at Merv, ending the Sasanian dynasty in Persia. That was 9 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0815",
+    "prompt": "Yazdegerd III is murdered at Merv, ending the Sasanian dynasty in Persia.",
+    "year": 651,
+    "tags": [
+      "Persia",
+      "Dynasty"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the last Sasanian ruler whose death ended the dynasty.",
+        "answers": [
+          "yazdegerd iii",
+          "yazdegerd",
+          "yazdgerd iii"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Arab armies are defeated again at the Second Battle of Dongola, leading to the baqt treaty. That was 1 year after this event.",
+      "One nearby event: Christian Nubians defeat Arab armies at the First Battle of Dongola. That was 9 years before this event.",
+      "One nearby event: Ali ibn Abi Talib is assassinated, and Muawiyah I begins the Umayyad Caliphate. That was 10 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0816",
+    "prompt": "Arab armies are defeated again at the Second Battle of Dongola, leading to the baqt treaty.",
+    "year": 652,
+    "tags": [
+      "Nubia",
+      "Treaty"
+    ],
+    "hints": [
+      "One nearby event: Yazdegerd III is murdered at Merv, ending the Sasanian dynasty in Persia. That was 1 year before this event.",
+      "One nearby event: Ali ibn Abi Talib is assassinated, and Muawiyah I begins the Umayyad Caliphate. That was 9 years after this event.",
+      "One nearby event: Christian Nubians defeat Arab armies at the First Battle of Dongola. That was 10 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0817",
+    "prompt": "Ali ibn Abi Talib is assassinated, and Muawiyah I begins the Umayyad Caliphate.",
+    "year": 661,
+    "tags": [
+      "Islamic World",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the caliph whose rule began the Umayyad Caliphate.",
+        "answers": [
+          "muawiyah i",
+          "muawiyah",
+          "muawiya",
+          "mu'awiyah"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Tang China and Silla defeat Baekje and their Yamato Japanese allies at the Battle of Baekgang. That was 2 years after this event.",
+      "One nearby event: Goguryeo falls to a joint attack by Tang China and Silla. That was 7 years after this event.",
+      "One nearby event: Arab armies are defeated again at the Second Battle of Dongola, leading to the baqt treaty. That was 9 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0818",
+    "prompt": "Tang China and Silla defeat Baekje and their Yamato Japanese allies at the Battle of Baekgang.",
+    "year": 663,
+    "tags": [
+      "Korea",
+      "War"
+    ],
+    "hints": [
+      "One nearby event: Ali ibn Abi Talib is assassinated, and Muawiyah I begins the Umayyad Caliphate. That was 2 years before this event.",
+      "One nearby event: Goguryeo falls to a joint attack by Tang China and Silla. That was 5 years after this event.",
+      "One nearby event: Uqba ibn Nafi enters Ifriqiya as the Muslim conquest of North Africa advances. That was 7 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0819",
+    "prompt": "Goguryeo falls to a joint attack by Tang China and Silla.",
+    "year": 668,
+    "tags": [
+      "Korea",
+      "Conquest"
+    ],
+    "hints": [
+      "One nearby event: Uqba ibn Nafi enters Ifriqiya as the Muslim conquest of North Africa advances. That was 2 years after this event.",
+      "One nearby event: Tang China and Silla defeat Baekje and their Yamato Japanese allies at the Battle of Baekgang. That was 5 years before this event.",
+      "One nearby event: The first Arab siege of Constantinople begins. That was 6 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0820",
+    "prompt": "Uqba ibn Nafi enters Ifriqiya as the Muslim conquest of North Africa advances.",
+    "year": 670,
+    "tags": [
+      "North Africa",
+      "Conquest"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the commander associated with this advance into Ifriqiya.",
+        "answers": [
+          "uqba ibn nafi",
+          "uqba",
+          "uqubah ibn nafi"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Goguryeo falls to a joint attack by Tang China and Silla. That was 2 years before this event.",
+      "One nearby event: The first Arab siege of Constantinople begins. That was 4 years after this event.",
+      "One nearby event: Tang China and Silla defeat Baekje and their Yamato Japanese allies at the Battle of Baekgang. That was 7 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0821",
+    "prompt": "The first Arab siege of Constantinople begins.",
+    "year": 674,
+    "tags": [
+      "Byzantium",
+      "War"
+    ],
+    "hints": [
+      "One nearby event: Uqba ibn Nafi enters Ifriqiya as the Muslim conquest of North Africa advances. That was 4 years before this event.",
+      "One nearby event: Goguryeo falls to a joint attack by Tang China and Silla. That was 6 years before this event.",
+      "One nearby event: Husayn ibn Ali is killed at the Battle of Karbala, deepening the division in the Muslim community. That was 6 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0822",
+    "prompt": "Husayn ibn Ali is killed at the Battle of Karbala, deepening the division in the Muslim community.",
+    "year": 680,
+    "tags": [
+      "Islamic World",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the figure killed at Karbala in 680.",
+        "answers": [
+          "husayn ibn ali",
+          "husayn",
+          "hussein ibn ali",
+          "hussein"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Bulgaria is recognized as an independent country by the Byzantine Empire. That was 1 year after this event.",
+      "One nearby event: Dapunta Hyang Sri Jayanasa begins the expansion of Srivijaya with his Siddhayatra journey. That was 3 years after this event.",
+      "One nearby event: The first Arab siege of Constantinople begins. That was 6 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0823",
+    "prompt": "Bulgaria is recognized as an independent country by the Byzantine Empire.",
+    "year": 681,
+    "tags": [
+      "Bulgaria",
+      "Diplomacy"
+    ],
+    "hints": [
+      "One nearby event: Husayn ibn Ali is killed at the Battle of Karbala, deepening the division in the Muslim community. That was 1 year before this event.",
+      "One nearby event: Dapunta Hyang Sri Jayanasa begins the expansion of Srivijaya with his Siddhayatra journey. That was 2 years after this event.",
+      "One nearby event: The first Arab siege of Constantinople begins. That was 7 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0824",
+    "prompt": "Dapunta Hyang Sri Jayanasa begins the expansion of Srivijaya with his Siddhayatra journey.",
+    "year": 683,
+    "tags": [
+      "Southeast Asia",
+      "Empire"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler associated with the early expansion of Srivijaya.",
+        "answers": [
+          "dapunta hyang sri jayanasa",
+          "dapunta hyang",
+          "jayanasa"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Bulgaria is recognized as an independent country by the Byzantine Empire. That was 2 years before this event.",
+      "One nearby event: Husayn ibn Ali is killed at the Battle of Karbala, deepening the division in the Muslim community. That was 3 years before this event.",
+      "One nearby event: Wu Zetian seizes power and rules as empress of China. That was 7 years after this event."
+    ]
+  },
+  {
+    "id": "evt_0825",
+    "prompt": "Wu Zetian seizes power and rules as empress of China.",
+    "year": 690,
+    "tags": [
+      "China",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the empress who took power in 690.",
+        "answers": [
+          "wu zetian",
+          "empress wu",
+          "wu"
+        ]
+      }
+    },
+    "hints": [
+      "One nearby event: Dapunta Hyang Sri Jayanasa begins the expansion of Srivijaya with his Siddhayatra journey. That was 7 years before this event.",
+      "One nearby event: Arab forces capture Carthage from the Byzantine Empire. That was 8 years after this event.",
+      "One nearby event: Bulgaria is recognized as an independent country by the Byzantine Empire. That was 9 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0826",
+    "prompt": "Arab forces capture Carthage from the Byzantine Empire.",
+    "year": 698,
+    "tags": [
+      "North Africa",
+      "Conquest"
+    ],
+    "hints": [
+      "One nearby event: Wu Zetian seizes power and rules as empress of China. That was 8 years before this event.",
+      "One nearby event: Dapunta Hyang Sri Jayanasa begins the expansion of Srivijaya with his Siddhayatra journey. That was 15 years before this event.",
+      "One nearby event: Bulgaria is recognized as an independent country by the Byzantine Empire. That was 17 years before this event."
+    ]
+  },
+  {
+    "id": "evt_0827",
+    "prompt": "Clovis I defeats the Visigoth king Alaric II at Vouille and expands Frankish power into Aquitania.",
+    "year": 507,
+    "hints": [
+      "One nearby event: Dionysius Exiguus devises the Anno Domini dating system based on the estimated birth year of Jesus. That was 18 years after this event.",
+      "One nearby event: Justinian I succeeds his uncle Justin I as emperor of the Eastern Roman Empire. That was 20 years after this event.",
+      "One nearby event: Saint Benedict of Nursia founds the monastery of Monte Cassino in Italy. That was 22 years after this event."
+    ],
+    "tags": [
+      "Franks",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Frankish ruler who won at Vouille.",
+        "answers": [
+          "clovis i",
+          "clovis",
+          "king clovis"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0828",
+    "prompt": "Dionysius Exiguus devises the Anno Domini dating system based on the estimated birth year of Jesus.",
+    "year": 525,
+    "hints": [
+      "One nearby event: Justinian I succeeds his uncle Justin I as emperor of the Eastern Roman Empire. That was 2 years after this event.",
+      "One nearby event: Saint Benedict of Nursia founds the monastery of Monte Cassino in Italy. That was 4 years after this event.",
+      "One nearby event: Clovis I defeats the Visigoth king Alaric II at Vouille and expands Frankish power into Aquitania. That was 18 years before this event."
+    ],
+    "tags": [
+      "Calendar",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the monk who devised the Anno Domini system.",
+        "answers": [
+          "dionysius exiguus",
+          "dionysius"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0829",
+    "prompt": "Justinian I succeeds his uncle Justin I as emperor of the Eastern Roman Empire.",
+    "year": 527,
+    "hints": [
+      "One nearby event: Dionysius Exiguus devises the Anno Domini dating system based on the estimated birth year of Jesus. That was 2 years before this event.",
+      "One nearby event: Saint Benedict of Nursia founds the monastery of Monte Cassino in Italy. That was 2 years after this event.",
+      "One nearby event: Justinian faces the Nika riots in Constantinople, and Belisarius helps crush the uprising. That was 5 years after this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "Monarchy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor who came to the throne in 527.",
+        "answers": [
+          "justinian i",
+          "justinian",
+          "emperor justinian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0830",
+    "prompt": "Saint Benedict of Nursia founds the monastery of Monte Cassino in Italy.",
+    "year": 529,
+    "hints": [
+      "One nearby event: Justinian I succeeds his uncle Justin I as emperor of the Eastern Roman Empire. That was 2 years before this event.",
+      "One nearby event: Justinian faces the Nika riots in Constantinople, and Belisarius helps crush the uprising. That was 3 years after this event.",
+      "One nearby event: A massive volcanic eruption causes years of abnormal cold and famine across much of the Northern Hemisphere. That was 6 years after this event."
+    ],
+    "tags": [
+      "Italy",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the saint associated with founding Monte Cassino.",
+        "answers": [
+          "benedict of nursia",
+          "saint benedict",
+          "st benedict",
+          "benedict"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0831",
+    "prompt": "Justinian faces the Nika riots in Constantinople, and Belisarius helps crush the uprising.",
+    "year": 532,
+    "hints": [
+      "One nearby event: Saint Benedict of Nursia founds the monastery of Monte Cassino in Italy. That was 3 years before this event.",
+      "One nearby event: A massive volcanic eruption causes years of abnormal cold and famine across much of the Northern Hemisphere. That was 3 years after this event.",
+      "One nearby event: The Plague of Justinian devastates Constantinople and spreads across the Byzantine world. That was 9 years after this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "Revolt"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name one of the figures associated with crushing the Nika riots.",
+        "answers": [
+          "belisarius",
+          "mundus",
+          "justinian i",
+          "justinian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0832",
+    "prompt": "A massive volcanic eruption causes years of abnormal cold and famine across much of the Northern Hemisphere.",
+    "year": 535,
+    "hints": [
+      "One nearby event: Justinian faces the Nika riots in Constantinople, and Belisarius helps crush the uprising. That was 3 years before this event.",
+      "One nearby event: The Plague of Justinian devastates Constantinople and spreads across the Byzantine world. That was 6 years after this event.",
+      "One nearby event: Saint Benedict of Nursia founds the monastery of Monte Cassino in Italy. That was 6 years before this event."
+    ],
+    "tags": [
+      "Global",
+      "Climate"
+    ]
+  },
+  {
+    "id": "evt_0833",
+    "prompt": "The Plague of Justinian devastates Constantinople and spreads across the Byzantine world.",
+    "year": 541,
+    "hints": [
+      "One nearby event: The Nubian kingdom of Nobatia converts to Christianity. That was 4 years after this event.",
+      "One nearby event: Bumin Khagan founds the Turkic Khaganate in Central Asia. That was 10 years after this event.",
+      "One nearby event: A massive volcanic eruption causes years of abnormal cold and famine across much of the Northern Hemisphere. That was 6 years before this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "Plague"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor whose reign gives this plague its common name.",
+        "answers": [
+          "justinian i",
+          "justinian",
+          "emperor justinian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0834",
+    "prompt": "The Nubian kingdom of Nobatia converts to Christianity.",
+    "year": 545,
+    "hints": [
+      "One nearby event: The Plague of Justinian devastates Constantinople and spreads across the Byzantine world. That was 4 years before this event.",
+      "One nearby event: Bumin Khagan founds the Turkic Khaganate in Central Asia. That was 6 years after this event.",
+      "One nearby event: Justinian's armies drive the Ostrogoths from Italy and reunify the peninsula under Roman rule. That was 9 years after this event."
+    ],
+    "tags": [
+      "Nubia",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0835",
+    "prompt": "Bumin Khagan founds the Turkic Khaganate in Central Asia.",
+    "year": 551,
+    "hints": [
+      "One nearby event: Buddhism is introduced to Japan from Baekje during the Asuka period. That was 1 year after this event.",
+      "One nearby event: Justinian's armies drive the Ostrogoths from Italy and reunify the peninsula under Roman rule. That was 3 years after this event.",
+      "One nearby event: The Plague of Justinian devastates Constantinople and spreads across the Byzantine world. That was 10 years before this event."
+    ],
+    "tags": [
+      "Central Asia",
+      "Empire"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler who founded the Turkic Khaganate.",
+        "answers": [
+          "bumin khagan",
+          "bumin",
+          "tumen"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0836",
+    "prompt": "Buddhism is introduced to Japan from Baekje during the Asuka period.",
+    "year": 552,
+    "hints": [
+      "One nearby event: Bumin Khagan founds the Turkic Khaganate in Central Asia. That was 1 year before this event.",
+      "One nearby event: Justinian's armies drive the Ostrogoths from Italy and reunify the peninsula under Roman rule. That was 2 years after this event.",
+      "One nearby event: Saint Columba founds the monastery on Iona. That was 11 years after this event."
+    ],
+    "tags": [
+      "Japan",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0837",
+    "prompt": "Justinian's armies drive the Ostrogoths from Italy and reunify the peninsula under Roman rule.",
+    "year": 554,
+    "hints": [
+      "One nearby event: Buddhism is introduced to Japan from Baekje during the Asuka period. That was 2 years before this event.",
+      "One nearby event: Bumin Khagan founds the Turkic Khaganate in Central Asia. That was 3 years before this event.",
+      "One nearby event: Saint Columba founds the monastery on Iona. That was 9 years after this event."
+    ],
+    "tags": [
+      "Italy",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor whose forces reunified Italy in 554.",
+        "answers": [
+          "justinian i",
+          "justinian",
+          "emperor justinian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0838",
+    "prompt": "Saint Columba founds the monastery on Iona.",
+    "year": 563,
+    "hints": [
+      "One nearby event: The Lombards invade Italy and establish a federation of duchies under a king. That was 5 years after this event.",
+      "One nearby event: Muhammad is born in Arabia. That was 7 years after this event.",
+      "One nearby event: Justinian's armies drive the Ostrogoths from Italy and reunify the peninsula under Roman rule. That was 9 years before this event."
+    ],
+    "tags": [
+      "Scotland",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the saint who founded Iona.",
+        "answers": [
+          "columba",
+          "saint columba",
+          "st columba"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0839",
+    "prompt": "The Lombards invade Italy and establish a federation of duchies under a king.",
+    "year": 568,
+    "hints": [
+      "One nearby event: Muhammad is born in Arabia. That was 2 years after this event.",
+      "One nearby event: Saint Columba founds the monastery on Iona. That was 5 years before this event.",
+      "One nearby event: China's Chen dynasty invents matches. That was 9 years after this event."
+    ],
+    "tags": [
+      "Italy",
+      "Invasion"
+    ]
+  },
+  {
+    "id": "evt_0840",
+    "prompt": "Muhammad is born in Arabia.",
+    "year": 570,
+    "hints": [
+      "One nearby event: The Lombards invade Italy and establish a federation of duchies under a king. That was 2 years before this event.",
+      "One nearby event: China's Chen dynasty invents matches. That was 7 years after this event.",
+      "One nearby event: The Visigoths conquer the Suebian Kingdom in Spain. That was 15 years after this event."
+    ],
+    "tags": [
+      "Arabia",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the religious figure born in Arabia in 570.",
+        "answers": [
+          "muhammad",
+          "mohammed"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0841",
+    "prompt": "China's Chen dynasty invents matches.",
+    "year": 577,
+    "hints": [
+      "One nearby event: Muhammad is born in Arabia. That was 7 years before this event.",
+      "One nearby event: The Visigoths conquer the Suebian Kingdom in Spain. That was 8 years after this event.",
+      "One nearby event: King Reccared of the Visigoths converts to Catholicism in Spain. That was 10 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Technology"
+    ]
+  },
+  {
+    "id": "evt_0842",
+    "prompt": "The Visigoths conquer the Suebian Kingdom in Spain.",
+    "year": 585,
+    "hints": [
+      "One nearby event: King Reccared of the Visigoths converts to Catholicism in Spain. That was 2 years after this event.",
+      "One nearby event: The Sui dynasty reunifies China after centuries of division. That was 4 years after this event.",
+      "One nearby event: Gregory the Great succeeds Pope Pelagius II and becomes pope. That was 5 years after this event."
+    ],
+    "tags": [
+      "Spain",
+      "Conquest"
+    ]
+  },
+  {
+    "id": "evt_0843",
+    "prompt": "King Reccared of the Visigoths converts to Catholicism in Spain.",
+    "year": 587,
+    "hints": [
+      "One nearby event: The Visigoths conquer the Suebian Kingdom in Spain. That was 2 years before this event.",
+      "One nearby event: The Sui dynasty reunifies China after centuries of division. That was 2 years after this event.",
+      "One nearby event: Gregory the Great succeeds Pope Pelagius II and becomes pope. That was 3 years after this event."
+    ],
+    "tags": [
+      "Spain",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Visigothic king who converted to Catholicism in 587.",
+        "answers": [
+          "reccared",
+          "reccared i",
+          "king reccared"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0844",
+    "prompt": "The Sui dynasty reunifies China after centuries of division.",
+    "year": 589,
+    "hints": [
+      "One nearby event: Gregory the Great succeeds Pope Pelagius II and becomes pope. That was 1 year after this event.",
+      "One nearby event: King Reccared of the Visigoths converts to Catholicism in Spain. That was 2 years before this event.",
+      "One nearby event: Khosrau II is restored as shah of Persia. That was 2 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Unification"
+    ]
+  },
+  {
+    "id": "evt_0845",
+    "prompt": "Gregory the Great succeeds Pope Pelagius II and becomes pope.",
+    "year": 590,
+    "hints": [
+      "One nearby event: Khosrau II is restored as shah of Persia. That was 1 year after this event.",
+      "One nearby event: The Sui dynasty reunifies China after centuries of division. That was 1 year before this event.",
+      "One nearby event: Pope Gregory the Great sends Augustine and Roman monks to England. That was 5 years after this event."
+    ],
+    "tags": [
+      "Christianity",
+      "Papacy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the pope who took office in 590.",
+        "answers": [
+          "gregory the great",
+          "gregory i",
+          "pope gregory the great",
+          "gregory"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0846",
+    "prompt": "Khosrau II is restored as shah of Persia.",
+    "year": 591,
+    "hints": [
+      "One nearby event: Gregory the Great succeeds Pope Pelagius II and becomes pope. That was 1 year before this event.",
+      "One nearby event: The Sui dynasty reunifies China after centuries of division. That was 2 years before this event.",
+      "One nearby event: Pope Gregory the Great sends Augustine and Roman monks to England. That was 4 years after this event."
+    ],
+    "tags": [
+      "Persia",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Persian ruler restored to the throne in 591.",
+        "answers": [
+          "khosrau ii",
+          "khosrow ii",
+          "khosrau",
+          "khosrow"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0847",
+    "prompt": "Pope Gregory the Great sends Augustine and Roman monks to England.",
+    "year": 595,
+    "hints": [
+      "One nearby event: Khosrau II is restored as shah of Persia. That was 4 years before this event.",
+      "One nearby event: Gregory the Great succeeds Pope Pelagius II and becomes pope. That was 5 years before this event.",
+      "One nearby event: The Sui dynasty reunifies China after centuries of division. That was 6 years before this event."
+    ],
+    "tags": [
+      "England",
+      "Christianity"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the missionary sent to England by Gregory the Great.",
+        "answers": [
+          "augustine",
+          "augustine of canterbury",
+          "saint augustine of canterbury"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0848",
+    "prompt": "Kumarajiva arrives in Chang'an and begins his famous translation work on Buddhist sutras in China.",
+    "year": 401,
+    "hints": [
+      "One nearby event: Mesrop Mashtots introduces most of the newly created Armenian alphabet. That was 4 years after this event.",
+      "One nearby event: Vandals, Alans, and Suebi cross the frozen Rhine and pour into Roman Gaul. That was 5 years after this event.",
+      "One nearby event: Alaric and the Visigoths sack Rome, shocking the Roman world. That was 9 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Buddhist scholar who arrived in Chang'an in 401.",
+        "answers": [
+          "kumarajiva",
+          "kumarajiva"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0849",
+    "prompt": "Mesrop Mashtots introduces most of the newly created Armenian alphabet.",
+    "year": 405,
+    "hints": [
+      "One nearby event: Kumarajiva arrives in Chang'an and begins his famous translation work on Buddhist sutras in China. That was 4 years before this event.",
+      "One nearby event: Vandals, Alans, and Suebi cross the frozen Rhine and pour into Roman Gaul. That was 1 year after this event.",
+      "One nearby event: Alaric and the Visigoths sack Rome, shocking the Roman world. That was 5 years after this event."
+    ],
+    "tags": [
+      "Armenia",
+      "Language"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the scholar associated with creating the Armenian alphabet.",
+        "answers": [
+          "mesrop mashtots",
+          "mesrop",
+          "mashtots"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0850",
+    "prompt": "Vandals, Alans, and Suebi cross the frozen Rhine and pour into Roman Gaul.",
+    "year": 406,
+    "hints": [
+      "One nearby event: Mesrop Mashtots introduces most of the newly created Armenian alphabet. That was 1 year before this event.",
+      "One nearby event: Constantine III leads Roman troops from Britain to Gaul, a move often seen as Rome's withdrawal from Britain. That was 1 year after this event.",
+      "One nearby event: Alaric and the Visigoths sack Rome, shocking the Roman world. That was 4 years after this event."
+    ],
+    "tags": [
+      "Western Roman Empire",
+      "Migration"
+    ]
+  },
+  {
+    "id": "evt_0851",
+    "prompt": "Constantine III leads Roman troops from Britain to Gaul, a move often seen as Rome's withdrawal from Britain.",
+    "year": 407,
+    "hints": [
+      "One nearby event: Vandals, Alans, and Suebi cross the frozen Rhine and pour into Roman Gaul. That was 1 year before this event.",
+      "One nearby event: Alaric and the Visigoths sack Rome, shocking the Roman world. That was 3 years after this event.",
+      "One nearby event: The Suebi establish the first independent Christian kingdom of Western Europe in Gallaecia. That was 4 years after this event."
+    ],
+    "tags": [
+      "Britain",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman usurper associated with the troop withdrawal from Britain.",
+        "answers": [
+          "constantine iii",
+          "constantine"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0852",
+    "prompt": "Alaric and the Visigoths sack Rome, shocking the Roman world.",
+    "year": 410,
+    "hints": [
+      "One nearby event: Constantine III leads Roman troops from Britain to Gaul, a move often seen as Rome's withdrawal from Britain. That was 3 years before this event.",
+      "One nearby event: The Suebi establish the first independent Christian kingdom of Western Europe in Gallaecia. That was 1 year after this event.",
+      "One nearby event: Saint Augustine of Hippo begins writing The City of God. That was 3 years after this event."
+    ],
+    "tags": [
+      "Western Roman Empire",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Visigothic king who sacked Rome in 410.",
+        "answers": [
+          "alaric",
+          "alaric i",
+          "king alaric"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0853",
+    "prompt": "The Suebi establish the first independent Christian kingdom of Western Europe in Gallaecia.",
+    "year": 411,
+    "hints": [
+      "One nearby event: Alaric and the Visigoths sack Rome, shocking the Roman world. That was 1 year before this event.",
+      "One nearby event: Saint Augustine of Hippo begins writing The City of God. That was 2 years after this event.",
+      "One nearby event: Liu Yu ends the Jin dynasty and founds the Liu Song dynasty in China. That was 9 years after this event."
+    ],
+    "tags": [
+      "Iberia",
+      "Kingdom"
+    ]
+  },
+  {
+    "id": "evt_0854",
+    "prompt": "Saint Augustine of Hippo begins writing The City of God.",
+    "year": 413,
+    "hints": [
+      "One nearby event: The Suebi establish the first independent Christian kingdom of Western Europe in Gallaecia. That was 2 years before this event.",
+      "One nearby event: Liu Yu ends the Jin dynasty and founds the Liu Song dynasty in China. That was 7 years after this event.",
+      "One nearby event: K'inich Yax K'uk' Mo' reestablishes Copan in the Maya world. That was 13 years after this event."
+    ],
+    "tags": [
+      "Christianity",
+      "Literature"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the bishop who began writing The City of God in 413.",
+        "answers": [
+          "augustine",
+          "saint augustine",
+          "augustine of hippo",
+          "st augustine"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0855",
+    "prompt": "Liu Yu ends the Jin dynasty and founds the Liu Song dynasty in China.",
+    "year": 420,
+    "hints": [
+      "One nearby event: Saint Augustine of Hippo begins writing The City of God. That was 7 years before this event.",
+      "One nearby event: K'inich Yax K'uk' Mo' reestablishes Copan in the Maya world. That was 6 years after this event.",
+      "One nearby event: The Ilopango volcano erupts and devastates Maya regions in present-day El Salvador. That was 10 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Dynasty"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler who founded the Liu Song dynasty.",
+        "answers": [
+          "liu yu",
+          "emperor wu of liu song",
+          "emperor wu"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0856",
+    "prompt": "K'inich Yax K'uk' Mo' reestablishes Copan in the Maya world.",
+    "year": 426,
+    "hints": [
+      "One nearby event: Liu Yu ends the Jin dynasty and founds the Liu Song dynasty in China. That was 6 years before this event.",
+      "One nearby event: The Ilopango volcano erupts and devastates Maya regions in present-day El Salvador. That was 4 years after this event.",
+      "One nearby event: The First Council of Ephesus upholds the title Theotokos for Mary. That was 5 years after this event."
+    ],
+    "tags": [
+      "Maya",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Maya ruler associated with reestablishing Copan.",
+        "answers": [
+          "k'inich yax k'uk' mo'",
+          "kinich yax kuk mo",
+          "yax k'uk' mo'",
+          "yax kuk mo"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0857",
+    "prompt": "The Ilopango volcano erupts and devastates Maya regions in present-day El Salvador.",
+    "year": 430,
+    "hints": [
+      "One nearby event: K'inich Yax K'uk' Mo' reestablishes Copan in the Maya world. That was 4 years before this event.",
+      "One nearby event: The First Council of Ephesus upholds the title Theotokos for Mary. That was 1 year after this event.",
+      "One nearby event: Geiseric and the Vandals conquer Carthage. That was 9 years after this event."
+    ],
+    "tags": [
+      "Maya",
+      "Disaster"
+    ]
+  },
+  {
+    "id": "evt_0858",
+    "prompt": "The First Council of Ephesus upholds the title Theotokos for Mary.",
+    "year": 431,
+    "hints": [
+      "One nearby event: The Ilopango volcano erupts and devastates Maya regions in present-day El Salvador. That was 1 year before this event.",
+      "One nearby event: Geiseric and the Vandals conquer Carthage. That was 8 years after this event.",
+      "One nearby event: Attila the Hun is defeated by Romans and Visigoths at the Battle of Chalons. That was 20 years after this event."
+    ],
+    "tags": [
+      "Christianity",
+      "Council"
+    ]
+  },
+  {
+    "id": "evt_0859",
+    "prompt": "Geiseric and the Vandals conquer Carthage.",
+    "year": 439,
+    "hints": [
+      "One nearby event: The First Council of Ephesus upholds the title Theotokos for Mary. That was 8 years before this event.",
+      "One nearby event: Attila the Hun is defeated by Romans and Visigoths at the Battle of Chalons. That was 12 years after this event.",
+      "One nearby event: Pope Leo I meets Attila and persuades him not to sack Rome. That was 13 years after this event."
+    ],
+    "tags": [
+      "North Africa",
+      "Conquest"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Vandal ruler who conquered Carthage.",
+        "answers": [
+          "geiseric",
+          "genseric"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0860",
+    "prompt": "Attila the Hun is defeated by Romans and Visigoths at the Battle of Chalons.",
+    "year": 451,
+    "hints": [
+      "One nearby event: Geiseric and the Vandals conquer Carthage. That was 12 years before this event.",
+      "One nearby event: Pope Leo I meets Attila and persuades him not to sack Rome. That was 1 year after this event.",
+      "One nearby event: Germanic tribes crush the Huns at the Battle of Nedao after Attila's death. That was 3 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Hun ruler defeated at Chalons.",
+        "answers": [
+          "attila",
+          "attila the hun"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0861",
+    "prompt": "Pope Leo I meets Attila and persuades him not to sack Rome.",
+    "year": 452,
+    "hints": [
+      "One nearby event: Attila the Hun is defeated by Romans and Visigoths at the Battle of Chalons. That was 1 year before this event.",
+      "One nearby event: Germanic tribes crush the Huns at the Battle of Nedao after Attila's death. That was 2 years after this event.",
+      "One nearby event: The Vandals sack Rome. That was 3 years after this event."
+    ],
+    "tags": [
+      "Rome",
+      "Diplomacy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the pope who met Attila in 452.",
+        "answers": [
+          "pope leo i",
+          "leo i",
+          "leo the great",
+          "leo"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0862",
+    "prompt": "Germanic tribes crush the Huns at the Battle of Nedao after Attila's death.",
+    "year": 454,
+    "hints": [
+      "One nearby event: Pope Leo I meets Attila and persuades him not to sack Rome. That was 2 years before this event.",
+      "One nearby event: The Vandals sack Rome. That was 1 year after this event.",
+      "One nearby event: Odoacer deposes Romulus Augustulus, the traditional date for the fall of the Western Roman Empire. That was 22 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0863",
+    "prompt": "The Vandals sack Rome.",
+    "year": 455,
+    "hints": [
+      "One nearby event: Germanic tribes crush the Huns at the Battle of Nedao after Attila's death. That was 1 year before this event.",
+      "One nearby event: Odoacer deposes Romulus Augustulus, the traditional date for the fall of the Western Roman Empire. That was 21 years after this event.",
+      "One nearby event: Clovis I becomes king of the Franks. That was 26 years after this event."
+    ],
+    "tags": [
+      "Western Roman Empire",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0864",
+    "prompt": "Odoacer deposes Romulus Augustulus, the traditional date for the fall of the Western Roman Empire.",
+    "year": 476,
+    "hints": [
+      "One nearby event: Clovis I becomes king of the Franks. That was 5 years after this event.",
+      "One nearby event: Clovis defeats Syagrius and ends the last free Roman enclave in Gaul. That was 10 years after this event.",
+      "One nearby event: The Vandals sack Rome. That was 21 years before this event."
+    ],
+    "tags": [
+      "Western Roman Empire",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Germanic ruler who deposed Romulus Augustulus.",
+        "answers": [
+          "odoacer"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0865",
+    "prompt": "Clovis I becomes king of the Franks after the death of Childeric I.",
+    "year": 481,
+    "hints": [
+      "One nearby event: Odoacer deposes Romulus Augustulus, the traditional date for the fall of the Western Roman Empire. That was 5 years before this event.",
+      "One nearby event: Clovis defeats Syagrius and ends the last free Roman enclave in Gaul. That was 5 years after this event.",
+      "One nearby event: Theodoric the Great ousts Odoacer and becomes king of Italy. That was 12 years after this event."
+    ],
+    "tags": [
+      "Franks",
+      "Monarchy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Frankish ruler who became king in 481.",
+        "answers": [
+          "clovis i",
+          "clovis",
+          "king clovis"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0866",
+    "prompt": "Clovis defeats Syagrius and ends the last free Roman enclave in Gaul.",
+    "year": 486,
+    "hints": [
+      "One nearby event: Clovis I becomes king of the Franks after the death of Childeric I. That was 5 years before this event.",
+      "One nearby event: Theodoric the Great ousts Odoacer and becomes king of Italy. That was 7 years after this event.",
+      "One nearby event: Clovis defeats the Alamanni at Tolbiac and is baptized by Remigius of Reims. That was 10 years after this event."
+    ],
+    "tags": [
+      "Franks",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Frankish ruler who defeated Syagrius.",
+        "answers": [
+          "clovis i",
+          "clovis",
+          "king clovis"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0867",
+    "prompt": "Theodoric the Great ousts Odoacer and becomes king of Italy.",
+    "year": 493,
+    "hints": [
+      "One nearby event: Clovis defeats Syagrius and ends the last free Roman enclave in Gaul. That was 7 years before this event.",
+      "One nearby event: Clovis defeats the Alamanni at Tolbiac and is baptized by Remigius of Reims. That was 3 years after this event.",
+      "One nearby event: Clovis I becomes king of the Franks after the death of Childeric I. That was 12 years before this event."
+    ],
+    "tags": [
+      "Italy",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler who ousted Odoacer and became king of Italy.",
+        "answers": [
+          "theodoric the great",
+          "theodoric",
+          "theoderic"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0868",
+    "prompt": "Clovis defeats the Alamanni at Tolbiac and is baptized by Remigius of Reims.",
+    "year": 496,
+    "hints": [
+      "One nearby event: Theodoric the Great ousts Odoacer and becomes king of Italy. That was 3 years before this event.",
+      "One nearby event: Clovis defeats Syagrius and ends the last free Roman enclave in Gaul. That was 10 years before this event.",
+      "One nearby event: Clovis I becomes king of the Franks after the death of Childeric I. That was 15 years before this event."
+    ],
+    "tags": [
+      "Franks",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Frankish king baptized after Tolbiac.",
+        "answers": [
+          "clovis i",
+          "clovis",
+          "king clovis"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0869",
+    "prompt": "Gregory the Illuminator helps Armenia become the first state to adopt Christianity as its official religion.",
+    "year": 301,
+    "hints": [
+      "One nearby event: The Sixteen Kingdoms period begins in China after the collapse of Western Jin control in the north. That was 3 years after this event.",
+      "One nearby event: Constantine the Great rises to power and ends the persecution of Christians in the Roman Empire. That was 5 years after this event.",
+      "One nearby event: Constantine the Great calls the First Council of Nicaea to address the Arian controversy. That was 24 years after this event."
+    ],
+    "tags": [
+      "Armenia",
+      "Christianity"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Christian figure most associated with Armenia's conversion.",
+        "answers": [
+          "gregory the illuminator",
+          "saint gregory the illuminator",
+          "gregory"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0870",
+    "prompt": "The Sixteen Kingdoms period begins in China after Western Jin authority breaks apart in the north.",
+    "year": 304,
+    "hints": [
+      "One nearby event: Gregory the Illuminator helps Armenia become the first state to adopt Christianity as its official religion. That was 3 years before this event.",
+      "One nearby event: Constantine the Great rises to power and ends the persecution of Christians in the Roman Empire. That was 2 years after this event.",
+      "One nearby event: Butuan Boat One, the oldest known balangay, is built in the Philippines. That was 16 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0871",
+    "prompt": "Constantine the Great rises to power and begins the great shift that ends the persecution of Christians in the Roman Empire.",
+    "year": 306,
+    "hints": [
+      "One nearby event: Gregory the Illuminator helps Armenia become the first state to adopt Christianity as its official religion. That was 5 years before this event.",
+      "One nearby event: Constantine the Great calls the First Council of Nicaea to address the Arian controversy. That was 19 years after this event.",
+      "One nearby event: Constantine makes Byzantium his new imperial capital, later known as Constantinople. That was 24 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Christianity"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor who rose to power in 306.",
+        "answers": [
+          "constantine the great",
+          "constantine i",
+          "constantine"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0872",
+    "prompt": "Butuan Boat One, the oldest known balangay, is built in the Philippines.",
+    "year": 320,
+    "hints": [
+      "One nearby event: Constantine the Great calls the First Council of Nicaea to address the Arian controversy. That was 5 years after this event.",
+      "One nearby event: Aksum adopts Christianity in northeast Africa. That was 5 years after this event.",
+      "One nearby event: Constantine makes Byzantium his new imperial capital, later known as Constantinople. That was 10 years after this event."
+    ],
+    "tags": [
+      "Philippines",
+      "Maritime"
+    ]
+  },
+  {
+    "id": "evt_0873",
+    "prompt": "Constantine the Great calls the First Council of Nicaea to address the Arian controversy.",
+    "year": 325,
+    "hints": [
+      "One nearby event: Aksum adopts Christianity in northeast Africa. That was the same year as this event.",
+      "One nearby event: Butuan Boat One, the oldest known balangay, is built in the Philippines. That was 5 years before this event.",
+      "One nearby event: Constantine makes Byzantium his new imperial capital, later known as Constantinople. That was 5 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Christianity"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor who called the Council of Nicaea.",
+        "answers": [
+          "constantine the great",
+          "constantine i",
+          "constantine"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0874",
+    "prompt": "Aksum adopts Christianity, becoming one of the major Christian kingdoms of late antiquity.",
+    "year": 325,
+    "hints": [
+      "One nearby event: Constantine the Great calls the First Council of Nicaea to address the Arian controversy. That was the same year as this event.",
+      "One nearby event: Samudragupta begins expanding the Gupta Empire. That was 10 years after this event.",
+      "One nearby event: The Kingdom of Aksum conquers the Kingdom of Kush. That was 25 years after this event."
+    ],
+    "tags": [
+      "Aksum",
+      "Christianity"
+    ]
+  },
+  {
+    "id": "evt_0875",
+    "prompt": "Constantine makes Byzantium his new imperial capital, later known as Constantinople.",
+    "year": 330,
+    "hints": [
+      "One nearby event: Constantine the Great calls the First Council of Nicaea to address the Arian controversy. That was 5 years before this event.",
+      "One nearby event: Samudragupta begins expanding the Gupta Empire. That was 5 years after this event.",
+      "One nearby event: Constantine the Great is baptized a Christian on his deathbed. That was 7 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Cities"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor who founded Constantinople as a new imperial capital.",
+        "answers": [
+          "constantine the great",
+          "constantine i",
+          "constantine"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0876",
+    "prompt": "Samudragupta begins the great expansion of the Gupta Empire in India.",
+    "year": 335,
+    "hints": [
+      "One nearby event: Constantine makes Byzantium his new imperial capital, later known as Constantinople. That was 5 years before this event.",
+      "One nearby event: Constantine the Great is baptized a Christian on his deathbed. That was 2 years after this event.",
+      "One nearby event: The Kingdom of Aksum conquers the Kingdom of Kush. That was 15 years after this event."
+    ],
+    "tags": [
+      "India",
+      "Empire"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Gupta ruler associated with this expansion.",
+        "answers": [
+          "samudragupta",
+          "samudra gupta"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0877",
+    "prompt": "Constantine the Great is baptized a Christian on his deathbed.",
+    "year": 337,
+    "hints": [
+      "One nearby event: Samudragupta begins the great expansion of the Gupta Empire in India. That was 2 years before this event.",
+      "One nearby event: The Kingdom of Aksum conquers the Kingdom of Kush. That was 13 years after this event.",
+      "One nearby event: The great earthquake and tsunami of 365 devastate the eastern Mediterranean. That was 28 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Christianity"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor baptized in 337.",
+        "answers": [
+          "constantine the great",
+          "constantine i",
+          "constantine"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0878",
+    "prompt": "The Kingdom of Aksum conquers the Kingdom of Kush.",
+    "year": 350,
+    "hints": [
+      "One nearby event: Mulavarman's inscriptions become the earliest known stone inscriptions in Indonesia. That was the same year as this event.",
+      "One nearby event: The great earthquake and tsunami of 365 devastate the eastern Mediterranean. That was 15 years after this event.",
+      "One nearby event: Constantine the Great is baptized a Christian on his deathbed. That was 13 years before this event."
+    ],
+    "tags": [
+      "Aksum",
+      "Conquest"
+    ]
+  },
+  {
+    "id": "evt_0879",
+    "prompt": "Mulavarman's inscriptions are produced in eastern Borneo, becoming the earliest known stone inscriptions in Indonesia.",
+    "year": 350,
+    "hints": [
+      "One nearby event: The Kingdom of Aksum conquers the Kingdom of Kush. That was the same year as this event.",
+      "One nearby event: The great earthquake and tsunami of 365 devastate the eastern Mediterranean. That was 15 years after this event.",
+      "One nearby event: The Visigoths are allowed across the Danube into the Roman Empire while fleeing the Huns. That was 26 years after this event."
+    ],
+    "tags": [
+      "Indonesia",
+      "Epigraphy"
+    ]
+  },
+  {
+    "id": "evt_0880",
+    "prompt": "A great earthquake and tsunami devastate Crete, Greece, Libya, Egypt, Cyprus, and Sicily.",
+    "year": 365,
+    "hints": [
+      "One nearby event: The Visigoths are allowed across the Danube into the Roman Empire while fleeing the Huns. That was 11 years after this event.",
+      "One nearby event: Emperor Valens is killed when the Romans are crushed at Adrianople. That was 13 years after this event.",
+      "One nearby event: The Kingdom of Aksum conquers the Kingdom of Kush. That was 15 years before this event."
+    ],
+    "tags": [
+      "Mediterranean",
+      "Disaster"
+    ]
+  },
+  {
+    "id": "evt_0881",
+    "prompt": "The Visigoths are allowed across the Danube into the Roman Empire while fleeing the Huns.",
+    "year": 376,
+    "hints": [
+      "One nearby event: Emperor Valens is killed when the Romans are crushed at Adrianople. That was 2 years after this event.",
+      "One nearby event: Theodosius I and the empire make Christianity the official religion and suppress pagan worship. That was 2 years after this event.",
+      "One nearby event: The great earthquake and tsunami of 365 devastate the eastern Mediterranean. That was 11 years before this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Migration"
+    ]
+  },
+  {
+    "id": "evt_0882",
+    "prompt": "Emperor Valens is killed when the Romans are crushed by the Visigoths at Adrianople.",
+    "year": 378,
+    "hints": [
+      "One nearby event: The Visigoths are allowed across the Danube into the Roman Empire while fleeing the Huns. That was 2 years before this event.",
+      "One nearby event: Theodosius I and the empire make Christianity the official religion and suppress pagan worship. That was the same year as this event.",
+      "One nearby event: The First Council of Constantinople reaffirms the doctrine of the Trinity. That was 3 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor killed at Adrianople.",
+        "answers": [
+          "valens",
+          "emperor valens"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0883",
+    "prompt": "Siyaj K'ak' conquers Waka, Tikal, and Uaxactun in the Maya world.",
+    "year": 378,
+    "hints": [
+      "One nearby event: Emperor Valens is killed when the Romans are crushed by the Visigoths at Adrianople. That was the same year as this event.",
+      "One nearby event: The First Council of Constantinople reaffirms the doctrine of the Trinity. That was 3 years after this event.",
+      "One nearby event: The Battle of Fei River shatters Fu Jian's attempt to reunify China. That was 5 years after this event."
+    ],
+    "tags": [
+      "Maya",
+      "Conquest"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did Siyaj K'ak' conquer Tikal in 378?",
+        "answers": [
+          "january",
+          "jan"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the conqueror associated with these Maya victories.",
+        "answers": [
+          "siyaj k'ak'",
+          "siyaj kak",
+          "fire is born"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0884",
+    "prompt": "Theodosius I and the empire make Christianity the official religion and suppress pagan worship.",
+    "year": 378,
+    "hints": [
+      "One nearby event: The First Council of Constantinople reaffirms the doctrine of the Trinity. That was 3 years after this event.",
+      "One nearby event: Emperor Valens is killed when the Romans are crushed by the Visigoths at Adrianople. That was the same year as this event.",
+      "One nearby event: Theodosius I dies, and the Roman Empire splits permanently into eastern and western halves. That was 17 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor associated with making Christianity the empire's official religion.",
+        "answers": [
+          "theodosius i",
+          "theodosius",
+          "theodosius the great"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0885",
+    "prompt": "The First Council of Constantinople reaffirms the doctrine of the Trinity.",
+    "year": 381,
+    "hints": [
+      "One nearby event: The Battle of Fei River shatters Fu Jian's attempt to reunify China. That was 2 years after this event.",
+      "One nearby event: Theodosius I and the empire make Christianity the official religion and suppress pagan worship. That was 3 years before this event.",
+      "One nearby event: Theodosius I dies, and the Roman Empire splits permanently into eastern and western halves. That was 14 years after this event."
+    ],
+    "tags": [
+      "Christianity",
+      "Council"
+    ]
+  },
+  {
+    "id": "evt_0886",
+    "prompt": "The Battle of Fei River shatters Fu Jian's attempt to reunify China under Former Qin.",
+    "year": 383,
+    "hints": [
+      "One nearby event: The First Council of Constantinople reaffirms the doctrine of the Trinity. That was 2 years before this event.",
+      "One nearby event: Theodosius I dies, and the Roman Empire splits permanently into eastern and western halves. That was 12 years after this event.",
+      "One nearby event: Siyaj K'ak' conquers Waka, Tikal, and Uaxactun in the Maya world. That was 5 years before this event."
+    ],
+    "tags": [
+      "China",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler whose bid to reunify China failed at Fei River.",
+        "answers": [
+          "fu jian",
+          "fujian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0887",
+    "prompt": "Theodosius I dies, and the Roman Empire splits permanently into eastern and western halves.",
+    "year": 395,
+    "hints": [
+      "One nearby event: The Battle of Fei River shatters Fu Jian's attempt to reunify China under Former Qin. That was 12 years before this event.",
+      "One nearby event: The First Council of Constantinople reaffirms the doctrine of the Trinity. That was 14 years before this event.",
+      "One nearby event: Kumarajiva arrives in Chang'an and begins his famous Buddhist translation work in China. That was 6 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor whose death is linked to the permanent split of the Roman Empire.",
+        "answers": [
+          "theodosius i",
+          "theodosius",
+          "theodosius the great"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0888",
+    "prompt": "Cao Cao is decisively defeated at the Battle of Red Cliffs, helping prevent the reunification of China.",
+    "year": 208,
+    "hints": [
+      "One nearby event: Emperor Caracalla grants Roman citizenship to all free Roman men. That was 4 years after this event.",
+      "One nearby event: The Han dynasty ends and the Three Kingdoms period begins in China. That was 12 years after this event.",
+      "One nearby event: Ardashir I defeats the Parthian Empire and founds Sasanian Persia. That was 16 years after this event."
+    ],
+    "tags": [
+      "China",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the warlord whose hopes were shattered at Red Cliffs.",
+        "answers": [
+          "cao cao",
+          "tsao tsao"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0889",
+    "prompt": "Emperor Caracalla grants Roman citizenship to all free Roman men through the Constitutio Antoniniana.",
+    "year": 212,
+    "hints": [
+      "One nearby event: Cao Cao is decisively defeated at the Battle of Red Cliffs, helping prevent the reunification of China. That was 4 years before this event.",
+      "One nearby event: The Han dynasty ends and the Three Kingdoms period begins in China. That was 8 years after this event.",
+      "One nearby event: Ardashir I defeats the Parthian Empire and founds Sasanian Persia. That was 12 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Law"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor associated with the Constitutio Antoniniana.",
+        "answers": [
+          "caracalla",
+          "marcus aurelius severus antoninus"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0890",
+    "prompt": "The Han dynasty ends, and the Three Kingdoms period begins in China.",
+    "year": 220,
+    "hints": [
+      "One nearby event: Emperor Caracalla grants Roman citizenship to all free Roman men through the Constitutio Antoniniana. That was 8 years before this event.",
+      "One nearby event: Ardashir I defeats the Parthian Empire and founds Sasanian Persia. That was 4 years after this event.",
+      "One nearby event: Zhuge Liang dies during the standoff at Wuzhang Plains. That was 14 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Dynasty"
+    ]
+  },
+  {
+    "id": "evt_0891",
+    "prompt": "Ardashir I defeats the Parthian Empire at Hormozdgan and founds Sasanian Persia.",
+    "year": 224,
+    "hints": [
+      "One nearby event: The Han dynasty ends, and the Three Kingdoms period begins in China. That was 4 years before this event.",
+      "One nearby event: Zhuge Liang dies during the standoff at Wuzhang Plains. That was 10 years after this event.",
+      "One nearby event: The Kingdom of Hatra falls to Persia. That was 17 years after this event."
+    ],
+    "tags": [
+      "Persia",
+      "Dynasty"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler who founded the Sasanian dynasty.",
+        "answers": [
+          "ardashir i",
+          "ardashir",
+          "artaxerxes i"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0892",
+    "prompt": "Zhuge Liang dies during the standoff at Wuzhang Plains.",
+    "year": 234,
+    "hints": [
+      "One nearby event: Ardashir I defeats the Parthian Empire at Hormozdgan and founds Sasanian Persia. That was 10 years before this event.",
+      "One nearby event: The Kingdom of Hatra falls to Persia. That was 7 years after this event.",
+      "One nearby event: Mani begins preaching Manichaeism at the Sasanian court. That was 8 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Three Kingdoms"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Shu strategist who died at Wuzhang Plains.",
+        "answers": [
+          "zhuge liang",
+          "kongming",
+          "chu ko liang"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0893",
+    "prompt": "The Kingdom of Hatra falls to Persia.",
+    "year": 241,
+    "hints": [
+      "One nearby event: Zhuge Liang dies during the standoff at Wuzhang Plains. That was 7 years before this event.",
+      "One nearby event: Mani begins preaching Manichaeism at the Sasanian court. That was 1 year after this event.",
+      "One nearby event: Emperor Valerian I is captured alive by Shapur I of Persia. That was 19 years after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Conquest"
+    ]
+  },
+  {
+    "id": "evt_0894",
+    "prompt": "Mani begins preaching Manichaeism at the Sasanian court.",
+    "year": 242,
+    "hints": [
+      "One nearby event: The Kingdom of Hatra falls to Persia. That was 1 year before this event.",
+      "One nearby event: Emperor Valerian I is captured alive by Shapur I of Persia. That was 18 years after this event.",
+      "One nearby event: Cao Wei conquers the Shu Han kingdom. That was 21 years after this event."
+    ],
+    "tags": [
+      "Persia",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the religious founder who began preaching in 242.",
+        "answers": [
+          "mani"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0895",
+    "prompt": "Emperor Valerian I is captured alive by Shapur I of Persia, one of Rome's most humiliating defeats.",
+    "year": 260,
+    "hints": [
+      "One nearby event: Mani begins preaching Manichaeism at the Sasanian court. That was 18 years before this event.",
+      "One nearby event: Cao Wei conquers the Shu Han kingdom. That was 3 years after this event.",
+      "One nearby event: Sima Yan founds the Jin dynasty after overthrowing Cao Wei. That was 6 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Persian ruler who captured Valerian.",
+        "answers": [
+          "shapur i",
+          "shapur",
+          "sapor i"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0896",
+    "prompt": "Cao Wei conquers the Shu Han kingdom.",
+    "year": 263,
+    "hints": [
+      "One nearby event: Emperor Valerian I is captured alive by Shapur I of Persia, one of Rome's most humiliating defeats. That was 3 years before this event.",
+      "One nearby event: Sima Yan founds the Jin dynasty after overthrowing Cao Wei. That was 3 years after this event.",
+      "One nearby event: The Jin dynasty reunifies China by conquering Eastern Wu. That was 17 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Three Kingdoms"
+    ]
+  },
+  {
+    "id": "evt_0897",
+    "prompt": "Sima Yan overthrows Cao Wei and founds the Jin dynasty in China.",
+    "year": 266,
+    "hints": [
+      "One nearby event: Cao Wei conquers the Shu Han kingdom. That was 3 years before this event.",
+      "One nearby event: The Jin dynasty reunifies China by conquering Eastern Wu. That was 14 years after this event.",
+      "One nearby event: Diocletian becomes Roman emperor and begins ending the Crisis of the Third Century. That was 18 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Dynasty"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler who founded the Jin dynasty.",
+        "answers": [
+          "sima yan",
+          "emperor wu of jin",
+          "wu of jin"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0898",
+    "prompt": "The Jin dynasty reunifies China by conquering Eastern Wu.",
+    "year": 280,
+    "hints": [
+      "One nearby event: Sima Yan overthrows Cao Wei and founds the Jin dynasty in China. That was 14 years before this event.",
+      "One nearby event: Diocletian becomes Roman emperor and begins ending the Crisis of the Third Century. That was 4 years after this event.",
+      "One nearby event: The War of the Eight Princes begins in China. That was 11 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Unification"
+    ]
+  },
+  {
+    "id": "evt_0899",
+    "prompt": "Diocletian becomes Roman emperor and begins ending the Crisis of the Third Century.",
+    "year": 284,
+    "hints": [
+      "One nearby event: The Jin dynasty reunifies China by conquering Eastern Wu. That was 4 years before this event.",
+      "One nearby event: The War of the Eight Princes begins in China. That was 7 years after this event.",
+      "One nearby event: Diocletian creates the Tetrarchy in Rome. That was 9 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor who came to power in 284.",
+        "answers": [
+          "diocletian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0900",
+    "prompt": "The War of the Eight Princes begins as the Sima clan tears the Jin dynasty apart in civil war.",
+    "year": 291,
+    "hints": [
+      "One nearby event: Diocletian becomes Roman emperor and begins ending the Crisis of the Third Century. That was 7 years before this event.",
+      "One nearby event: Diocletian creates the Tetrarchy in Rome. That was 2 years after this event.",
+      "One nearby event: The Kofun era begins in Japan. That was 9 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Civil War"
+    ]
+  },
+  {
+    "id": "evt_0901",
+    "prompt": "Diocletian creates the Tetrarchy to reorganize and stabilize the Roman Empire.",
+    "year": 293,
+    "hints": [
+      "One nearby event: The War of the Eight Princes begins as the Sima clan tears the Jin dynasty apart in civil war. That was 2 years before this event.",
+      "One nearby event: The Kofun era begins in Japan. That was 7 years after this event.",
+      "One nearby event: Diocletian becomes Roman emperor and begins ending the Crisis of the Third Century. That was 9 years before this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Government"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor who created the Tetrarchy.",
+        "answers": [
+          "diocletian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0902",
+    "prompt": "The Kofun era begins in Japan, opening the first phase of the Kofun period.",
+    "year": 300,
+    "hints": [
+      "One nearby event: Diocletian creates the Tetrarchy to reorganize and stabilize the Roman Empire. That was 7 years before this event.",
+      "One nearby event: The War of the Eight Princes begins as the Sima clan tears the Jin dynasty apart in civil war. That was 9 years before this event.",
+      "One nearby event: Diocletian becomes Roman emperor and begins ending the Crisis of the Third Century. That was 16 years before this event."
+    ],
+    "tags": [
+      "Japan",
+      "Period"
+    ]
+  },
+  {
+    "id": "evt_0903",
+    "prompt": "Cai Lun of Han China invents paper in its modern form.",
+    "year": 105,
+    "hints": [
+      "One nearby event: Emperor Trajan defeats Dacia and annexes it as a Roman province for Rome. That was 1 year after this event.",
+      "One nearby event: Emperor Trajan wages a major war against Parthia and briefly annexes Armenia and Mesopotamia. That was 9 years after this event.",
+      "One nearby event: Zhang Heng invents the first seismometer in China. That was 27 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Invention"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Han court official associated with the invention of paper in 105.",
+        "answers": [
+          "cai lun",
+          "tsai lun"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0904",
+    "prompt": "Emperor Trajan defeats Dacia and annexes it as a Roman province for Rome.",
+    "year": 106,
+    "hints": [
+      "One nearby event: Cai Lun of Han China invents paper in its modern form. That was 1 year before this event.",
+      "One nearby event: Emperor Trajan wages a major war against Parthia and briefly annexes Armenia and Mesopotamia. That was 8 years after this event.",
+      "One nearby event: The Kitos War erupts as part of the wider Jewish–Roman conflicts. That was 9 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor associated with the conquest of Dacia.",
+        "answers": [
+          "trajan",
+          "emperor trajan"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0905",
+    "prompt": "Emperor Trajan wages a major war against Parthia and briefly annexes Armenia and Mesopotamia.",
+    "year": 114,
+    "hints": [
+      "One nearby event: The Kitos War erupts as part of the wider Jewish–Roman conflicts. That was 1 year after this event.",
+      "One nearby event: Emperor Trajan defeats Dacia and annexes it as a Roman province for Rome. That was 8 years before this event.",
+      "One nearby event: The Bar Kokhba revolt erupts against Roman rule in Judea. That was 18 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor who campaigned against Parthia in 114–116.",
+        "answers": [
+          "trajan",
+          "emperor trajan"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0906",
+    "prompt": "The Kitos War erupts as part of the wider Jewish–Roman conflicts.",
+    "year": 115,
+    "hints": [
+      "One nearby event: Emperor Trajan wages a major war against Parthia and briefly annexes Armenia and Mesopotamia. That was 1 year before this event.",
+      "One nearby event: The Bar Kokhba revolt erupts against Roman rule in Judea. That was 17 years after this event.",
+      "One nearby event: Zhang Heng invents the world's first water-powered armillary sphere in China. That was 10 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Revolt"
+    ]
+  },
+  {
+    "id": "evt_0907",
+    "prompt": "Zhang Heng invents the world's first water-powered armillary sphere in China.",
+    "year": 125,
+    "hints": [
+      "One nearby event: Kanishka begins his rule over the Kushan Empire in northern India and present-day Pakistan. That was 2 years after this event.",
+      "One nearby event: The Kitos War erupts as part of the wider Jewish–Roman conflicts. That was 10 years before this event.",
+      "One nearby event: The Bar Kokhba revolt erupts against Roman rule in Judea. That was 7 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Science"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Chinese inventor associated with the armillary sphere in 125.",
+        "answers": [
+          "zhang heng",
+          "chang heng"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0908",
+    "prompt": "Kanishka begins his rule over the Kushan Empire in northern India and present-day Pakistan.",
+    "year": 127,
+    "hints": [
+      "One nearby event: The Bar Kokhba revolt erupts against Roman rule in Judea. That was 5 years after this event.",
+      "One nearby event: Zhang Heng invents the world's first water-powered armillary sphere in China. That was 2 years before this event.",
+      "One nearby event: Marcion is rejected by the Church of Rome and founds Marcionism. That was 17 years after this event."
+    ],
+    "tags": [
+      "Kushan Empire",
+      "Monarchy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Kushan ruler whose reign begins in 127.",
+        "answers": [
+          "kanishka",
+          "kanishka i"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0909",
+    "prompt": "The Bar Kokhba revolt erupts against Roman rule in Judea.",
+    "year": 132,
+    "hints": [
+      "One nearby event: Zhang Heng invents the first seismometer in China. That was the same year as this event.",
+      "One nearby event: Kanishka begins his rule over the Kushan Empire in northern India and present-day Pakistan. That was 5 years before this event.",
+      "One nearby event: The Antonine Wall begins to be built across central Scotland. That was 10 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Revolt"
+    ]
+  },
+  {
+    "id": "evt_0910",
+    "prompt": "Zhang Heng invents the first seismometer in China.",
+    "year": 132,
+    "hints": [
+      "One nearby event: The Bar Kokhba revolt erupts against Roman rule in Judea. That was the same year as this event.",
+      "One nearby event: Marcion is rejected by the Church of Rome and founds Marcionism. That was 12 years after this event.",
+      "One nearby event: Zhang Heng invents the world's first water-powered armillary sphere in China. That was 7 years before this event."
+    ],
+    "tags": [
+      "China",
+      "Science"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Chinese inventor associated with the first seismometer.",
+        "answers": [
+          "zhang heng",
+          "chang heng"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0911",
+    "prompt": "The Antonine Wall begins to be built across central Scotland.",
+    "year": 142,
+    "hints": [
+      "One nearby event: Marcion is rejected by the Church of Rome and founds Marcionism. That was 2 years after this event.",
+      "One nearby event: The Bar Kokhba revolt erupts against Roman rule in Judea. That was 10 years before this event.",
+      "One nearby event: The Roman–Parthian War under Lucius Verus begins. That was 19 years after this event."
+    ],
+    "tags": [
+      "Roman Britain",
+      "Engineering"
+    ]
+  },
+  {
+    "id": "evt_0912",
+    "prompt": "Marcion is rejected by the Church of Rome and founds Marcionism.",
+    "year": 144,
+    "hints": [
+      "One nearby event: The Antonine Wall begins to be built across central Scotland. That was 2 years before this event.",
+      "One nearby event: The Roman–Parthian War under Lucius Verus begins. That was 17 years after this event.",
+      "One nearby event: The Antonine Plague begins to spread through the Roman world. That was 21 years after this event."
+    ],
+    "tags": [
+      "Christianity",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the teacher who founded Marcionism.",
+        "answers": [
+          "marcion",
+          "marcion of sinope"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0913",
+    "prompt": "The Roman–Parthian War under Lucius Verus begins.",
+    "year": 161,
+    "hints": [
+      "One nearby event: The Antonine Plague begins to spread through the Roman world. That was 4 years after this event.",
+      "One nearby event: The Marcomannic Wars begin under Marcus Aurelius. That was 5 years after this event.",
+      "One nearby event: Marcion is rejected by the Church of Rome and founds Marcionism. That was 17 years before this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor associated with the war that began in 161.",
+        "answers": [
+          "lucius verus",
+          "marcus aurelius",
+          "verus"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0914",
+    "prompt": "The Antonine Plague begins to spread through the Roman world.",
+    "year": 165,
+    "hints": [
+      "One nearby event: The Marcomannic Wars begin under Marcus Aurelius. That was 1 year after this event.",
+      "One nearby event: The Roman–Parthian War under Lucius Verus begins. That was 4 years before this event.",
+      "One nearby event: Emperor Commodus begins his reign in Rome, marking the end of the Pax Romana. That was 15 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Plague"
+    ]
+  },
+  {
+    "id": "evt_0915",
+    "prompt": "The Marcomannic Wars begin under Marcus Aurelius.",
+    "year": 166,
+    "hints": [
+      "One nearby event: The Antonine Plague begins to spread through the Roman world. That was 1 year before this event.",
+      "One nearby event: Emperor Commodus begins his reign in Rome, marking the end of the Pax Romana. That was 14 years after this event.",
+      "One nearby event: The Yellow Turban Rebellion erupts against the Han dynasty in China. That was 18 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor associated with the Marcomannic Wars.",
+        "answers": [
+          "marcus aurelius",
+          "aurelius"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0916",
+    "prompt": "Emperor Commodus begins his reign in Rome, marking the end of the Pax Romana.",
+    "year": 180,
+    "hints": [
+      "One nearby event: The Yellow Turban Rebellion erupts against the Han dynasty in China. That was 4 years after this event.",
+      "One nearby event: The Marcomannic Wars begin under Marcus Aurelius. That was 14 years before this event.",
+      "One nearby event: Warlords across China launch a campaign against Dong Zhuo. That was 10 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Monarchy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor whose reign begins in 180.",
+        "answers": [
+          "commodus",
+          "emperor commodus"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0917",
+    "prompt": "The Yellow Turban Rebellion erupts against the Han dynasty in China.",
+    "year": 184,
+    "hints": [
+      "One nearby event: Warlords across China launch a campaign against Dong Zhuo. That was 6 years after this event.",
+      "One nearby event: The Year of the Five Emperors throws Rome into chaos. That was 9 years after this event.",
+      "One nearby event: Emperor Commodus begins his reign in Rome, marking the end of the Pax Romana. That was 4 years before this event."
+    ],
+    "tags": [
+      "China",
+      "Rebellion"
+    ]
+  },
+  {
+    "id": "evt_0918",
+    "prompt": "Warlords across China launch a campaign against Dong Zhuo.",
+    "year": 190,
+    "hints": [
+      "One nearby event: The Year of the Five Emperors throws Rome into chaos. That was 3 years after this event.",
+      "One nearby event: The Yellow Turban Rebellion erupts against the Han dynasty in China. That was 6 years before this event.",
+      "One nearby event: Septimius Severus defeats Clodius Albinus and secures sole control of Rome. That was 7 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Civil War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the warlord targeted by the coalition that formed in 190.",
+        "answers": [
+          "dong zhuo",
+          "tung cho"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0919",
+    "prompt": "The Year of the Five Emperors throws Rome into chaos after Commodus.",
+    "year": 193,
+    "hints": [
+      "One nearby event: Septimius Severus defeats Clodius Albinus and secures sole control of Rome. That was 4 years after this event.",
+      "One nearby event: Warlords across China launch a campaign against Dong Zhuo. That was 3 years before this event.",
+      "One nearby event: The Yellow Turban Rebellion erupts against the Han dynasty in China. That was 9 years before this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0920",
+    "prompt": "Septimius Severus defeats Clodius Albinus and secures sole control of Rome.",
+    "year": 197,
+    "hints": [
+      "One nearby event: The Year of the Five Emperors throws Rome into chaos after Commodus. That was 4 years before this event.",
+      "One nearby event: Warlords across China launch a campaign against Dong Zhuo. That was 7 years before this event.",
+      "One nearby event: The Han dynasty ends, and the Three Kingdoms period begins in China. That was 23 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman ruler who secured sole control after defeating Clodius Albinus.",
+        "answers": [
+          "septimius severus",
+          "severus"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0921",
+    "prompt": "Arminius leads Germanic warriors to destroy three Roman legions in the Teutoburg Forest.",
+    "year": 9,
+    "hints": [
+      "One nearby event: Germanicus defeats Arminius at the Battle of Idistaviso. That was 7 years after this event.",
+      "One nearby event: Wang Mang's Xin dynasty collapses, and the Eastern Han dynasty is restored in China. That was 14 years after this event.",
+      "One nearby event: Emperor Claudius sends Aulus Plautius to Britain, beginning the Roman conquest of Britain. That was 34 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Germanic leader associated with the Roman disaster in the Teutoburg Forest.",
+        "answers": [
+          "arminius",
+          "hermann"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0922",
+    "prompt": "Germanicus defeats Arminius at the Battle of Idistaviso, avenging Rome's Teutoburg disaster.",
+    "year": 16,
+    "hints": [
+      "One nearby event: Arminius leads Germanic warriors to destroy three Roman legions in the Teutoburg Forest. That was 7 years before this event.",
+      "One nearby event: Wang Mang's Xin dynasty collapses, and the Eastern Han dynasty is restored in China. That was 7 years after this event.",
+      "One nearby event: Emperor Claudius sends Aulus Plautius to Britain, beginning the Roman conquest of Britain. That was 27 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman commander who won at Idistaviso.",
+        "answers": [
+          "germanicus",
+          "germanicus julius caesar"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0923",
+    "prompt": "Wang Mang's Xin dynasty collapses, and the Eastern Han dynasty is restored in China.",
+    "year": 23,
+    "hints": [
+      "One nearby event: Arminius leads Germanic warriors to destroy three Roman legions in the Teutoburg Forest. That was 14 years before this event.",
+      "One nearby event: The Trung sisters launch a rebellion against Han rule in northern Vietnam. That was 17 years after this event.",
+      "One nearby event: Emperor Claudius sends Aulus Plautius to Britain, beginning the Roman conquest of Britain. That was 20 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Dynasty"
+    ]
+  },
+  {
+    "id": "evt_0924",
+    "prompt": "The Trưng sisters launch a rebellion against Han rule in northern Vietnam.",
+    "year": 40,
+    "hints": [
+      "One nearby event: Emperor Claudius sends Aulus Plautius to Britain, beginning the Roman conquest of Britain. That was 3 years after this event.",
+      "One nearby event: Queen Boudica leads the Iceni and other Britons in a major revolt against Rome. That was 20 years after this event.",
+      "One nearby event: Emperor Nero's Rome is devastated by the Great Fire, after which Christians are blamed and persecuted. That was 24 years after this event."
+    ],
+    "tags": [
+      "Vietnam",
+      "Rebellion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name one of the sisters who led this rebellion.",
+        "answers": [
+          "trung trac",
+          "trung nhi",
+          "trưng trắc",
+          "trưng nhị"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0925",
+    "prompt": "Emperor Claudius sends Aulus Plautius to Britain, beginning the Roman conquest of Britain.",
+    "year": 43,
+    "hints": [
+      "One nearby event: The Trưng sisters launch a rebellion against Han rule in northern Vietnam. That was 3 years before this event.",
+      "One nearby event: Queen Boudica leads the Iceni and other Britons in a major revolt against Rome. That was 17 years after this event.",
+      "One nearby event: Emperor Nero's Rome is devastated by the Great Fire, after which Christians are blamed and persecuted. That was 21 years after this event."
+    ],
+    "tags": [
+      "Roman Empire",
+      "Britain"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor who launched the conquest of Britain in 43.",
+        "answers": [
+          "claudius",
+          "emperor claudius"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0926",
+    "prompt": "Queen Boudica leads the Iceni and other Britons in a major revolt against Rome.",
+    "year": 60,
+    "hints": [
+      "One nearby event: Emperor Nero's Rome is devastated by the Great Fire, after which Christians are blamed and persecuted. That was 4 years after this event.",
+      "One nearby event: Jewish rebels rise against Rome in Judea, beginning the First Jewish–Roman War. That was 6 years after this event.",
+      "One nearby event: Emperor Claudius sends Aulus Plautius to Britain, beginning the Roman conquest of Britain. That was 17 years before this event."
+    ],
+    "tags": [
+      "Britain",
+      "Revolt"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the queen who led the revolt against Rome.",
+        "answers": [
+          "boudica",
+          "boudicca"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0927",
+    "prompt": "Emperor Nero's Rome is devastated by the Great Fire, after which Christians are blamed and persecuted.",
+    "year": 64,
+    "hints": [
+      "One nearby event: Jewish rebels rise against Rome in Judea, beginning the First Jewish–Roman War. That was 2 years after this event.",
+      "One nearby event: Galba, Otho, Vitellius, and Vespasian all claim the Roman throne in the Year of the Four Emperors. That was 5 years after this event.",
+      "One nearby event: Mount Vesuvius erupts and buries Pompeii and Herculaneum in ash. That was 15 years after this event."
+    ],
+    "tags": [
+      "Rome",
+      "Disaster"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Great Fire of Rome begin?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor ruling during the Great Fire of Rome.",
+        "answers": [
+          "nero",
+          "emperor nero"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0928",
+    "prompt": "Jewish rebels rise against Rome in Judea, beginning the First Jewish–Roman War.",
+    "year": 66,
+    "hints": [
+      "One nearby event: Galba, Otho, Vitellius, and Vespasian all claim the Roman throne in the Year of the Four Emperors. That was 3 years after this event.",
+      "One nearby event: Titus sacks Jerusalem and the Second Temple is destroyed during the First Jewish–Roman War. That was 4 years after this event.",
+      "One nearby event: Emperor Nero's Rome is devastated by the Great Fire, after which Christians are blamed and persecuted. That was 2 years before this event."
+    ],
+    "tags": [
+      "Judea",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0929",
+    "prompt": "Galba, Otho, Vitellius, and Vespasian all claim the Roman throne in the Year of the Four Emperors.",
+    "year": 69,
+    "hints": [
+      "One nearby event: Titus sacks Jerusalem and the Second Temple is destroyed during the First Jewish–Roman War. That was 1 year after this event.",
+      "One nearby event: Emperor Nero's Rome is devastated by the Great Fire, after which Christians are blamed and persecuted. That was 5 years before this event.",
+      "One nearby event: Mount Vesuvius erupts and buries Pompeii and Herculaneum in ash. That was 10 years after this event."
+    ],
+    "tags": [
+      "Rome",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name any one of the four emperors of 69.",
+        "answers": [
+          "galba",
+          "otho",
+          "vitellius",
+          "vespasian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0930",
+    "prompt": "Titus sacks Jerusalem and the Second Temple is destroyed during the First Jewish–Roman War.",
+    "year": 70,
+    "hints": [
+      "One nearby event: Roman forces capture Masada, ending the last major resistance of the First Jewish–Roman War. That was 3 years after this event.",
+      "One nearby event: Galba, Otho, Vitellius, and Vespasian all claim the Roman throne in the Year of the Four Emperors. That was 1 year before this event.",
+      "One nearby event: Emperor Titus opens the Colosseum with inaugural games in Rome. That was 10 years after this event."
+    ],
+    "tags": [
+      "Judea",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman commander associated with the sack of Jerusalem in 70.",
+        "answers": [
+          "titus",
+          "emperor titus"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0931",
+    "prompt": "Roman forces capture Masada, ending the last major resistance of the First Jewish–Roman War.",
+    "year": 73,
+    "hints": [
+      "One nearby event: Titus sacks Jerusalem and the Second Temple is destroyed during the First Jewish–Roman War. That was 3 years before this event.",
+      "One nearby event: Emperor Titus opens the Colosseum with inaugural games in Rome. That was 7 years after this event.",
+      "One nearby event: Mount Vesuvius erupts and buries Pompeii and Herculaneum in ash. That was 6 years after this event."
+    ],
+    "tags": [
+      "Judea",
+      "Siege"
+    ]
+  },
+  {
+    "id": "evt_0932",
+    "prompt": "Emperor Titus opens the Colosseum with inaugural games in Rome.",
+    "year": 80,
+    "hints": [
+      "One nearby event: Mount Vesuvius erupts and buries Pompeii and Herculaneum in ash. That was 1 year before this event.",
+      "One nearby event: Agricola defeats the Caledonians at the Battle of Mons Graupius in Scotland. That was 3 years after this event.",
+      "One nearby event: Titus sacks Jerusalem and the Second Temple is destroyed during the First Jewish–Roman War. That was 10 years before this event."
+    ],
+    "tags": [
+      "Rome",
+      "Culture"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman emperor associated with the Colosseum's inaugural games.",
+        "answers": [
+          "titus",
+          "emperor titus"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0933",
+    "prompt": "Agricola defeats the Caledonians at the Battle of Mons Graupius in Scotland.",
+    "year": 83,
+    "hints": [
+      "One nearby event: Emperor Titus opens the Colosseum with inaugural games in Rome. That was 3 years before this event.",
+      "One nearby event: Han armies shatter the Northern Xiongnu at the Battle of the Altai Mountains. That was 6 years after this event.",
+      "One nearby event: Mount Vesuvius erupts and buries Pompeii and Herculaneum in ash. That was 4 years before this event."
+    ],
+    "tags": [
+      "Britain",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Roman commander associated with Mons Graupius.",
+        "answers": [
+          "agricola",
+          "gnaeus julius agricola"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0934",
+    "prompt": "Han armies shatter the Northern Xiongnu at the Battle of the Altai Mountains.",
+    "year": 89,
+    "hints": [
+      "One nearby event: General Dou Xian drives the last Northern Xiongnu westward, ending the long Han–Xiongnu War. That was 2 years after this event.",
+      "One nearby event: Agricola defeats the Caledonians at the Battle of Mons Graupius in Scotland. That was 6 years before this event.",
+      "One nearby event: Emperor Titus opens the Colosseum with inaugural games in Rome. That was 9 years before this event."
+    ],
+    "tags": [
+      "China",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0935",
+    "prompt": "General Dou Xian drives the last Northern Xiongnu westward, ending the long Han–Xiongnu War.",
+    "year": 91,
+    "hints": [
+      "One nearby event: Han armies shatter the Northern Xiongnu at the Battle of the Altai Mountains. That was 2 years before this event.",
+      "One nearby event: Agricola defeats the Caledonians at the Battle of Mons Graupius in Scotland. That was 8 years before this event.",
+      "One nearby event: Emperor Nero's Rome is devastated by the Great Fire, after which Christians are blamed and persecuted. That was 27 years before this event."
+    ],
+    "tags": [
+      "China",
+      "Frontier"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Han general associated with the final campaigns against the Northern Xiongnu.",
+        "answers": [
+          "dou xian"
+        ]
+      }
+    }
   }
 ]
