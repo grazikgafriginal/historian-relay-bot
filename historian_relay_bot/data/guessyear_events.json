@@ -10515,5 +10515,2079 @@
         ]
       }
     }
+  },
+  {
+    "id": "evt_0604",
+    "prompt": "A prolonged famine kills millions across Europe after years of crop failure and relentless rain.",
+    "year": 1315,
+    "hints": [
+      "One nearby event: An island city is founded in a lake valley by the Mexica, becoming the future capital of a powerful empire. That was 10 years after this event.",
+      "One nearby event: A dynastic claim by an English king begins a long conflict later known as the Hundred Years' War. That was 22 years after this event.",
+      "One nearby event: A major plague outbreak devastates parts of Europe, later called the Black Death. That was 32 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Medieval"
+    ]
+  },
+  {
+    "id": "evt_0605",
+    "prompt": "An island city is founded in a lake valley by the Mexica, becoming the future capital of a powerful empire.",
+    "year": 1325,
+    "hints": [
+      "One nearby event: A prolonged famine kills millions across Europe after years of crop failure and relentless rain. That was 10 years before this event.",
+      "One nearby event: A dynastic claim by an English king begins a long conflict later known as the Hundred Years' War. That was 12 years after this event.",
+      "One nearby event: A major plague outbreak devastates parts of Europe, later called the Black Death. That was 22 years after this event."
+    ],
+    "tags": [
+      "Americas",
+      "Empire"
+    ]
+  },
+  {
+    "id": "evt_0606",
+    "prompt": "A dynastic claim by an English king begins a long conflict later known as the Hundred Years' War.",
+    "year": 1337,
+    "hints": [
+      "One nearby event: English longbowmen shatter a French army in a famous battle of the Hundred Years' War. That was 9 years after this event.",
+      "One nearby event: A major plague outbreak devastates parts of Europe, later called the Black Death. That was 10 years after this event.",
+      "One nearby event: An island city is founded in a lake valley by the Mexica, becoming the future capital of a powerful empire. That was 12 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the English king whose claim helped start the Hundred Years' War.",
+        "answers": [
+          "edward iii",
+          "king edward iii",
+          "edward"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0607",
+    "prompt": "English longbowmen shatter a French army in a famous battle of the Hundred Years' War.",
+    "year": 1346,
+    "hints": [
+      "One nearby event: A major plague outbreak devastates parts of Europe, later called the Black Death. That was 1 year after this event.",
+      "One nearby event: A dynastic claim by an English king begins a long conflict later known as the Hundred Years' War. That was 9 years before this event.",
+      "One nearby event: A major decree of the Holy Roman Empire formalizes how future emperors are to be elected. That was 10 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the Battle of Crécy fought?",
+        "answers": [
+          "august",
+          "aug"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a leader associated with the Battle of Crécy.",
+        "answers": [
+          "edward iii",
+          "the black prince",
+          "edward the black prince",
+          "philip vi"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0608",
+    "prompt": "A major decree of the Holy Roman Empire formalizes how future emperors are to be elected.",
+    "year": 1356,
+    "hints": [
+      "One nearby event: One of history’s largest naval battles is fought on a Chinese lake between rival rebel leaders. That was 7 years after this event.",
+      "One nearby event: A major plague outbreak devastates parts of Europe, later called the Black Death. That was 9 years before this event.",
+      "One nearby event: A Chinese rebel leader overthrows the Mongol-led dynasty and founds the Ming dynasty. That was 12 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Law"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Holy Roman Emperor associated with the Golden Bull of 1356.",
+        "answers": [
+          "charles iv",
+          "emperor charles iv",
+          "charles"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0609",
+    "prompt": "One of history’s largest naval battles is fought on a Chinese lake between rival rebel leaders.",
+    "year": 1363,
+    "hints": [
+      "One nearby event: A Chinese rebel leader overthrows the Mongol-led dynasty and founds the Ming dynasty. That was 5 years after this event.",
+      "One nearby event: A major decree of the Holy Roman Empire formalizes how future emperors are to be elected. That was 7 years before this event.",
+      "One nearby event: Western Christianity splits when rival popes claim authority, beginning a great schism. That was 15 years after this event."
+    ],
+    "tags": [
+      "China",
+      "War"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Battle of Lake Poyang begin?",
+        "answers": [
+          "august",
+          "aug"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a leader associated with the Battle of Lake Poyang.",
+        "answers": [
+          "zhu yuanzhang",
+          "chen youliang",
+          "hongwu emperor",
+          "hongwu"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0610",
+    "prompt": "A Chinese rebel leader overthrows the Mongol-led dynasty and founds the Ming dynasty.",
+    "year": 1368,
+    "hints": [
+      "One nearby event: One of history’s largest naval battles is fought on a Chinese lake between rival rebel leaders. That was 5 years before this event.",
+      "One nearby event: Western Christianity splits when rival popes claim authority, beginning a great schism. That was 10 years after this event.",
+      "One nearby event: An uprising of commoners in England shakes the kingdom during a time of heavy taxation and labor unrest. That was 13 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the founder of the Ming dynasty.",
+        "answers": [
+          "zhu yuanzhang",
+          "hongwu emperor",
+          "hongwu"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0611",
+    "prompt": "Western Christianity splits when rival popes claim authority, beginning a great schism.",
+    "year": 1378,
+    "hints": [
+      "One nearby event: An uprising of commoners in England shakes the kingdom during a time of heavy taxation and labor unrest. That was 3 years after this event.",
+      "One nearby event: A Chinese rebel leader overthrows the Mongol-led dynasty and founds the Ming dynasty. That was 10 years before this event.",
+      "One nearby event: A new Korean dynasty is established, reshaping the peninsula for centuries. That was 14 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name one pope associated with the beginning of the Great Schism of the West.",
+        "answers": [
+          "urban vi",
+          "clement vii"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0612",
+    "prompt": "An uprising of commoners in England shakes the kingdom during a time of heavy taxation and labor unrest.",
+    "year": 1381,
+    "hints": [
+      "One nearby event: Western Christianity splits when rival popes claim authority, beginning a great schism. That was 3 years before this event.",
+      "One nearby event: A Chinese rebel leader overthrows the Mongol-led dynasty and founds the Ming dynasty. That was 13 years before this event.",
+      "One nearby event: A new Korean dynasty is established, reshaping the peninsula for centuries. That was 11 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Revolt"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Peasants' Revolt in England begin?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a figure associated with the Peasants' Revolt of 1381.",
+        "answers": [
+          "wat tyler",
+          "richard ii",
+          "john ball"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0613",
+    "prompt": "A new Korean dynasty is established, reshaping the peninsula for centuries.",
+    "year": 1392,
+    "hints": [
+      "One nearby event: An empire-shaking clash in Anatolia ends with an Ottoman sultan captured by Timur. That was 10 years after this event.",
+      "One nearby event: China’s ruler shifts the imperial capital northward to the city that will anchor Ming power for centuries. That was 11 years after this event.",
+      "One nearby event: Western Christianity splits when rival popes claim authority, beginning a great schism. That was 14 years before this event."
+    ],
+    "tags": [
+      "Korea",
+      "Politics"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the Joseon dynasty established in 1392?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the founder of the Joseon dynasty.",
+        "answers": [
+          "taejo",
+          "yi seong gye",
+          "yi seong-gye",
+          "taejo of joseon"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0614",
+    "prompt": "A crusading army sacks Constantinople instead of reaching the Holy Land, creating a Latin Empire.",
+    "year": 1204,
+    "hints": [
+      "One nearby event: A Mongol leader is proclaimed Great Khan, launching a vast expansion. That was 2 years after this event.",
+      "One nearby event: A new mendicant religious order begins when Francis of Assisi gathers followers. That was 5 years after this event.",
+      "One nearby event: A decisive battle in Iberia breaks the power of Almohad rule and accelerates the Reconquista. That was 8 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Crusade"
+    ]
+  },
+  {
+    "id": "evt_0615",
+    "prompt": "A new mendicant religious order begins when Francis of Assisi gathers followers.",
+    "year": 1209,
+    "hints": [
+      "One nearby event: A Mongol leader is proclaimed Great Khan, launching a vast expansion. That was 3 years before this event.",
+      "One nearby event: A decisive battle in Iberia breaks the power of Almohad rule and accelerates the Reconquista. That was 3 years after this event.",
+      "One nearby event: A crusading army sacks Constantinople instead of reaching the Holy Land, creating a Latin Empire. That was 5 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the religious figure who founded the Franciscan Order.",
+        "answers": [
+          "francis of assisi",
+          "saint francis",
+          "st francis"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0616",
+    "prompt": "A decisive battle in Iberia breaks the power of Almohad rule and accelerates the Reconquista.",
+    "year": 1212,
+    "hints": [
+      "One nearby event: A French king defeats English and imperial rivals in a battle that reshapes Western European politics. That was 2 years after this event.",
+      "One nearby event: A new mendicant religious order begins when Francis of Assisi gathers followers. That was 3 years before this event.",
+      "One nearby event: A famous charter is sealed after English barons rebel against their king. That was 3 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0617",
+    "prompt": "A French king defeats English and imperial rivals in a battle that reshapes Western European politics.",
+    "year": 1214,
+    "hints": [
+      "One nearby event: A famous charter is sealed after English barons rebel against their king. That was 1 year after this event.",
+      "One nearby event: A decisive battle in Iberia breaks the power of Almohad rule and accelerates the Reconquista. That was 2 years before this event.",
+      "One nearby event: A new mendicant religious order begins when Francis of Assisi gathers followers. That was 5 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0618",
+    "prompt": "Mongol forces crush a coalition of Russian princes at the Kalka River.",
+    "year": 1223,
+    "hints": [
+      "One nearby event: A new dynasty takes power in Vietnam after the Ly dynasty is overthrown. That was 2 years after this event.",
+      "One nearby event: The founder of the Mongol Empire dies during a campaign in Asia. That was 4 years after this event.",
+      "One nearby event: A crusading emperor regains Jerusalem through negotiation rather than a major battle. That was 6 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0619",
+    "prompt": "A new dynasty takes power in Vietnam after the Ly dynasty is overthrown.",
+    "year": 1225,
+    "hints": [
+      "One nearby event: Mongol forces crush a coalition of Russian princes at the Kalka River. That was 2 years before this event.",
+      "One nearby event: The founder of the Mongol Empire dies during a campaign in Asia. That was 2 years after this event.",
+      "One nearby event: A crusading emperor regains Jerusalem through negotiation rather than a major battle. That was 4 years after this event."
+    ],
+    "tags": [
+      "Asia",
+      "Dynasty"
+    ]
+  },
+  {
+    "id": "evt_0620",
+    "prompt": "The founder of the Mongol Empire dies during a campaign in Asia.",
+    "year": 1227,
+    "hints": [
+      "One nearby event: A new dynasty takes power in Vietnam after the Ly dynasty is overthrown. That was 2 years before this event.",
+      "One nearby event: A crusading emperor regains Jerusalem through negotiation rather than a major battle. That was 2 years after this event.",
+      "One nearby event: Mongol forces crush a coalition of Russian princes at the Kalka River. That was 4 years before this event."
+    ],
+    "tags": [
+      "Asia",
+      "Empire"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Mongol ruler who died in 1227.",
+        "answers": [
+          "genghis khan",
+          "chinggis khan",
+          "temujin",
+          "temüjin"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0621",
+    "prompt": "A crusading emperor regains Jerusalem through negotiation rather than a major battle.",
+    "year": 1229,
+    "hints": [
+      "One nearby event: The founder of the Mongol Empire dies during a campaign in Asia. That was 2 years before this event.",
+      "One nearby event: A new dynasty takes power in Vietnam after the Ly dynasty is overthrown. That was 4 years before this event.",
+      "One nearby event: Mongol forces crush a coalition of Russian princes at the Kalka River. That was 6 years before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Diplomacy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor associated with the Sixth Crusade's negotiated recovery of Jerusalem.",
+        "answers": [
+          "frederick ii",
+          "emperor frederick ii",
+          "frederick"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0622",
+    "prompt": "Mandinka kingdoms unite, laying the foundation for the Mali Empire in West Africa.",
+    "year": 1235,
+    "hints": [
+      "One nearby event: A crusading emperor regains Jerusalem through negotiation rather than a major battle. That was 6 years before this event.",
+      "One nearby event: Mongol armies devastate Hungary and Poland in twin invasions that shock Europe. That was 6 years after this event.",
+      "One nearby event: Russian forces defeat the Teutonic Knights on the ice of Lake Peipus. That was 7 years after this event."
+    ],
+    "tags": [
+      "Africa",
+      "Empire"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler traditionally associated with the rise of the Mali Empire.",
+        "answers": [
+          "sundiata keita",
+          "sundiata",
+          "keita"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0623",
+    "prompt": "Mongol armies devastate Hungary and Poland in twin invasions that shock Europe.",
+    "year": 1241,
+    "hints": [
+      "One nearby event: Russian forces defeat the Teutonic Knights on the ice of Lake Peipus. That was 1 year after this event.",
+      "One nearby event: Mandinka kingdoms unite, laying the foundation for the Mali Empire in West Africa. That was 6 years before this event.",
+      "One nearby event: Portugal completes its Reconquista by taking the Algarve from Muslim rule. That was 8 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0624",
+    "prompt": "Russian forces defeat the Teutonic Knights on the ice of Lake Peipus.",
+    "year": 1242,
+    "hints": [
+      "One nearby event: Mongol armies devastate Hungary and Poland in twin invasions that shock Europe. That was 1 year before this event.",
+      "One nearby event: Mandinka kingdoms unite, laying the foundation for the Mali Empire in West Africa. That was 7 years before this event.",
+      "One nearby event: Portugal completes its Reconquista by taking the Algarve from Muslim rule. That was 7 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Russian leader associated with the victory on Lake Peipus.",
+        "answers": [
+          "alexander nevsky",
+          "nevsky",
+          "alexander"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0625",
+    "prompt": "Portugal completes its Reconquista by taking the Algarve from Muslim rule.",
+    "year": 1249,
+    "hints": [
+      "One nearby event: A military slave elite seizes power in Egypt, founding a dynasty that will rule for centuries. That was 1 year after this event.",
+      "One nearby event: Russian forces defeat the Teutonic Knights on the ice of Lake Peipus. That was 7 years before this event.",
+      "One nearby event: Mongol armies devastate Hungary and Poland in twin invasions that shock Europe. That was 8 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Reconquista"
+    ]
+  },
+  {
+    "id": "evt_0626",
+    "prompt": "A military slave elite seizes power in Egypt, founding a dynasty that will rule for centuries.",
+    "year": 1250,
+    "hints": [
+      "One nearby event: Portugal completes its Reconquista by taking the Algarve from Muslim rule. That was 1 year before this event.",
+      "One nearby event: Russian forces defeat the Teutonic Knights on the ice of Lake Peipus. That was 8 years before this event.",
+      "One nearby event: Mongol forces capture and destroy Baghdad, ending the Abbasid caliphate there. That was 8 years after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Dynasty"
+    ]
+  },
+  {
+    "id": "evt_0627",
+    "prompt": "Mongol forces capture and destroy Baghdad, ending the Abbasid caliphate there.",
+    "year": 1258,
+    "hints": [
+      "One nearby event: Mongol expansion is checked at Ain Jalut by Mamluk forces in the Levant. That was 2 years after this event.",
+      "One nearby event: Byzantine forces retake Constantinople and restore their empire after decades of exile. That was 3 years after this event.",
+      "One nearby event: A military slave elite seizes power in Egypt, founding a dynasty that will rule for centuries. That was 8 years before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Conquest"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Mongol ruler associated with the sack of Baghdad in 1258.",
+        "answers": [
+          "hulagu khan",
+          "hulagu",
+          "hulegu khan",
+          "hulegu"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0628",
+    "prompt": "Mongol expansion is checked at Ain Jalut by Mamluk forces in the Levant.",
+    "year": 1260,
+    "hints": [
+      "One nearby event: Byzantine forces retake Constantinople and restore their empire after decades of exile. That was 1 year after this event.",
+      "One nearby event: Mongol forces capture and destroy Baghdad, ending the Abbasid caliphate there. That was 2 years before this event.",
+      "One nearby event: A military slave elite seizes power in Egypt, founding a dynasty that will rule for centuries. That was 10 years before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name a Mamluk leader associated with the victory at Ain Jalut.",
+        "answers": [
+          "baybars",
+          "qutuz",
+          "sultan qutuz"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0629",
+    "prompt": "Byzantine forces retake Constantinople and restore their empire after decades of exile.",
+    "year": 1261,
+    "hints": [
+      "One nearby event: Mongol expansion is checked at Ain Jalut by Mamluk forces in the Levant. That was 1 year before this event.",
+      "One nearby event: Mongol forces capture and destroy Baghdad, ending the Abbasid caliphate there. That was 3 years before this event.",
+      "One nearby event: A military slave elite seizes power in Egypt, founding a dynasty that will rule for centuries. That was 11 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Restoration"
+    ]
+  },
+  {
+    "id": "evt_0630",
+    "prompt": "A huge Mongol fleet attacks Japan but fails after fierce resistance and storms.",
+    "year": 1274,
+    "hints": [
+      "One nearby event: The Southern Song dynasty ends after defeat in a decisive naval battle. That was 5 years after this event.",
+      "One nearby event: A second Mongol invasion of Japan fails again after storms and resistance. That was 7 years after this event.",
+      "One nearby event: Byzantine forces retake Constantinople and restore their empire after decades of exile. That was 13 years before this event."
+    ],
+    "tags": [
+      "Asia",
+      "Invasion"
+    ]
+  },
+  {
+    "id": "evt_0631",
+    "prompt": "The Southern Song dynasty ends after defeat in a decisive naval battle.",
+    "year": 1279,
+    "hints": [
+      "One nearby event: A second Mongol invasion of Japan fails again after storms and resistance. That was 2 years after this event.",
+      "One nearby event: A huge Mongol fleet attacks Japan but fails after fierce resistance and storms. That was 5 years before this event.",
+      "One nearby event: England expels its Jewish population by royal edict. That was 11 years after this event."
+    ],
+    "tags": [
+      "China",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0632",
+    "prompt": "A second Mongol invasion of Japan fails again after storms and resistance.",
+    "year": 1281,
+    "hints": [
+      "One nearby event: The Southern Song dynasty ends after defeat in a decisive naval battle. That was 2 years before this event.",
+      "One nearby event: A huge Mongol fleet attacks Japan but fails after fierce resistance and storms. That was 7 years before this event.",
+      "One nearby event: England expels its Jewish population by royal edict. That was 9 years after this event."
+    ],
+    "tags": [
+      "Asia",
+      "Invasion"
+    ]
+  },
+  {
+    "id": "evt_0633",
+    "prompt": "England expels its Jewish population by royal edict.",
+    "year": 1290,
+    "hints": [
+      "One nearby event: A loose alliance of Alpine communities forms what becomes the Swiss Confederation. That was 1 year after this event.",
+      "One nearby event: The last major Crusader stronghold in the Holy Land falls when Acre is captured. That was 1 year after this event.",
+      "One nearby event: A new Hindu kingdom is founded in eastern Java, later becoming a major regional power. That was 3 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Law"
+    ]
+  },
+  {
+    "id": "evt_0634",
+    "prompt": "A loose alliance of Alpine communities forms what becomes the Swiss Confederation.",
+    "year": 1291,
+    "hints": [
+      "One nearby event: England expels its Jewish population by royal edict. That was 1 year before this event.",
+      "One nearby event: A new Hindu kingdom is founded in eastern Java, later becoming a major regional power. That was 2 years after this event.",
+      "One nearby event: A war for Scottish independence begins against English rule. That was 5 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0635",
+    "prompt": "The last major Crusader stronghold in the Holy Land falls when Acre is captured.",
+    "year": 1291,
+    "hints": [
+      "One nearby event: England expels its Jewish population by royal edict. That was 1 year before this event.",
+      "One nearby event: A new Hindu kingdom is founded in eastern Java, later becoming a major regional power. That was 2 years before this event.",
+      "One nearby event: A war for Scottish independence begins against English rule. That was 5 years after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Crusade"
+    ]
+  },
+  {
+    "id": "evt_0636",
+    "prompt": "A new Hindu kingdom is founded in eastern Java, later becoming a major regional power.",
+    "year": 1293,
+    "hints": [
+      "One nearby event: A loose alliance of Alpine communities forms what becomes the Swiss Confederation. That was 2 years before this event.",
+      "One nearby event: The last major Crusader stronghold in the Holy Land falls when Acre is captured. That was 2 years before this event.",
+      "One nearby event: England expels its Jewish population by royal edict. That was 3 years before this event."
+    ],
+    "tags": [
+      "Southeast Asia",
+      "Kingdom"
+    ]
+  },
+  {
+    "id": "evt_0637",
+    "prompt": "A war for Scottish independence begins against English rule.",
+    "year": 1296,
+    "hints": [
+      "One nearby event: A new Hindu kingdom is founded in eastern Java, later becoming a major regional power. That was 3 years before this event.",
+      "One nearby event: A frontier principality under Osman I begins the state that becomes the Ottoman Empire. That was 3 years after this event.",
+      "One nearby event: A loose alliance of Alpine communities forms what becomes the Swiss Confederation. That was 5 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name a figure associated with the start of the First War of Scottish Independence.",
+        "answers": [
+          "william wallace",
+          "wallace",
+          "edward i",
+          "king edward i"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0638",
+    "prompt": "A frontier principality under Osman I begins the state that becomes the Ottoman Empire.",
+    "year": 1299,
+    "hints": [
+      "One nearby event: A war for Scottish independence begins against English rule. That was 3 years before this event.",
+      "One nearby event: A new Hindu kingdom is founded in eastern Java, later becoming a major regional power. That was 6 years before this event.",
+      "One nearby event: A loose alliance of Alpine communities forms what becomes the Swiss Confederation. That was 8 years before this event."
+    ],
+    "tags": [
+      "Anatolia",
+      "Empire"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler traditionally associated with the founding of the Ottoman state.",
+        "answers": [
+          "osman i",
+          "osman",
+          "osman ghazi"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0639",
+    "prompt": "A treaty between two Norman brothers temporarily settles the succession crisis in England after a disputed royal accession.",
+    "year": 1101,
+    "hints": [
+      "One nearby event: Hungary and Croatia are united under a single crown. That was 1 year before this event.",
+      "One nearby event: A battle in Normandy lets Henry I defeat his brother and tighten control over both England and Normandy. That was 5 years before this event.",
+      "One nearby event: A crusader prince is forced by treaty to become a vassal of the Byzantine emperor. That was 7 years before this event."
+    ],
+    "tags": [
+      "England",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0640",
+    "prompt": "Hungary and Croatia are united under a single crown.",
+    "year": 1102,
+    "hints": [
+      "One nearby event: A treaty between two Norman brothers temporarily settles the succession crisis in England after a disputed royal accession. That was 1 year after this event.",
+      "One nearby event: A battle in Normandy lets Henry I defeat his brother and tighten control over both England and Normandy. That was 4 years before this event.",
+      "One nearby event: A crusader prince is forced by treaty to become a vassal of the Byzantine emperor. That was 6 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0641",
+    "prompt": "A battle in Normandy lets Henry I defeat his brother and tighten control over both England and Normandy.",
+    "year": 1106,
+    "hints": [
+      "One nearby event: A crusader prince is forced by treaty to become a vassal of the Byzantine emperor. That was 2 years before this event.",
+      "One nearby event: Crusaders capture Tripoli, establishing a new county on the Levantine coast. That was 3 years before this event.",
+      "One nearby event: Hungary and Croatia are united under a single crown. That was 4 years after this event."
+    ],
+    "tags": [
+      "England",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0642",
+    "prompt": "A crusader prince is forced by treaty to become a vassal of the Byzantine emperor.",
+    "year": 1108,
+    "hints": [
+      "One nearby event: Crusaders capture Tripoli, establishing a new county on the Levantine coast. That was 1 year before this event.",
+      "One nearby event: A battle in Normandy lets Henry I defeat his brother and tighten control over both England and Normandy. That was 2 years after this event.",
+      "One nearby event: A Cambodian ruler begins the reign associated with the building of Angkor Wat. That was 5 years before this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "Crusade"
+    ]
+  },
+  {
+    "id": "evt_0643",
+    "prompt": "Crusaders capture Tripoli, establishing a new county on the Levantine coast.",
+    "year": 1109,
+    "hints": [
+      "One nearby event: A crusader prince is forced by treaty to become a vassal of the Byzantine emperor. That was 1 year after this event.",
+      "One nearby event: A battle in Normandy lets Henry I defeat his brother and tighten control over both England and Normandy. That was 3 years after this event.",
+      "One nearby event: A Cambodian ruler begins the reign associated with the building of Angkor Wat. That was 4 years before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Crusade"
+    ]
+  },
+  {
+    "id": "evt_0644",
+    "prompt": "A Cambodian ruler begins the reign associated with the building of Angkor Wat.",
+    "year": 1113,
+    "hints": [
+      "One nearby event: Crusaders capture Tripoli, establishing a new county on the Levantine coast. That was 4 years after this event.",
+      "One nearby event: A crusader prince is forced by treaty to become a vassal of the Byzantine emperor. That was 5 years after this event.",
+      "One nearby event: A military order is founded in Jerusalem to protect Christian pilgrims. That was 6 years before this event."
+    ],
+    "tags": [
+      "Cambodia",
+      "Architecture"
+    ]
+  },
+  {
+    "id": "evt_0645",
+    "prompt": "A military order is founded in Jerusalem to protect Christian pilgrims.",
+    "year": 1119,
+    "hints": [
+      "One nearby event: A Georgian king wins a crushing victory over a much larger Seljuk-led coalition at Didgori. That was 2 years before this event.",
+      "One nearby event: A settlement between emperor and pope eases the Investiture Controversy. That was 3 years before this event.",
+      "One nearby event: A Cambodian ruler begins the reign associated with the building of Angkor Wat. That was 6 years after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0646",
+    "prompt": "A Georgian king wins a crushing victory over a much larger Seljuk-led coalition at Didgori.",
+    "year": 1121,
+    "hints": [
+      "One nearby event: A settlement between emperor and pope eases the Investiture Controversy. That was 1 year before this event.",
+      "One nearby event: A Georgian king captures Tbilisi and makes it his capital, ending centuries of Arab rule. That was 1 year before this event.",
+      "One nearby event: A military order is founded in Jerusalem to protect Christian pilgrims. That was 2 years after this event."
+    ],
+    "tags": [
+      "Georgia",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0647",
+    "prompt": "A settlement between emperor and pope eases the Investiture Controversy.",
+    "year": 1122,
+    "hints": [
+      "One nearby event: A Georgian king wins a crushing victory over a much larger Seljuk-led coalition at Didgori. That was 1 year after this event.",
+      "One nearby event: Jurchen forces declare war on the Song dynasty, opening the Jin–Song wars. That was 3 years before this event.",
+      "One nearby event: A military order is founded in Jerusalem to protect Christian pilgrims. That was 3 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0648",
+    "prompt": "A Georgian king captures Tbilisi and makes it his capital, ending centuries of Arab rule.",
+    "year": 1122,
+    "hints": [
+      "One nearby event: A Georgian king wins a crushing victory over a much larger Seljuk-led coalition at Didgori. That was 1 year after this event.",
+      "One nearby event: Jurchen forces declare war on the Song dynasty, opening the Jin–Song wars. That was 3 years before this event.",
+      "One nearby event: A military order is founded in Jerusalem to protect Christian pilgrims. That was 3 years after this event."
+    ],
+    "tags": [
+      "Georgia",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0649",
+    "prompt": "Jurchen forces declare war on the Song dynasty, opening the Jin–Song wars.",
+    "year": 1125,
+    "hints": [
+      "One nearby event: The Northern Song loses control of northern China to the Jin dynasty. That was 2 years before this event.",
+      "One nearby event: Portugal wins a battle that marks the beginning of its independence from León. That was 3 years before this event.",
+      "One nearby event: A settlement between emperor and pope eases the Investiture Controversy. That was 3 years after this event."
+    ],
+    "tags": [
+      "China",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0650",
+    "prompt": "The Northern Song loses control of northern China to the Jin dynasty.",
+    "year": 1127,
+    "hints": [
+      "One nearby event: Portugal wins a battle that marks the beginning of its independence from León. That was 1 year before this event.",
+      "One nearby event: Jurchen forces declare war on the Song dynasty, opening the Jin–Song wars. That was 2 years after this event.",
+      "One nearby event: Roger II is crowned king, creating a powerful Norman kingdom in Sicily. That was 3 years before this event."
+    ],
+    "tags": [
+      "China",
+      "Dynasty"
+    ]
+  },
+  {
+    "id": "evt_0651",
+    "prompt": "Portugal wins a battle that marks the beginning of its independence from León.",
+    "year": 1128,
+    "hints": [
+      "One nearby event: The Northern Song loses control of northern China to the Jin dynasty. That was 1 year after this event.",
+      "One nearby event: Roger II is crowned king, creating a powerful Norman kingdom in Sicily. That was 2 years before this event.",
+      "One nearby event: Jurchen forces declare war on the Song dynasty, opening the Jin–Song wars. That was 3 years after this event."
+    ],
+    "tags": [
+      "Portugal",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0652",
+    "prompt": "Roger II is crowned king, creating a powerful Norman kingdom in Sicily.",
+    "year": 1130,
+    "hints": [
+      "One nearby event: The Southern Song creates China’s first permanent standing navy. That was 2 years before this event.",
+      "One nearby event: Portugal wins a battle that marks the beginning of its independence from León. That was 2 years after this event.",
+      "One nearby event: The Northern Song loses control of northern China to the Jin dynasty. That was 3 years after this event."
+    ],
+    "tags": [
+      "Sicily",
+      "Monarchy"
+    ]
+  },
+  {
+    "id": "evt_0653",
+    "prompt": "The Southern Song creates China’s first permanent standing navy.",
+    "year": 1132,
+    "hints": [
+      "One nearby event: Roger II is crowned king, creating a powerful Norman kingdom in Sicily. That was 2 years after this event.",
+      "One nearby event: A devastating earthquake destroys much of Aleppo and northern Syria. That was 6 years before this event.",
+      "One nearby event: A Portuguese victory at Ourique helps legitimize Afonso Henriques as king. That was 7 years before this event."
+    ],
+    "tags": [
+      "China",
+      "Military"
+    ]
+  },
+  {
+    "id": "evt_0654",
+    "prompt": "A devastating earthquake destroys much of Aleppo and northern Syria.",
+    "year": 1138,
+    "hints": [
+      "One nearby event: A Portuguese victory at Ourique helps legitimize Afonso Henriques as king. That was 1 year before this event.",
+      "One nearby event: Portugal formally gains recognition as an independent kingdom. That was 5 years before this event.",
+      "One nearby event: The Southern Song creates China’s first permanent standing navy. That was 6 years after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Disaster"
+    ]
+  },
+  {
+    "id": "evt_0655",
+    "prompt": "A Portuguese victory at Ourique helps legitimize Afonso Henriques as king.",
+    "year": 1139,
+    "hints": [
+      "One nearby event: A devastating earthquake destroys much of Aleppo and northern Syria. That was 1 year after this event.",
+      "One nearby event: Portugal formally gains recognition as an independent kingdom. That was 4 years before this event.",
+      "One nearby event: Edessa falls to Zengi, helping trigger the Second Crusade. That was 5 years before this event."
+    ],
+    "tags": [
+      "Portugal",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0656",
+    "prompt": "Portugal formally gains recognition as an independent kingdom.",
+    "year": 1143,
+    "hints": [
+      "One nearby event: Edessa falls to Zengi, helping trigger the Second Crusade. That was 1 year before this event.",
+      "One nearby event: A Portuguese victory at Ourique helps legitimize Afonso Henriques as king. That was 4 years after this event.",
+      "One nearby event: A devastating earthquake destroys much of Aleppo and northern Syria. That was 5 years after this event."
+    ],
+    "tags": [
+      "Portugal",
+      "Diplomacy"
+    ]
+  },
+  {
+    "id": "evt_0657",
+    "prompt": "Edessa falls to Zengi, helping trigger the Second Crusade.",
+    "year": 1144,
+    "hints": [
+      "One nearby event: Portugal formally gains recognition as an independent kingdom. That was 1 year after this event.",
+      "One nearby event: Crusaders and Portuguese forces capture Lisbon from Muslim rule. That was 3 years before this event.",
+      "One nearby event: A Portuguese victory at Ourique helps legitimize Afonso Henriques as king. That was 5 years after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Crusade"
+    ]
+  },
+  {
+    "id": "evt_0658",
+    "prompt": "Crusaders and Portuguese forces capture Lisbon from Muslim rule.",
+    "year": 1147,
+    "hints": [
+      "One nearby event: Edessa falls to Zengi, helping trigger the Second Crusade. That was 3 years after this event.",
+      "One nearby event: The Treaty of Wallingford ends the civil war known as the Anarchy in England. That was 6 years before this event.",
+      "One nearby event: Henry II is crowned king, launching the Angevin era in England. That was 7 years before this event."
+    ],
+    "tags": [
+      "Portugal",
+      "Reconquista"
+    ]
+  },
+  {
+    "id": "evt_0659",
+    "prompt": "The Treaty of Wallingford ends the civil war known as the Anarchy in England.",
+    "year": 1153,
+    "hints": [
+      "One nearby event: Henry II is crowned king, launching the Angevin era in England. That was 1 year before this event.",
+      "One nearby event: Crusaders and Portuguese forces capture Lisbon from Muslim rule. That was 6 years after this event.",
+      "One nearby event: Song forces using gunpowder bombs and trebuchets smash a Jin fleet in major naval battles. That was 8 years before this event."
+    ],
+    "tags": [
+      "England",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0660",
+    "prompt": "Henry II is crowned king, launching the Angevin era in England.",
+    "year": 1154,
+    "hints": [
+      "One nearby event: The Treaty of Wallingford ends the civil war known as the Anarchy in England. That was 1 year after this event.",
+      "One nearby event: Song forces using gunpowder bombs and trebuchets smash a Jin fleet in major naval battles. That was 7 years before this event.",
+      "One nearby event: A Danish king captures Arkona, destroying a major pagan fortress and temple on Rügen. That was 14 years before this event."
+    ],
+    "tags": [
+      "England",
+      "Monarchy"
+    ]
+  },
+  {
+    "id": "evt_0661",
+    "prompt": "Song forces using gunpowder bombs and trebuchets smash a Jin fleet in major naval battles.",
+    "year": 1161,
+    "hints": [
+      "One nearby event: A Danish king captures Arkona, destroying a major pagan fortress and temple on Rügen. That was 7 years before this event.",
+      "One nearby event: The Treaty of Wallingford ends the civil war known as the Anarchy in England. That was 8 years after this event.",
+      "One nearby event: Henry II is crowned king, launching the Angevin era in England. That was 7 years after this event."
+    ],
+    "tags": [
+      "China",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0662",
+    "prompt": "A Danish king captures Arkona, destroying a major pagan fortress and temple on Rügen.",
+    "year": 1168,
+    "hints": [
+      "One nearby event: The Norman invasion of Ireland begins with Strongbow backing Dermot MacMurrough. That was 1 year before this event.",
+      "One nearby event: Song forces using gunpowder bombs and trebuchets smash a Jin fleet in major naval battles. That was 7 years after this event.",
+      "One nearby event: Thomas Becket is murdered inside Canterbury Cathedral. That was 2 years before this event."
+    ],
+    "tags": [
+      "Denmark",
+      "Conquest"
+    ]
+  },
+  {
+    "id": "evt_0663",
+    "prompt": "The Norman invasion of Ireland begins with Strongbow backing Dermot MacMurrough.",
+    "year": 1169,
+    "hints": [
+      "One nearby event: Thomas Becket is murdered inside Canterbury Cathedral. That was 1 year before this event.",
+      "One nearby event: A Danish king captures Arkona, destroying a major pagan fortress and temple on Rügen. That was 1 year after this event.",
+      "One nearby event: Saladin deposes the last Fatimid caliph and founds the Ayyubid dynasty in Egypt. That was 2 years before this event."
+    ],
+    "tags": [
+      "Ireland",
+      "Invasion"
+    ]
+  },
+  {
+    "id": "evt_0664",
+    "prompt": "Thomas Becket is murdered inside Canterbury Cathedral.",
+    "year": 1170,
+    "hints": [
+      "One nearby event: The Norman invasion of Ireland begins with Strongbow backing Dermot MacMurrough. That was 1 year after this event.",
+      "One nearby event: Saladin deposes the last Fatimid caliph and founds the Ayyubid dynasty in Egypt. That was 1 year before this event.",
+      "One nearby event: The Scottish king William the Lion is captured by the English at Alnwick. That was 4 years before this event."
+    ],
+    "tags": [
+      "England",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0665",
+    "prompt": "Saladin deposes the last Fatimid caliph and founds the Ayyubid dynasty in Egypt.",
+    "year": 1171,
+    "hints": [
+      "One nearby event: The Norman invasion of Ireland begins with Strongbow backing Dermot MacMurrough. That was 2 years after this event.",
+      "One nearby event: Thomas Becket is murdered inside Canterbury Cathedral. That was 1 year after this event.",
+      "One nearby event: The Scottish king William the Lion is captured by the English at Alnwick. That was 3 years before this event."
+    ],
+    "tags": [
+      "Egypt",
+      "Dynasty"
+    ]
+  },
+  {
+    "id": "evt_0666",
+    "prompt": "The Scottish king William the Lion is captured by the English at Alnwick.",
+    "year": 1174,
+    "hints": [
+      "One nearby event: A Japanese Buddhist leader founds the Jōdo shū, or Pure Land, sect. That was 1 year before this event.",
+      "One nearby event: Saladin deposes the last Fatimid caliph and founds the Ayyubid dynasty in Egypt. That was 3 years after this event.",
+      "One nearby event: Thomas Becket is murdered inside Canterbury Cathedral. That was 4 years after this event."
+    ],
+    "tags": [
+      "Scotland",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0667",
+    "prompt": "A Japanese Buddhist leader founds the Jōdo shū, or Pure Land, sect.",
+    "year": 1175,
+    "hints": [
+      "One nearby event: The Lombard League defeats Frederick Barbarossa at Legnano. That was 1 year before this event.",
+      "One nearby event: The Scottish king William the Lion is captured by the English at Alnwick. That was 1 year after this event.",
+      "One nearby event: The Byzantines suffer a major defeat by the Seljuks at Myriokephalon. That was 1 year before this event."
+    ],
+    "tags": [
+      "Japan",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0668",
+    "prompt": "The Lombard League defeats Frederick Barbarossa at Legnano.",
+    "year": 1176,
+    "hints": [
+      "One nearby event: The Byzantines suffer a major defeat by the Seljuks at Myriokephalon. That was 1 year before this event.",
+      "One nearby event: A Japanese Buddhist leader founds the Jōdo shū, or Pure Land, sect. That was 1 year after this event.",
+      "One nearby event: Queen Tamar becomes sole ruler of Georgia. That was 8 years before this event."
+    ],
+    "tags": [
+      "Italy",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0669",
+    "prompt": "The Byzantines suffer a major defeat by the Seljuks at Myriokephalon.",
+    "year": 1176,
+    "hints": [
+      "One nearby event: The Lombard League defeats Frederick Barbarossa at Legnano. That was 1 year after this event.",
+      "One nearby event: A Japanese Buddhist leader founds the Jōdo shū, or Pure Land, sect. That was 1 year after this event.",
+      "One nearby event: Queen Tamar becomes sole ruler of Georgia. That was 8 years before this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0670",
+    "prompt": "Queen Tamar becomes sole ruler of Georgia.",
+    "year": 1184,
+    "hints": [
+      "One nearby event: An uprising against Byzantine rule restores the Bulgarian Empire. That was 1 year before this event.",
+      "One nearby event: Japan’s emperor loses effective political power as the Kamakura shogunate rises. That was 1 year before this event.",
+      "One nearby event: The Lombard League defeats Frederick Barbarossa at Legnano. That was 8 years after this event."
+    ],
+    "tags": [
+      "Georgia",
+      "Monarchy"
+    ]
+  },
+  {
+    "id": "evt_0671",
+    "prompt": "An uprising against Byzantine rule restores the Bulgarian Empire.",
+    "year": 1185,
+    "hints": [
+      "One nearby event: Japan’s emperor loses effective political power as the Kamakura shogunate rises. That was 1 year before this event.",
+      "One nearby event: Queen Tamar becomes sole ruler of Georgia. That was 1 year after this event.",
+      "One nearby event: Saladin crushes the kingdom of Jerusalem at the Battle of Hattin. That was 2 years before this event."
+    ],
+    "tags": [
+      "Bulgaria",
+      "Revolt"
+    ]
+  },
+  {
+    "id": "evt_0672",
+    "prompt": "Japan’s emperor loses effective political power as the Kamakura shogunate rises.",
+    "year": 1185,
+    "hints": [
+      "One nearby event: An uprising against Byzantine rule restores the Bulgarian Empire. That was 1 year after this event.",
+      "One nearby event: Queen Tamar becomes sole ruler of Georgia. That was 1 year after this event.",
+      "One nearby event: Saladin crushes the kingdom of Jerusalem at the Battle of Hattin. That was 2 years before this event."
+    ],
+    "tags": [
+      "Japan",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0673",
+    "prompt": "Saladin crushes the kingdom of Jerusalem at the Battle of Hattin.",
+    "year": 1187,
+    "hints": [
+      "One nearby event: Richard I is crowned king of England as the Third Crusade begins. That was 2 years before this event.",
+      "One nearby event: An uprising against Byzantine rule restores the Bulgarian Empire. That was 2 years after this event.",
+      "One nearby event: Japan’s emperor loses effective political power as the Kamakura shogunate rises. That was 2 years after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0674",
+    "prompt": "Richard I is crowned king of England as the Third Crusade begins.",
+    "year": 1189,
+    "hints": [
+      "One nearby event: Frederick Barbarossa drowns on crusade, weakening the imperial army bound for the Holy Land. That was 1 year before this event.",
+      "One nearby event: Saladin crushes the kingdom of Jerusalem at the Battle of Hattin. That was 2 years after this event.",
+      "One nearby event: Richard I defeats Saladin at the Battle of Arsuf. That was 2 years before this event."
+    ],
+    "tags": [
+      "England",
+      "Crusade"
+    ]
+  },
+  {
+    "id": "evt_0675",
+    "prompt": "Frederick Barbarossa drowns on crusade, weakening the imperial army bound for the Holy Land.",
+    "year": 1190,
+    "hints": [
+      "One nearby event: Richard I defeats Saladin at the Battle of Arsuf. That was 1 year before this event.",
+      "One nearby event: Richard I is crowned king of England as the Third Crusade begins. That was 1 year after this event.",
+      "One nearby event: Richard the Lionheart and Saladin agree to a treaty leaving Jerusalem under Muslim control but open to pilgrims. That was 2 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Crusade"
+    ]
+  },
+  {
+    "id": "evt_0676",
+    "prompt": "Richard I defeats Saladin at the Battle of Arsuf.",
+    "year": 1191,
+    "hints": [
+      "One nearby event: Richard the Lionheart and Saladin agree to a treaty leaving Jerusalem under Muslim control but open to pilgrims. That was 1 year before this event.",
+      "One nearby event: Frederick Barbarossa drowns on crusade, weakening the imperial army bound for the Holy Land. That was 1 year after this event.",
+      "One nearby event: Richard I is crowned king of England as the Third Crusade begins. That was 2 years after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0677",
+    "prompt": "Richard the Lionheart and Saladin agree to a treaty leaving Jerusalem under Muslim control but open to pilgrims.",
+    "year": 1192,
+    "hints": [
+      "One nearby event: Minamoto no Yoritomo becomes the first shogun, establishing military rule in Japan. That was 1 year before this event.",
+      "One nearby event: Muhammad Ghori defeats Prithviraj Chauhan and establishes the first lasting Muslim empire in northern India. That was 1 year before this event.",
+      "One nearby event: Richard I defeats Saladin at the Battle of Arsuf. That was 1 year after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Diplomacy"
+    ]
+  },
+  {
+    "id": "evt_0678",
+    "prompt": "Minamoto no Yoritomo becomes the first shogun, establishing military rule in Japan.",
+    "year": 1192,
+    "hints": [
+      "One nearby event: Richard the Lionheart and Saladin agree to a treaty leaving Jerusalem under Muslim control but open to pilgrims. That was 1 year before this event.",
+      "One nearby event: Muhammad Ghori defeats Prithviraj Chauhan and establishes the first lasting Muslim empire in northern India. That was 1 year before this event.",
+      "One nearby event: Richard I defeats Saladin at the Battle of Arsuf. That was 1 year after this event."
+    ],
+    "tags": [
+      "Japan",
+      "Politics"
+    ]
+  },
+  {
+    "id": "evt_0679",
+    "prompt": "Muhammad Ghori defeats Prithviraj Chauhan and establishes the first lasting Muslim empire in northern India.",
+    "year": 1192,
+    "hints": [
+      "One nearby event: Richard the Lionheart and Saladin agree to a treaty leaving Jerusalem under Muslim control but open to pilgrims. That was 1 year before this event.",
+      "One nearby event: Minamoto no Yoritomo becomes the first shogun, establishing military rule in Japan. That was 1 year before this event.",
+      "One nearby event: Richard I defeats Saladin at the Battle of Arsuf. That was 1 year after this event."
+    ],
+    "tags": [
+      "India",
+      "Conquest"
+    ]
+  },
+  {
+    "id": "evt_0680",
+    "prompt": "Nalanda, the great Buddhist learning center, is destroyed.",
+    "year": 1193,
+    "hints": [
+      "One nearby event: Richard the Lionheart and Saladin agree to a treaty leaving Jerusalem under Muslim control but open to pilgrims. That was 1 year after this event.",
+      "One nearby event: Minamoto no Yoritomo becomes the first shogun, establishing military rule in Japan. That was 1 year after this event.",
+      "One nearby event: Muhammad Ghori defeats Prithviraj Chauhan and establishes the first lasting Muslim empire in northern India. That was 1 year after this event."
+    ],
+    "tags": [
+      "India",
+      "Education"
+    ]
+  },
+  {
+    "id": "evt_0681",
+    "prompt": "A hospital brotherhood in Acre is elevated into the military order later known as the Teutonic Knights.",
+    "year": 1198,
+    "hints": [
+      "One nearby event: Nalanda, the great Buddhist learning center, is destroyed. That was 5 years after this event.",
+      "One nearby event: Richard the Lionheart and Saladin agree to a treaty leaving Jerusalem under Muslim control but open to pilgrims. That was 6 years after this event.",
+      "One nearby event: Richard I defeats Saladin at the Battle of Arsuf. That was 7 years after this event."
+    ],
+    "tags": [
+      "Crusade",
+      "Military Order"
+    ]
+  },
+  {
+    "id": "evt_0682",
+    "prompt": "Norse sailors led by Leif Eriksson establish a short-lived settlement in Vinland, in North America.",
+    "year": 1001,
+    "hints": [
+      "One nearby event: A major Fatimid library and academy is founded in Cairo, becoming a famous center of learning. That was 3 years after this event.",
+      "One nearby event: A peace treaty between the Song and Liao stabilizes northern China after years of war. That was 4 years after this event.",
+      "One nearby event: A ruler overthrows the Anterior Lê and founds the Lý dynasty in Vietnam. That was 8 years after this event."
+    ],
+    "tags": [
+      "North America",
+      "Exploration"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Norse explorer associated with Vinland.",
+        "answers": [
+          "leif eriksson",
+          "leif ericson",
+          "leif"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0683",
+    "prompt": "A major Fatimid library and academy is founded in Cairo, becoming a famous center of learning.",
+    "year": 1004,
+    "hints": [
+      "One nearby event: A peace treaty between the Song and Liao stabilizes northern China after years of war. That was 1 year after this event.",
+      "One nearby event: Norse sailors led by Leif Eriksson establish a short-lived settlement in Vinland, in North America. That was 3 years before this event.",
+      "One nearby event: A ruler overthrows the Anterior Lê and founds the Lý dynasty in Vietnam. That was 5 years after this event."
+    ],
+    "tags": [
+      "Egypt",
+      "Learning"
+    ]
+  },
+  {
+    "id": "evt_0684",
+    "prompt": "A peace treaty between the Song and Liao stabilizes northern China after years of war.",
+    "year": 1005,
+    "hints": [
+      "One nearby event: A major Fatimid library and academy is founded in Cairo, becoming a famous center of learning. That was 1 year before this event.",
+      "One nearby event: Norse sailors led by Leif Eriksson establish a short-lived settlement in Vinland, in North America. That was 4 years before this event.",
+      "One nearby event: A ruler overthrows the Anterior Lê and founds the Lý dynasty in Vietnam. That was 4 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Diplomacy"
+    ]
+  },
+  {
+    "id": "evt_0685",
+    "prompt": "A ruler overthrows the Anterior Lê and founds the Lý dynasty in Vietnam.",
+    "year": 1009,
+    "hints": [
+      "One nearby event: A peace treaty between the Song and Liao stabilizes northern China after years of war. That was 4 years before this event.",
+      "One nearby event: A Danish king conquers England, briefly taking the English crown. That was 4 years after this event.",
+      "One nearby event: A major Fatimid library and academy is founded in Cairo, becoming a famous center of learning. That was 5 years before this event."
+    ],
+    "tags": [
+      "Vietnam",
+      "Dynasty"
+    ]
+  },
+  {
+    "id": "evt_0686",
+    "prompt": "A Danish king conquers England, briefly taking the English crown.",
+    "year": 1013,
+    "hints": [
+      "One nearby event: Byzantine forces crush Bulgaria at a decisive battle under Basil II. That was 1 year after this event.",
+      "One nearby event: Irish forces win a famous battle against a Leinster-Viking alliance, though their high king is killed. That was 1 year after this event.",
+      "One nearby event: A ruler overthrows the Anterior Lê and founds the Lý dynasty in Vietnam. That was 4 years before this event."
+    ],
+    "tags": [
+      "England",
+      "Conquest"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Danish ruler who conquered England in 1013.",
+        "answers": [
+          "sweyn forkbeard",
+          "swein forkbeard",
+          "sweyn",
+          "svein forkbeard"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0687",
+    "prompt": "Byzantine forces crush Bulgaria at a decisive battle under Basil II.",
+    "year": 1014,
+    "hints": [
+      "One nearby event: A Danish king conquers England, briefly taking the English crown. That was 1 year before this event.",
+      "One nearby event: The First Bulgarian Empire is finally conquered by the Byzantines. That was 4 years after this event.",
+      "One nearby event: Korean forces win a major victory over the Khitans at the Battle of Kwiju. That was 4 years after this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Byzantine emperor associated with this victory over Bulgaria.",
+        "answers": [
+          "basil ii",
+          "basil",
+          "basil the bulgar-slayer",
+          "basil the bulgarslayer"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0688",
+    "prompt": "Irish forces win a famous battle against a Leinster-Viking alliance, though their high king is killed.",
+    "year": 1014,
+    "hints": [
+      "One nearby event: A Danish king conquers England, briefly taking the English crown. That was 1 year before this event.",
+      "One nearby event: The First Bulgarian Empire is finally conquered by the Byzantines. That was 4 years after this event.",
+      "One nearby event: Korean forces win a major victory over the Khitans at the Battle of Kwiju. That was 4 years after this event."
+    ],
+    "tags": [
+      "Ireland",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the high king associated with this battle.",
+        "answers": [
+          "brian boru",
+          "brian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0689",
+    "prompt": "The First Bulgarian Empire is finally conquered by the Byzantines.",
+    "year": 1018,
+    "hints": [
+      "One nearby event: Korean forces win a major victory over the Khitans at the Battle of Kwiju. That was 1 year before this event.",
+      "One nearby event: Airlangga establishes the Kingdom of Kahuripan in Java. That was 1 year after this event.",
+      "One nearby event: Byzantine forces crush Bulgaria at a decisive battle under Basil II. That was 4 years before this event."
+    ],
+    "tags": [
+      "Bulgaria",
+      "Conquest"
+    ]
+  },
+  {
+    "id": "evt_0690",
+    "prompt": "Korean forces win a major victory over the Khitans at the Battle of Kwiju.",
+    "year": 1018,
+    "hints": [
+      "One nearby event: Airlangga establishes the Kingdom of Kahuripan in Java. That was 1 year after this event.",
+      "One nearby event: Byzantine forces crush Bulgaria at a decisive battle under Basil II. That was 4 years before this event.",
+      "One nearby event: Irish forces win a famous battle against a Leinster-Viking alliance, though their high king is killed. That was 4 years before this event."
+    ],
+    "tags": [
+      "Korea",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Korean general associated with the victory at Kwiju.",
+        "answers": [
+          "kang kam-chan",
+          "kang kam chan",
+          "kang kamch'an",
+          "kang gam-chan",
+          "kang gam chan"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0691",
+    "prompt": "Airlangga establishes the Kingdom of Kahuripan in Java.",
+    "year": 1019,
+    "hints": [
+      "One nearby event: Korean forces win a major victory over the Khitans at the Battle of Kwiju. That was 1 year before this event.",
+      "One nearby event: The Chola dynasty launches a naval campaign that subdues Srivijaya. That was 6 years after this event.",
+      "One nearby event: The First Bulgarian Empire is finally conquered by the Byzantines. That was 1 year before this event."
+    ],
+    "tags": [
+      "Indonesia",
+      "Kingdom"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler who established Kahuripan.",
+        "answers": [
+          "airlangga"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0692",
+    "prompt": "The Chola dynasty launches a naval campaign that subdues Srivijaya.",
+    "year": 1025,
+    "hints": [
+      "One nearby event: A Norwegian king is killed at Stiklestad and later becomes Norway’s patron saint. That was 5 years after this event.",
+      "One nearby event: Airlangga establishes the Kingdom of Kahuripan in Java. That was 6 years before this event.",
+      "One nearby event: A devastating earthquake and tsunami strike the Jordan Valley and eastern Mediterranean. That was 8 years after this event."
+    ],
+    "tags": [
+      "India",
+      "Naval War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Chola ruler associated with this campaign against Srivijaya.",
+        "answers": [
+          "rajendra chola i",
+          "rajendra chola",
+          "rajendra i",
+          "rajendra"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0693",
+    "prompt": "A Norwegian king is killed at Stiklestad and later becomes Norway’s patron saint.",
+    "year": 1030,
+    "hints": [
+      "One nearby event: A devastating earthquake and tsunami strike the Jordan Valley and eastern Mediterranean. That was 3 years after this event.",
+      "One nearby event: The Chola dynasty launches a naval campaign that subdues Srivijaya. That was 5 years before this event.",
+      "One nearby event: The death of Cnut the Great breaks apart his North Sea empire. That was 5 years after this event."
+    ],
+    "tags": [
+      "Norway",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Norwegian king killed at Stiklestad.",
+        "answers": [
+          "olav haraldsson",
+          "saint olaf",
+          "st olaf",
+          "olaf ii",
+          "olav ii"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0694",
+    "prompt": "A devastating earthquake and tsunami strike the Jordan Valley and eastern Mediterranean.",
+    "year": 1033,
+    "hints": [
+      "One nearby event: The death of Cnut the Great breaks apart his North Sea empire. That was 2 years after this event.",
+      "One nearby event: A Norwegian king is killed at Stiklestad and later becomes Norway’s patron saint. That was 3 years before this event.",
+      "One nearby event: Duncan I is slain in battle and Macbeth takes the Scottish throne. That was 7 years after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Disaster"
+    ]
+  },
+  {
+    "id": "evt_0695",
+    "prompt": "The death of Cnut the Great breaks apart his North Sea empire.",
+    "year": 1035,
+    "hints": [
+      "One nearby event: A devastating earthquake and tsunami strike the Jordan Valley and eastern Mediterranean. That was 2 years before this event.",
+      "One nearby event: Duncan I is slain in battle and Macbeth takes the Scottish throne. That was 5 years after this event.",
+      "One nearby event: A West African kingdom traditionally dates its founding to this year under Eze Nri. That was 8 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Monarchy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler whose death triggered the breakup of this empire.",
+        "answers": [
+          "cnut the great",
+          "canute the great",
+          "cnut",
+          "canute"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0696",
+    "prompt": "Duncan I is slain in battle and Macbeth takes the Scottish throne.",
+    "year": 1040,
+    "hints": [
+      "One nearby event: A West African kingdom traditionally dates its founding to this year under Eze Nri. That was 3 years after this event.",
+      "One nearby event: A Chinese military manual becomes the first known book to describe gunpowder formulas. That was 4 years after this event.",
+      "One nearby event: The death of Cnut the Great breaks apart his North Sea empire. That was 5 years before this event."
+    ],
+    "tags": [
+      "Scotland",
+      "Monarchy"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Scottish ruler who took the throne after Duncan I fell.",
+        "answers": [
+          "macbeth",
+          "mac bethad mac findlaich"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0697",
+    "prompt": "A West African kingdom traditionally dates its founding to this year under Eze Nri.",
+    "year": 1043,
+    "hints": [
+      "One nearby event: A Chinese military manual becomes the first known book to describe gunpowder formulas. That was 1 year after this event.",
+      "One nearby event: Duncan I is slain in battle and Macbeth takes the Scottish throne. That was 3 years before this event.",
+      "One nearby event: A North African dynasty breaks with the Fatimids and recognizes the Abbasids instead. That was 2 years after this event."
+    ],
+    "tags": [
+      "West Africa",
+      "Kingdom"
+    ]
+  },
+  {
+    "id": "evt_0698",
+    "prompt": "A Chinese military manual becomes the first known book to describe gunpowder formulas.",
+    "year": 1044,
+    "hints": [
+      "One nearby event: A North African dynasty breaks with the Fatimids and recognizes the Abbasids instead. That was 1 year after this event.",
+      "One nearby event: A West African kingdom traditionally dates its founding to this year under Eze Nri. That was 1 year before this event.",
+      "One nearby event: Norman forces defeat a papal coalition at Civitate and capture Pope Leo IX. That was 9 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Technology"
+    ]
+  },
+  {
+    "id": "evt_0699",
+    "prompt": "A North African dynasty breaks with the Fatimids and recognizes the Abbasids instead.",
+    "year": 1045,
+    "hints": [
+      "One nearby event: A Chinese military manual becomes the first known book to describe gunpowder formulas. That was 1 year before this event.",
+      "One nearby event: The churches of Rome and Constantinople split in the Great Schism. That was 9 years after this event.",
+      "One nearby event: Astronomers record a brilliant supernova whose remnant becomes the Crab Nebula. That was 9 years after this event."
+    ],
+    "tags": [
+      "North Africa",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0700",
+    "prompt": "Norman forces defeat a papal coalition at Civitate and capture Pope Leo IX.",
+    "year": 1053,
+    "hints": [
+      "One nearby event: The churches of Rome and Constantinople split in the Great Schism. That was 1 year after this event.",
+      "One nearby event: Astronomers record a brilliant supernova whose remnant becomes the Crab Nebula. That was 1 year after this event.",
+      "One nearby event: The Seljuk Turks seize Baghdad, ending Buyid domination there. That was 2 years after this event."
+    ],
+    "tags": [
+      "Italy",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the pope captured after the Battle of Civitate.",
+        "answers": [
+          "leo ix",
+          "pope leo ix",
+          "leo"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0701",
+    "prompt": "The churches of Rome and Constantinople split in the Great Schism.",
+    "year": 1054,
+    "hints": [
+      "One nearby event: Astronomers record a brilliant supernova whose remnant becomes the Crab Nebula. That was 0 years after this event.",
+      "One nearby event: The Seljuk Turks seize Baghdad, ending Buyid domination there. That was 1 year after this event.",
+      "One nearby event: Norman forces defeat a papal coalition at Civitate and capture Pope Leo IX. That was 1 year before this event."
+    ],
+    "tags": [
+      "Christianity",
+      "Religion"
+    ]
+  },
+  {
+    "id": "evt_0702",
+    "prompt": "Astronomers record a brilliant supernova whose remnant becomes the Crab Nebula.",
+    "year": 1054,
+    "hints": [
+      "One nearby event: The Seljuk Turks seize Baghdad, ending Buyid domination there. That was 1 year after this event.",
+      "One nearby event: Norman forces defeat a papal coalition at Civitate and capture Pope Leo IX. That was 1 year before this event.",
+      "One nearby event: The churches of Rome and Constantinople split in the Great Schism. That was 0 years before this event."
+    ],
+    "tags": [
+      "Science",
+      "Astronomy"
+    ]
+  },
+  {
+    "id": "evt_0703",
+    "prompt": "The Seljuk Turks seize Baghdad, ending Buyid domination there.",
+    "year": 1055,
+    "hints": [
+      "One nearby event: Anawrahta defeats Thaton and unifies much of Myanmar under Pagan. That was 2 years after this event.",
+      "One nearby event: Norman forces defeat a papal coalition at Civitate and capture Pope Leo IX. That was 2 years before this event.",
+      "One nearby event: The churches of Rome and Constantinople split in the Great Schism. That was 1 year before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Conquest"
+    ]
+  },
+  {
+    "id": "evt_0704",
+    "prompt": "Anawrahta defeats Thaton and unifies much of Myanmar under Pagan.",
+    "year": 1057,
+    "hints": [
+      "One nearby event: The Seljuk Turks seize Baghdad, ending Buyid domination there. That was 2 years before this event.",
+      "One nearby event: The Byzantines suffer a catastrophic defeat by the Seljuks at Manzikert. That was 14 years after this event.",
+      "One nearby event: The Seljuk Turks capture Jerusalem, worsening access for Christian pilgrims. That was 17 years after this event."
+    ],
+    "tags": [
+      "Myanmar",
+      "Unification"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Pagan ruler associated with the unification of Myanmar in 1057.",
+        "answers": [
+          "anawrahta",
+          "aniruddha"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0705",
+    "prompt": "The Byzantines suffer a catastrophic defeat by the Seljuks at Manzikert.",
+    "year": 1071,
+    "hints": [
+      "One nearby event: The Seljuk Turks capture Jerusalem, worsening access for Christian pilgrims. That was 3 years after this event.",
+      "One nearby event: Anawrahta defeats Thaton and unifies much of Myanmar under Pagan. That was 14 years before this event.",
+      "One nearby event: Almoravid forces sack Koumbi Saleh, dealing a major blow to the Ghana Empire. That was 5 years after this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Seljuk ruler associated with the Byzantine defeat at Manzikert.",
+        "answers": [
+          "alp arslan",
+          "arslan"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0706",
+    "prompt": "The Seljuk Turks capture Jerusalem, worsening access for Christian pilgrims.",
+    "year": 1074,
+    "hints": [
+      "One nearby event: Almoravid forces sack Koumbi Saleh, dealing a major blow to the Ghana Empire. That was 2 years after this event.",
+      "One nearby event: The Song government tightens control over sulfur and saltpeter to restrict gunpowder materials. That was 2 years after this event.",
+      "One nearby event: The Byzantines suffer a catastrophic defeat by the Seljuks at Manzikert. That was 3 years before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Conquest"
+    ]
+  },
+  {
+    "id": "evt_0707",
+    "prompt": "Almoravid forces sack Koumbi Saleh, dealing a major blow to the Ghana Empire.",
+    "year": 1076,
+    "hints": [
+      "One nearby event: The Song government tightens control over sulfur and saltpeter to restrict gunpowder materials. That was 0 years after this event.",
+      "One nearby event: An emperor stands barefoot in the snow at Canossa to seek absolution from the pope. That was 1 year after this event.",
+      "One nearby event: The Seljuk Turks capture Jerusalem, worsening access for Christian pilgrims. That was 2 years before this event."
+    ],
+    "tags": [
+      "West Africa",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0708",
+    "prompt": "The Song government tightens control over sulfur and saltpeter to restrict gunpowder materials.",
+    "year": 1076,
+    "hints": [
+      "One nearby event: An emperor stands barefoot in the snow at Canossa to seek absolution from the pope. That was 1 year after this event.",
+      "One nearby event: The Seljuk Turks capture Jerusalem, worsening access for Christian pilgrims. That was 2 years before this event.",
+      "One nearby event: Almoravid forces sack Koumbi Saleh, dealing a major blow to the Ghana Empire. That was 0 years before this event."
+    ],
+    "tags": [
+      "China",
+      "Law"
+    ]
+  },
+  {
+    "id": "evt_0709",
+    "prompt": "An emperor stands barefoot in the snow at Canossa to seek absolution from the pope.",
+    "year": 1077,
+    "hints": [
+      "One nearby event: A Castilian king captures Toledo from Muslim rule. That was 8 years after this event.",
+      "One nearby event: The Seljuk Turks capture Jerusalem, worsening access for Christian pilgrims. That was 3 years before this event.",
+      "One nearby event: Almoravid forces sack Koumbi Saleh, dealing a major blow to the Ghana Empire. That was 1 year before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the emperor who performed the Walk to Canossa.",
+        "answers": [
+          "henry iv",
+          "emperor henry iv",
+          "henry"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0710",
+    "prompt": "A Castilian king captures Toledo from Muslim rule.",
+    "year": 1085,
+    "hints": [
+      "One nearby event: A major battle in Iberia sees the Almoravids defeat Castilian forces. That was 1 year after this event.",
+      "One nearby event: A massive land survey of England is compiled on royal orders to improve taxation and control. That was 1 year after this event.",
+      "One nearby event: A university is founded in Bologna, later famous as Europe’s oldest university. That was 3 years after this event."
+    ],
+    "tags": [
+      "Spain",
+      "Reconquista"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Castilian ruler who captured Toledo in 1085.",
+        "answers": [
+          "alfonso vi",
+          "king alfonso vi",
+          "alfonso"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0711",
+    "prompt": "A major battle in Iberia sees the Almoravids defeat Castilian forces.",
+    "year": 1086,
+    "hints": [
+      "One nearby event: A massive land survey of England is compiled on royal orders to improve taxation and control. That was 0 years after this event.",
+      "One nearby event: A Castilian king captures Toledo from Muslim rule. That was 1 year before this event.",
+      "One nearby event: A university is founded in Bologna, later famous as Europe’s oldest university. That was 2 years after this event."
+    ],
+    "tags": [
+      "Spain",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0712",
+    "prompt": "A massive land survey of England is compiled on royal orders to improve taxation and control.",
+    "year": 1086,
+    "hints": [
+      "One nearby event: A Castilian king captures Toledo from Muslim rule. That was 1 year before this event.",
+      "One nearby event: A university is founded in Bologna, later famous as Europe’s oldest university. That was 2 years after this event.",
+      "One nearby event: A Chinese scholar records the earliest known written reference to the magnetic compass. That was 2 years after this event."
+    ],
+    "tags": [
+      "England",
+      "Administration"
+    ]
+  },
+  {
+    "id": "evt_0713",
+    "prompt": "A university is founded in Bologna, later famous as Europe’s oldest university.",
+    "year": 1088,
+    "hints": [
+      "One nearby event: A Chinese scholar records the earliest known written reference to the magnetic compass. That was 0 years after this event.",
+      "One nearby event: A massive land survey of England is compiled on royal orders to improve taxation and control. That was 2 years before this event.",
+      "One nearby event: A major battle in Iberia sees the Almoravids defeat Castilian forces. That was 2 years before this event."
+    ],
+    "tags": [
+      "Italy",
+      "Education"
+    ]
+  },
+  {
+    "id": "evt_0714",
+    "prompt": "A Chinese scholar records the earliest known written reference to the magnetic compass.",
+    "year": 1088,
+    "hints": [
+      "One nearby event: A massive land survey of England is compiled on royal orders to improve taxation and control. That was 2 years before this event.",
+      "One nearby event: A university is founded in Bologna, later famous as Europe’s oldest university. That was 0 years before this event.",
+      "One nearby event: Norman forces take Malta and the surrounding islands. That was 3 years after this event."
+    ],
+    "tags": [
+      "China",
+      "Science"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Chinese scholar associated with this early compass reference.",
+        "answers": [
+          "shen kuo",
+          "shen gua"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0715",
+    "prompt": "Norman forces take Malta and the surrounding islands.",
+    "year": 1091,
+    "hints": [
+      "One nearby event: The Byzantines and their Cuman allies destroy the Pechenegs at Levounion. That was 0 years after this event.",
+      "One nearby event: A great Spanish warlord captures Valencia from Muslim rule. That was 3 years after this event.",
+      "One nearby event: A Chinese scholar records the earliest known written reference to the magnetic compass. That was 3 years before this event."
+    ],
+    "tags": [
+      "Mediterranean",
+      "Conquest"
+    ]
+  },
+  {
+    "id": "evt_0716",
+    "prompt": "The Byzantines and their Cuman allies destroy the Pechenegs at Levounion.",
+    "year": 1091,
+    "hints": [
+      "One nearby event: A great Spanish warlord captures Valencia from Muslim rule. That was 3 years after this event.",
+      "One nearby event: Norman forces take Malta and the surrounding islands. That was 0 years before this event.",
+      "One nearby event: A great astronomical clock tower is completed in Kaifeng under the engineer Su Song. That was 3 years after this event."
+    ],
+    "tags": [
+      "Byzantium",
+      "War"
+    ]
+  },
+  {
+    "id": "evt_0717",
+    "prompt": "A great Spanish warlord captures Valencia from Muslim rule.",
+    "year": 1094,
+    "hints": [
+      "One nearby event: A great astronomical clock tower is completed in Kaifeng under the engineer Su Song. That was 0 years after this event.",
+      "One nearby event: Pope Urban II calls for a crusade to the Holy Land. That was 1 year after this event.",
+      "One nearby event: Norman forces take Malta and the surrounding islands. That was 3 years before this event."
+    ],
+    "tags": [
+      "Spain",
+      "Conquest"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Spanish leader who captured Valencia in 1094.",
+        "answers": [
+          "el cid",
+          "rodrigo diaz",
+          "rodrigo díaz",
+          "rodrigo diaz de vivar"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0718",
+    "prompt": "A great astronomical clock tower is completed in Kaifeng under the engineer Su Song.",
+    "year": 1094,
+    "hints": [
+      "One nearby event: Pope Urban II calls for a crusade to the Holy Land. That was 1 year after this event.",
+      "One nearby event: Norman forces take Malta and the surrounding islands. That was 3 years before this event.",
+      "One nearby event: The Byzantines and their Cuman allies destroy the Pechenegs at Levounion. That was 3 years before this event."
+    ],
+    "tags": [
+      "China",
+      "Engineering"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the engineer associated with Kaifeng’s clock tower.",
+        "answers": [
+          "su song",
+          "su sung"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0719",
+    "prompt": "Pope Urban II calls for a crusade to the Holy Land.",
+    "year": 1095,
+    "hints": [
+      "One nearby event: Oxford holds its first recorded lectures. That was 1 year after this event.",
+      "One nearby event: Crusaders capture Nicaea in one of the first major victories of the First Crusade. That was 2 years after this event.",
+      "One nearby event: A great Spanish warlord captures Valencia from Muslim rule. That was 1 year before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Crusade"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the pope who launched this appeal.",
+        "answers": [
+          "urban ii",
+          "pope urban ii",
+          "urban"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0720",
+    "prompt": "Oxford holds its first recorded lectures.",
+    "year": 1096,
+    "hints": [
+      "One nearby event: Crusaders capture Nicaea in one of the first major victories of the First Crusade. That was 1 year after this event.",
+      "One nearby event: Pope Urban II calls for a crusade to the Holy Land. That was 1 year before this event.",
+      "One nearby event: Crusaders capture Antioch after a long and brutal siege. That was 2 years after this event."
+    ],
+    "tags": [
+      "England",
+      "Education"
+    ]
+  },
+  {
+    "id": "evt_0721",
+    "prompt": "Crusaders capture Nicaea in one of the first major victories of the First Crusade.",
+    "year": 1097,
+    "hints": [
+      "One nearby event: Crusaders capture Antioch after a long and brutal siege. That was 1 year after this event.",
+      "One nearby event: Oxford holds its first recorded lectures. That was 1 year before this event.",
+      "One nearby event: Crusaders seize Jerusalem in one of the most dramatic moments of the First Crusade. That was 2 years after this event."
+    ],
+    "tags": [
+      "Anatolia",
+      "Crusade"
+    ]
+  },
+  {
+    "id": "evt_0722",
+    "prompt": "Crusaders capture Antioch after a long and brutal siege.",
+    "year": 1098,
+    "hints": [
+      "One nearby event: Crusaders seize Jerusalem in one of the most dramatic moments of the First Crusade. That was 1 year after this event.",
+      "One nearby event: Crusaders capture Nicaea in one of the first major victories of the First Crusade. That was 1 year before this event.",
+      "One nearby event: Oxford holds its first recorded lectures. That was 2 years before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Crusade"
+    ]
+  },
+  {
+    "id": "evt_0723",
+    "prompt": "Crusaders seize Jerusalem in one of the most dramatic moments of the First Crusade.",
+    "year": 1099,
+    "hints": [
+      "One nearby event: Crusaders capture Antioch after a long and brutal siege. That was 1 year before this event.",
+      "One nearby event: Crusaders capture Nicaea in one of the first major victories of the First Crusade. That was 2 years before this event.",
+      "One nearby event: Oxford holds its first recorded lectures. That was 3 years before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Crusade"
+    ]
   }
 ]
