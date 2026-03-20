@@ -45,11 +45,29 @@
     "tags": [
       "Europe",
       "Law"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was Magna Carta sealed in 1215?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a figure associated with Magna Carta.",
+        "answers": [
+          "king john",
+          "john",
+          "stephen langton",
+          "langton"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0003",
-    "prompt": "A new religious movement begins when Martin Luther's theses is publicly circulated criticizing church practices.",
+    "prompt": "A new religious movement begins when Martin Luther's theses are circulated, criticizing church practices and helping spark the Protestant Reformation.",
     "year": 1517,
     "hints": [
       "One nearby event: A long reign begins that marks the high point of Ottoman power under a famously magnificent sultan. That was 3 years after this event.",
@@ -59,7 +77,23 @@
     "tags": [
       "Europe",
       "Religion"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month were Luther's theses traditionally dated in 1517?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the reformer associated with the theses of 1517.",
+        "answers": [
+          "martin luther",
+          "luther"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0004",
@@ -73,11 +107,27 @@
     "tags": [
       "Exploration",
       "Americas"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did Columbus first reach the Americas in 1492?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the explorer associated with the 1492 voyage to the Americas.",
+        "answers": [
+          "christopher columbus",
+          "columbus"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0005",
-    "prompt": "Spanish Armada is defeated in a failed invasion attempt against England, shifting naval power.",
+    "prompt": "The Spanish Armada is defeated in a failed invasion attempt against England, shifting the balance of naval power.",
     "year": 1588,
     "hints": [
       "One nearby event: A trading company is founded that becomes a dominant force in Indian Ocean commerce. That was 14 years after this event.",
@@ -178,7 +228,7 @@
   },
   {
     "id": "evt_0009",
-    "prompt": "A general crowns himself emperor in Paris, consolidating power after a revolution.",
+    "prompt": "Napoleon crowns himself emperor in Paris, consolidating power after the French Revolution.",
     "year": 1804,
     "hints": [
       "One nearby event: The Dutch East India Company is dissolved after centuries of Asian trade and empire-building. That was 5 years before this event.",
@@ -188,7 +238,23 @@
     "tags": [
       "Europe",
       "Politics"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did Napoleon crown himself emperor in 1804?",
+        "answers": [
+          "december",
+          "dec"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the ruler who crowned himself emperor in Paris in 1804.",
+        "answers": [
+          "napoleon",
+          "napoleon bonaparte"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0010",
@@ -202,7 +268,27 @@
     "tags": [
       "Europe",
       "War"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the Battle of Waterloo fought?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a leader associated with the Battle of Waterloo.",
+        "answers": [
+          "napoleon",
+          "napoleon bonaparte",
+          "duke of wellington",
+          "wellington",
+          "blucher",
+          "blücher"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0011",
@@ -484,7 +570,23 @@
     "tags": [
       "Europe",
       "War"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did Germany invade Poland in 1939?",
+        "answers": [
+          "september",
+          "sep"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a leader associated with the outbreak of World War II in Europe.",
+        "answers": [
+          "adolf hitler",
+          "hitler"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0024",
@@ -498,7 +600,26 @@
     "tags": [
       "War",
       "Pacific"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the attack on Pearl Harbor occur?",
+        "answers": [
+          "december",
+          "dec"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a leader associated with the attack on Pearl Harbor.",
+        "answers": [
+          "franklin d roosevelt",
+          "franklin roosevelt",
+          "fdr",
+          "isoroku yamamoto",
+          "yamamoto"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0025",
@@ -682,7 +803,27 @@
     "tags": [
       "Cold War",
       "Americas"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Cuban Missile Crisis take place?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a leader associated with the Cuban Missile Crisis.",
+        "answers": [
+          "john f kennedy",
+          "kennedy",
+          "nikita khrushchev",
+          "khrushchev",
+          "fidel castro",
+          "castro"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0033",
@@ -744,7 +885,27 @@
     "tags": [
       "Science",
       "Space"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did humans first land on the Moon?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name an astronaut associated with the first Moon landing.",
+        "answers": [
+          "neil armstrong",
+          "armstrong",
+          "buzz aldrin",
+          "aldrin",
+          "michael collins",
+          "collins"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0036",
@@ -823,7 +984,25 @@
     "tags": [
       "Europe",
       "Politics"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Soviet Union formally dissolve?",
+        "answers": [
+          "december",
+          "dec"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a leader associated with the dissolution of the Soviet Union.",
+        "answers": [
+          "mikhail gorbachev",
+          "gorbachev",
+          "boris yeltsin",
+          "yeltsin"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0041",
@@ -1068,7 +1247,7 @@
   },
   {
     "id": "evt_0051",
-    "prompt": "A powerful empire's capital falls to a rising Turkish state, marking the end of an era.",
+    "prompt": "Constantinople falls to the Ottoman Empire, marking the end of the Byzantine Empire.",
     "year": 1453,
     "hints": [
       "One nearby event: A rising dynasty reunifies Iran and firmly promotes Shi'a Islam as a state identity. That was 48 years after this event.",
@@ -1078,7 +1257,25 @@
     "tags": [
       "Europe",
       "Middle East"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did Constantinople fall in 1453?",
+        "answers": [
+          "may"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a leader associated with the fall of Constantinople in 1453.",
+        "answers": [
+          "mehmed ii",
+          "mehmed the conqueror",
+          "mehmet ii",
+          "constantine xi",
+          "constantine xi palaiologos"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0052",
@@ -1209,7 +1406,7 @@
   },
   {
     "id": "evt_0056",
-    "prompt": "A Protestant leader is executed in England after political and religious turmoil.",
+    "prompt": "A Protestant claimant to the English throne is executed after political and religious turmoil.",
     "year": 1554,
     "hints": [
       "One nearby event: A European power defeats the Inca Empire and captures its ruler. That was 22 years before this event.",
@@ -1430,7 +1627,27 @@
     "tags": [
       "Americas",
       "Politics"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the U.S. Declaration of Independence adopted?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a figure associated with the Declaration of Independence.",
+        "answers": [
+          "thomas jefferson",
+          "jefferson",
+          "john adams",
+          "adams",
+          "benjamin franklin",
+          "franklin"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0066",
@@ -1595,7 +1812,27 @@
     "tags": [
       "Disaster",
       "Global"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Titanic sink in 1912?",
+        "answers": [
+          "april",
+          "apr"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a figure associated with the Titanic disaster.",
+        "answers": [
+          "edward smith",
+          "captain smith",
+          "j bruce ismay",
+          "ismay",
+          "thomas andrews",
+          "andrews"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0072",
@@ -1938,7 +2175,24 @@
     "tags": [
       "Americas",
       "Politics"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was John F. Kennedy assassinated?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the U.S. president assassinated in Dallas in 1963.",
+        "answers": [
+          "john f kennedy",
+          "kennedy",
+          "jfk"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0085",
@@ -2018,7 +2272,7 @@
   },
   {
     "id": "evt_0088",
-    "prompt": "A peace treaty is signed between Egypt and Israel at Camp David accords era.",
+    "prompt": "A landmark peace agreement is reached at Camp David between Egypt and Israel.",
     "year": 1978,
     "hints": [
       "One nearby event: A major scandal forces a U.S. president to resign. That was 4 years before this event.",
@@ -2126,7 +2380,26 @@
     "tags": [
       "Africa",
       "Politics"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was Nelson Mandela released from prison in 1990?",
+        "answers": [
+          "february",
+          "feb"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a leader associated with Nelson Mandela's release in 1990.",
+        "answers": [
+          "nelson mandela",
+          "mandela",
+          "f w de klerk",
+          "fw de klerk",
+          "de klerk"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0092",
@@ -2173,7 +2446,27 @@
     "tags": [
       "Europe",
       "Diplomacy"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the Good Friday Agreement signed?",
+        "answers": [
+          "april",
+          "apr"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a leader associated with the Good Friday Agreement.",
+        "answers": [
+          "tony blair",
+          "blair",
+          "bertie ahern",
+          "ahern",
+          "george mitchell",
+          "mitchell"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0094",
@@ -2210,7 +2503,27 @@
     "tags": [
       "Europe",
       "Politics"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Brexit referendum take place?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a political figure associated with Brexit.",
+        "answers": [
+          "david cameron",
+          "cameron",
+          "boris johnson",
+          "johnson",
+          "nigel farage",
+          "farage"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0096",
@@ -2317,7 +2630,23 @@
     "tags": [
       "Technology",
       "Global"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the first iPhone introduced in 2007?",
+        "answers": [
+          "january",
+          "jan"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the figure most associated with introducing the first iPhone.",
+        "answers": [
+          "steve jobs",
+          "jobs"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0100",
@@ -2345,7 +2674,7 @@
   {
     "id": "evt_0101",
     "prompt": "A decisive naval battle halts a major attempted invasion of Greece by a Persian king.",
-    "year": -480,
+    "year": 480,
     "hints": [
       "One nearby event: Clovis I converting to Christianity. That was 16 years after this event.",
       "One nearby event: the traditional fall of the Western Roman Empire. That was 4 years before this event.",
@@ -2542,7 +2871,7 @@
   },
   {
     "id": "evt_0109",
-    "prompt": "A famous battle ends the independence struggle of a Dutch republic against Spain (Eight Years' War).",
+    "prompt": "A peace settlement recognizes Dutch independence from Spain and helps end a long European conflict.",
     "year": 1648,
     "hints": [
       "One nearby event: A scientific society is founded in London to promote experimental science. That was 12 years after this event.",
@@ -2590,7 +2919,7 @@
   {
     "id": "evt_0111",
     "prompt": "A famous battle in Italy defeats a Roman army and shocks the Republic during the Punic Wars.",
-    "year": -216,
+    "year": 216,
     "hints": [
       "One nearby event: Qin unification of China. That was 5 years after this event.",
       "One nearby event: A major empire in China is unified under the Qin, ending the Warring States period. That was 5 years after this event.",
@@ -2660,7 +2989,7 @@
   {
     "id": "evt_0114",
     "prompt": "A major battle ends the Second Punic War and secures Rome’s dominance.",
-    "year": -202,
+    "year": 202,
     "hints": [
       "One nearby event: A famous battle in Italy defeats a Roman army and shocks the Republic during the Punic Wars. That was 14 years after this event.",
       "One nearby event: Qin unification of China. That was 19 years after this event.",
@@ -2690,7 +3019,7 @@
   },
   {
     "id": "evt_0115",
-    "prompt": "A major Christian pilgrimage route becomes famous after a cathedral city rises in prominence (Santiago).",
+    "prompt": "Santiago de Compostela rises as one of medieval Europe's most famous Christian pilgrimage destinations.",
     "year": 1078,
     "hints": [
       "One nearby event: A major conquest begins when a Norman duke lands in England and defeats the reigning king. That was 12 years before this event.",
@@ -3047,7 +3376,7 @@
   },
   {
     "id": "evt_0129",
-    "prompt": "A landmark event begins in 1517 that sparks the Protestant Reformation.",
+    "prompt": "Martin Luther's theses are circulated, helping spark the Protestant Reformation.",
     "year": 1517,
     "hints": [
       "One nearby event: A major city in the Americas falls after a siege, ending the Aztec Empire. That was 4 years after this event.",
@@ -3057,7 +3386,23 @@
     "tags": [
       "Europe",
       "Religion"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month were Luther's theses traditionally dated in 1517?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the reformer associated with the theses of 1517.",
+        "answers": [
+          "martin luther",
+          "luther"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0130",
@@ -3091,7 +3436,7 @@
   },
   {
     "id": "evt_0131",
-    "prompt": "A famous battle in 732 halts an advancing army in Western Europe.",
+    "prompt": "A famous battle halts an advancing army in Western Europe.",
     "year": 732,
     "hints": [
       "One nearby event: the Umayyad conquest of Visigothic Iberia. That was 21 years before this event.",
@@ -3556,7 +3901,7 @@
   },
   {
     "id": "evt_0148",
-    "prompt": "A major war ends in Southeast Asia with a peace agreement in Paris (Vietnam War accords era).",
+    "prompt": "The Paris Peace Accords are signed, marking the formal end of direct U.S. involvement in the Vietnam War.",
     "year": 1973,
     "hints": [
       "One nearby event: The Vietnam Veterans Memorial is dedicated in Washington, D.C. That was 9 years after this event.",
@@ -3618,7 +3963,7 @@
   },
   {
     "id": "evt_0150",
-    "prompt": "A major treaty creates a new international court and organization after World War I (League of Nations era).",
+    "prompt": "A major postwar settlement helps create the League of Nations and a new international order after World War I.",
     "year": 1919,
     "hints": [
       "One nearby event: The Republic of Turkey is proclaimed after the Ottoman Empire collapses. That was 4 years after this event.",
@@ -3628,7 +3973,27 @@
     "tags": [
       "Global",
       "Politics"
-    ]
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the Treaty of Versailles signed in 1919?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a major statesman associated with the postwar settlement of 1919.",
+        "answers": [
+          "woodrow wilson",
+          "wilson",
+          "georges clemenceau",
+          "clemenceau",
+          "david lloyd george",
+          "lloyd george"
+        ]
+      }
+    }
   },
   {
     "id": "evt_0151",
@@ -6584,7 +6949,7 @@
   },
   {
     "id": "evt_0335",
-    "prompt": "A wall dividing a major European city is opened and soon dismantled.",
+    "prompt": "The Berlin Wall falls during the Peaceful Revolution, marking the beginning of the destruction of the figurative Iron Curtain.",
     "year": 1989,
     "hints": [
       "One nearby event: A large protest movement in Poland centers around the Solidarity trade union. That was 9 years before this event.",
@@ -7872,7 +8237,7 @@
   },
   {
     "id": "evt_0427",
-    "prompt": "A famous battle in 732 halts an advancing army in Western Europe.",
+    "prompt": "A famous battle halts an advancing army in Western Europe.",
     "year": 732,
     "hints": [
       "One nearby event: the Muslim conquest of Iberia beginning. That was 21 years before this event.",
@@ -16815,6 +17180,576 @@
         "prompt": "Bonus: Name the Han general associated with the final campaigns against the Northern Xiongnu.",
         "answers": [
           "dou xian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0936",
+    "prompt": "Emperor Ai of Han dies; his eight-year-old cousin Ping is enthroned, and Wang Mang becomes regent under Empress Dowager Wang Zhengjun.",
+    "year": -1,
+    "hints": [
+      "One nearby event: the Ara Pacis is dedicated in Rome. That was 8 years before this event.",
+      "One nearby event: Herod the Great dies, triggering unrest in Judea. That was 3 years before this event.",
+      "One nearby event: Emperor Ping dies unexpectedly and Wang Mang selects the toddler Ruzi Ying as emperor. That was 6 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the regent who rose to power after Emperor Ai's death.",
+        "answers": [
+          "wang mang"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0937",
+    "prompt": "After the death of Emperor Ai, the former regent Dong Xian commits suicide with his wife.",
+    "year": -1,
+    "hints": [
+      "One nearby event: Augustus is proclaimed pater patriae by the Roman Senate. That was 1 year before this event.",
+      "One nearby event: Emperor Ping marries Wang Mang's daughter, strengthening Wang Mang's influence at court. That was 4 years after this event.",
+      "One nearby event: the Great Illyrian Revolt begins in Roman territory. That was 6 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Han emperor whose death precipitated Dong Xian's fall.",
+        "answers": [
+          "emperor ai",
+          "ai",
+          "ai of han"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0938",
+    "prompt": "Gaius Caesar marries Livilla, daughter of Antonia Minor and Nero Claudius Drusus, in an effort to gain prestige.",
+    "year": -1,
+    "hints": [
+      "One nearby event: Augustus is proclaimed pater patriae by the Roman Senate. That was 1 year before this event.",
+      "One nearby event: the Ara Pacis is dedicated in Rome. That was 8 years before this event.",
+      "One nearby event: Herod the Great dies and unrest breaks out in Judea. That was 3 years before this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Europe",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the bride in this marriage alliance.",
+        "answers": [
+          "livilla"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0939",
+    "prompt": "The Roman theatre at Cartagena, associated with Gaius and Lucius Caesar, finishes construction.",
+    "year": -1,
+    "hints": [
+      "One nearby event: the Forum Augustum is dedicated in Rome. That was 1 year before this event.",
+      "One nearby event: the Ara Pacis is dedicated in Rome. That was 8 years before this event.",
+      "One nearby event: the Great Illyrian Revolt begins in Roman territory. That was 6 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Europe",
+      "Culture"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name one of the two Caesares associated with this theatre's construction.",
+        "answers": [
+          "gaius caesar",
+          "lucius caesar"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0940",
+    "prompt": "Natakamani approximately succeeds Amanishakheto as ruler of the Kingdom of Kush.",
+    "year": -1,
+    "hints": [
+      "One nearby event: Augustus is proclaimed pater patriae by the Roman Senate. That was 1 year before this event.",
+      "One nearby event: Herod the Great dies, triggering unrest in Judea. That was 3 years before this event.",
+      "One nearby event: Quirinius conducts a census in Judea that sparks revolt. That was 6 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Africa",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler whom Natakamani succeeded.",
+        "answers": [
+          "amanishakheto"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0941",
+    "prompt": "Within the Satavahana dynasty, Kunatala Satakarni is succeeded by Satakarni III.",
+    "year": -1,
+    "hints": [
+      "One nearby event: the Ara Pacis is dedicated in Rome. That was 8 years before this event.",
+      "One nearby event: Herod the Great dies and his heirs divide power in Judea. That was 3 years before this event.",
+      "One nearby event: candidates for office in Han China must take civil-service examinations. That was 6 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler who takes the throne in this succession.",
+        "answers": [
+          "satakarni iii",
+          "satakarni 3"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0942",
+    "prompt": "At the Battle of Panium, Antiochus III of the Seleucid Empire defeats Ptolemy V of Egypt.",
+    "year": -200,
+    "hints": [
+      "One nearby event: Flamininus defeats Philip V at the Battle of Cynoscephalae, ending the Second Macedonian War. That was 3 years after this event.",
+      "One nearby event: Rome destroys and razes Carthage and Corinth. That was 54 years after this event.",
+      "One nearby event: Zhang Qian returns to China after a protracted journey through the west. That was 75 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Middle East",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Seleucid ruler who won at Panium.",
+        "answers": [
+          "antiochus iii",
+          "antiochus the great"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0943",
+    "prompt": "Roman victory at the Battle of Pydna dissolves the Antigonid Kingdom of Macedon.",
+    "year": -168,
+    "hints": [
+      "One nearby event: The Romans declare war on Perseus, beginning the Third Macedonian War. That was 3 years before this event.",
+      "One nearby event: Judas Maccabaeus restores the Temple in Jerusalem. That was 4 years after this event.",
+      "One nearby event: Rome destroys and razes Carthage and Corinth. That was 22 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Europe",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Macedonian king defeated in this war.",
+        "answers": [
+          "perseus",
+          "perseus of macedon"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0944",
+    "prompt": "Judas Maccabaeus restores the Temple in Jerusalem, an event commemorated by Hanukkah during the Maccabean Revolt.",
+    "year": -164,
+    "hints": [
+      "One nearby event: Roman victory at the Battle of Pydna dissolves the Antigonid Kingdom of Macedon. That was 4 years before this event.",
+      "One nearby event: Emperor Wu of Han begins his reign. That was 23 years after this event.",
+      "One nearby event: Gaius Gracchus is assassinated in Rome. That was 43 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Middle East",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Hasmonean leader who restored the Temple.",
+        "answers": [
+          "judas maccabaeus",
+          "judas maccabeus"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0945",
+    "prompt": "Prince Liu Che is enthroned as Emperor Wu of Han, beginning a 54-year reign after the death of Emperor Jing.",
+    "year": -141,
+    "hints": [
+      "One nearby event: Rome destroys and razes Carthage and Corinth. That was 5 years before this event.",
+      "One nearby event: Hipparchus becomes the first to calculate precession and create a sizable catalog of stars. That was 11 years after this event.",
+      "One nearby event: The conquest of Nam Viet begins the First Chinese domination of Vietnam. That was 30 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Han emperor who began this long reign.",
+        "answers": [
+          "emperor wu",
+          "wu of han",
+          "liu che"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0946",
+    "prompt": "Hipparchus becomes the first to calculate the precession of the sun and moon and to create a sizable catalog of stars.",
+    "year": -130,
+    "hints": [
+      "One nearby event: Tiberius Gracchus is assassinated in Rome. That was 3 years before this event.",
+      "One nearby event: Zhang Qian returns to China after a protracted journey through the west. That was 5 years after this event.",
+      "One nearby event: The Cimbri and Teutones arrive on the Danube, beginning the Cimbrian War. That was 17 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Europe",
+      "Science"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the astronomer associated with this breakthrough.",
+        "answers": [
+          "hipparchus"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0947",
+    "prompt": "Zhang Qian returns to China after a protracted journey through the west, deepening Han contact with Central Asia.",
+    "year": -125,
+    "hints": [
+      "One nearby event: Hipparchus creates a major star catalog and studies precession. That was 5 years before this event.",
+      "One nearby event: Gaius Gracchus is assassinated in Rome. That was 4 years after this event.",
+      "One nearby event: Chinese troops destroy Wanggeom seong and establish the Four Commanderies of Han in Korea. That was 17 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "Exploration"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Han diplomat and explorer who made this journey.",
+        "answers": [
+          "zhang qian"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0948",
+    "prompt": "The First Punic War breaks out between the Carthaginian Empire and the Roman Republic.",
+    "year": -264,
+    "hints": [
+      "One nearby event: the Kalinga War takes place between Ashoka and Kalinga. That was 1 year before this event.",
+      "One nearby event: Antiochus II Theos becomes emperor of the Seleucid Empire. That was 3 years after this event.",
+      "One nearby event: the First Punic War ends in Carthaginian defeat, with Rome annexing Sicily and Corsica. That was 23 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Europe",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Carthaginian general who would later lead the famous Alpine invasion in the next Punic War.",
+        "answers": [
+          "hannibal"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0949",
+    "prompt": "Ashoka inscribes the Edicts of Ashoka across the Mauryan Empire.",
+    "year": -260,
+    "hints": [
+      "One nearby event: the Kalinga War takes place between Ashoka and Kalinga. That was 5 years before this event.",
+      "One nearby event: the First Punic War breaks out between Carthage and Rome. That was 4 years before this event.",
+      "One nearby event: the death of Antiochus II sparks the Third Syrian War. That was 14 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "Religion"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Mauryan ruler associated with these edicts.",
+        "answers": [
+          "ashoka",
+          "ashoka the great"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0950",
+    "prompt": "The death of Antiochus II sparks the Third Syrian War, and Ptolemy III seizes Syria and Babylon from the Seleucids.",
+    "year": -246,
+    "hints": [
+      "One nearby event: Ashoka inscribes the Edicts of Ashoka. That was 14 years before this event.",
+      "One nearby event: the First Punic War ends in Carthaginian defeat. That was 5 years after this event.",
+      "One nearby event: Chinese mathematicians record the passage of Halley's Comet. That was 6 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Middle East",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Ptolemaic ruler who conquered Syria and Babylon early in this war.",
+        "answers": [
+          "ptolemy iii",
+          "ptolemy iii euergetes"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0951",
+    "prompt": "With the conquest of Qi, Qin Shi Huang unifies China into a single empire and founds the Qin dynasty.",
+    "year": -221,
+    "hints": [
+      "One nearby event: a large Gallic army is defeated by the Romans at the Battle of Telamon. That was 4 years before this event.",
+      "One nearby event: the Second Punic War begins as Hannibal crosses the Alps. That was 3 years after this event.",
+      "One nearby event: Qin Shi Huang orders construction of the Great Wall. That was 7 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler who unified China in this event.",
+        "answers": [
+          "qin shi huang",
+          "ying zheng"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0952",
+    "prompt": "The Second Punic War begins, and Hannibal makes his famous Alpine crossing to invade Italy.",
+    "year": -218,
+    "hints": [
+      "One nearby event: Qin Shi Huang unifies China and forms the Qin dynasty. That was 3 years before this event.",
+      "One nearby event: Antiochus III is defeated by Ptolemy IV at the Battle of Raphia. That was 1 year after this event.",
+      "One nearby event: Hannibal crushes the Roman legions at the Battle of Cannae. That was 2 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Europe",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Carthaginian commander who led this Alpine invasion.",
+        "answers": [
+          "hannibal"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0953",
+    "prompt": "The Chu-Han contention ends; Xiang Yu dies, and Liu Bang founds the Han dynasty.",
+    "year": -202,
+    "hints": [
+      "One nearby event: the Cretan War begins between Macedon and Rhodes and their allies. That was 3 years before this event.",
+      "One nearby event: the Second Macedonian War begins between Rome and Macedon. That was 2 years after this event.",
+      "One nearby event: Zhao Tuo defeats the Vietnamese king An Dương Vương. That was 6 years before this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the founder of the Han dynasty.",
+        "answers": [
+          "liu bang",
+          "emperor gaozu of han",
+          "gaozu of han"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0954",
+    "prompt": "Plato founds the Platonic Academy in Athens, where he will later teach Aristotle.",
+    "year": -387,
+    "hints": [
+      "One nearby event: Wu Qi begins major reforms in the state of Chu. That was 2 years before this event.",
+      "One nearby event: Persia turns to wars against Cyprus and Egypt after the Peace of Antalcidas. That was 1 year after this event.",
+      "One nearby event: the last remaining Jin territory is divided among Han, Wei, and Zhao. That was 11 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Europe",
+      "Science"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the philosopher who founded this academy.",
+        "answers": [
+          "plato"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0955",
+    "prompt": "Shang Yang implements his first set of reforms in Qin, helping transform the state into a far more centralized power.",
+    "year": -356,
+    "hints": [
+      "One nearby event: the last remaining Jin territory is divided among Han, Wei, and Zhao. That was 20 years before this event.",
+      "One nearby event: the state of Qi defeats Wei at the Battle of Maling. That was 13 years after this event.",
+      "One nearby event: King Huiwen becomes ruler of Qin. That was 18 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "Law"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Qin statesman associated with these reforms.",
+        "answers": [
+          "shang yang"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0956",
+    "prompt": "The state of Qi defeats Wei at the Battle of Maling, sharply weakening Wei during the Warring States period.",
+    "year": -343,
+    "hints": [
+      "One nearby event: the rulers of Qi and Wei mutually recognize each other as kings. That was 1 year before this event.",
+      "One nearby event: King Huiwen becomes ruler of Qin. That was 5 years after this event.",
+      "One nearby event: Alexander the Great wins the Battle of Gaugamela. That was 12 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Wei general whose death followed this defeat.",
+        "answers": [
+          "pang juan"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0957",
+    "prompt": "Alexander the Great wins the Battle of Gaugamela, effectively ending Persian hegemony.",
+    "year": -331,
+    "hints": [
+      "One nearby event: the state of Qi defeats Wei at the Battle of Maling. That was 12 years before this event.",
+      "One nearby event: Alexander fights his last great battle at the Hydaspes River. That was 5 years after this event.",
+      "One nearby event: Alexander dies in Babylon. That was 8 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Middle East",
+      "War"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Persian king defeated in this campaign.",
+        "answers": [
+          "darius iii",
+          "darius 3"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0958",
+    "prompt": "Chandragupta Maurya overthrows Dhana Nanda and establishes the Maurya dynasty in Magadha.",
+    "year": -322,
+    "hints": [
+      "One nearby event: Alexander the Great dies in Babylon. That was 1 year before this event.",
+      "One nearby event: Qin conquers Shu and Ba. That was 6 years after this event.",
+      "One nearby event: Ptolemy founds the Museum and Library of Alexandria. That was 15 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Asia",
+      "Politics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the advisor who helped Chandragupta seize power.",
+        "answers": [
+          "chanakya",
+          "kautilya"
+        ]
+      }
+    }
+  },
+  {
+    "id": "evt_0959",
+    "prompt": "Ptolemy I founds the Museum and Library of Alexandria with the help of Demetrius Phalereus.",
+    "year": -307,
+    "hints": [
+      "One nearby event: Qin conquers Shu and Ba. That was 9 years before this event.",
+      "One nearby event: Cassander has Roxana and Alexander IV put to death. That was 2 years before this event.",
+      "One nearby event: Agathocles takes the title of King of Sicily. That was 3 years after this event."
+    ],
+    "tags": [
+      "Ancient",
+      "Africa",
+      "Culture"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the ruler who founded this Alexandrian institution.",
+        "answers": [
+          "ptolemy",
+          "ptolemy i",
+          "ptolemy i soter"
         ]
       }
     }

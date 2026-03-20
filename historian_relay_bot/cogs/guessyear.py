@@ -18,7 +18,7 @@ from discord.ext import commands
 
 log = logging.getLogger(__name__)
 
-YEAR_RE = re.compile(r"^\s*(\d{1,4})\s*$")
+YEAR_RE = re.compile(r"^\s*(-?\d{1,4})\s*$")
 
 
 @dataclass(slots=True)
@@ -1539,7 +1539,7 @@ class GuessYearCog(commands.Cog):
         min_year = int(self.bot.cfg.GUESSYEAR_MIN_YEAR)
         max_year = self._resolve_max_year()
         correct_year = int(evt["year"])
-        if correct_year < min_year or correct_year > max_year:
+        if correct_year > max_year:
             return await ctx.send("Dataset event has an out-of-range year. Please fix the dataset.", delete_after=12)
 
         now = int(time.time())
@@ -1625,6 +1625,79 @@ class GuessYearCog(commands.Cog):
 
         await ctx.send("Ending the current round…", delete_after=5)
         await self._end_round(ctx.guild.id, ctx.channel.id, forced=True)
+
+    @guessyear.command(name="play")
+    async def guessyear_play(self, ctx: commands.Context, event_id: str):
+        """Start a Guess the Year round with a specific event ID. Mod only."""
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+
+        if not self.bot.cfg.GUESSYEAR_ENABLED:
+            return await ctx.send("Guess the Year is disabled on this server.", delete_after=10)
+
+        if not self._is_allowed_channel(ctx.channel.id):
+            return await ctx.send("Guess the Year is not enabled in this channel.", delete_after=10)
+
+        if not isinstance(ctx.author, discord.Member) or not self._can_manage_rounds(ctx.author):
+            return await ctx.send("You don't have permission to use this command.", delete_after=10)
+
+        busy = self._duel_busy_message(ctx.guild.id, ctx.channel.id)
+        if busy:
+            return await ctx.send(f"{busy} Finish or cancel it before starting a normal round.", delete_after=12)
+
+        state = await self._ensure_state_loaded(ctx.guild.id, ctx.channel.id)
+        if state and state.ends_at > int(time.time()):
+            rem = self._remaining(state.ends_at)
+            return await ctx.send(f"A round is already active here. **{rem}s** remaining.", delete_after=12)
+
+        evt = self._events_by_id.get(str(event_id))
+        if not evt:
+            return await ctx.send(f"No event found with ID `{event_id}`.", delete_after=12)
+
+        min_year = int(self.bot.cfg.GUESSYEAR_MIN_YEAR)
+        max_year = self._resolve_max_year()
+        correct_year = int(evt["year"])
+        if correct_year > max_year:
+            return await ctx.send("That event has an out-of-range year.", delete_after=12)
+
+        now = int(time.time())
+        ends_at = now + int(self.bot.cfg.GUESSYEAR_ROUND_SECONDS)
+
+        try:
+            round_id = await self.bot.db.guessyear_create_round(
+                guild_id=ctx.guild.id,
+                channel_id=ctx.channel.id,
+                started_by_user_id=ctx.author.id,
+                event_id=str(evt["id"]),
+                correct_year=correct_year,
+                started_at=now,
+                ends_at=ends_at,
+            )
+        except Exception:
+            log.exception("Failed to create GuessYear round in DB")
+            return await ctx.send("Could not start a round (database error).", delete_after=12)
+
+        state = RoundState(
+            round_id=int(round_id),
+            guild_id=ctx.guild.id,
+            channel_id=ctx.channel.id,
+            event_id=str(evt["id"]),
+            correct_year=correct_year,
+            prompt=str(evt["prompt"]),
+            hints=list(evt.get("hints", [])),
+            started_at=now,
+            ends_at=ends_at,
+            hints_used=0,
+        )
+        self._active[(ctx.guild.id, ctx.channel.id)] = state
+        self._schedule_end(state)
+
+        await ctx.send(
+            f"**🕰️ Guess the Year #{round_id}**\n"
+            f"**Prompt:** {state.prompt}\n\n"
+            f"Submit your guess as a year (e.g., `1066`).\n"
+            f"Time: **{self.bot.cfg.GUESSYEAR_ROUND_SECONDS}s**. Use `!hint` for clues."
+        )   
 
     @commands.command(name="duel")
     async def duel(self, ctx: commands.Context, opponent: discord.Member, questions: int = 1):
@@ -2075,7 +2148,7 @@ class GuessYearCog(commands.Cog):
         guess_year = int(m.group(1))
         min_year = int(self.bot.cfg.GUESSYEAR_MIN_YEAR)
         max_year = self._resolve_max_year()
-        if guess_year < min_year or guess_year > max_year:
+        if guess_year > max_year:
             return
 
         policy = str(getattr(self.bot.cfg, "GUESSYEAR_GUESS_POLICY", "first")).lower().strip()
