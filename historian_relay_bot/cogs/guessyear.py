@@ -92,6 +92,24 @@ class DuelState:
     history: List[DuelQuestionResult] = field(default_factory=list)
 
 
+@dataclass(slots=True)
+class LearnSessionState:
+    guild_id: int
+    channel_id: int
+    host_channel_id: int
+    owner_user_id: int
+    current_event_id: str
+    correct_year: int
+    prompt: str
+    category_keys: List[str]
+    started_at: int
+    questions_answered: int = 0
+    exact_hits: int = 0
+    current_hints_used: int = 0
+    awaiting_answer: bool = True
+    used_event_ids: List[str] = field(default_factory=list)
+
+
 CATEGORY_DEFINITIONS: List[Dict[str, Any]] = [
     {"key": "ancient", "label": "Ancient", "emoji": "🏺", "description": "Rome, Greece, early empires", "tags": {"Ancient", "Rome"}},
     {"key": "medieval", "label": "Medieval", "emoji": "⚔️", "description": "Middle Ages and kingdoms", "tags": {"Medieval"}},
@@ -361,6 +379,38 @@ class ThreadClosePromptView(discord.ui.View):
         await interaction.response.edit_message(embed=embed, view=self)
 
 
+class LearnSessionView(discord.ui.View):
+    def __init__(self, cog: "GuessYearCog", state: LearnSessionState):
+        super().__init__(timeout=None)
+        self.cog = cog
+        self.state = state
+
+    def _alive(self) -> bool:
+        active = self.cog._learn_active.get((self.state.guild_id, self.state.channel_id))
+        return active is self.state
+
+    @discord.ui.button(label="Hint", style=discord.ButtonStyle.secondary, emoji="💡")
+    async def hint(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if not self._alive():
+            await interaction.response.send_message("This learning session is no longer active.", ephemeral=True)
+            return
+        await self.cog._learn_hint_interaction(interaction, self.state)
+
+    @discord.ui.button(label="Next Question", style=discord.ButtonStyle.primary, emoji="➡️")
+    async def next_question(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if not self._alive():
+            await interaction.response.send_message("This learning session is no longer active.", ephemeral=True)
+            return
+        await self.cog._learn_next_interaction(interaction, self.state)
+
+    @discord.ui.button(label="End Session", style=discord.ButtonStyle.danger, emoji="🛑")
+    async def end_session(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if not self._alive():
+            await interaction.response.send_message("This learning session is no longer active.", ephemeral=True)
+            return
+        await self.cog._end_learn_session_interaction(interaction, self.state)
+
+
 class GuessYearCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -382,6 +432,10 @@ class GuessYearCog(commands.Cog):
         self._duel_round_views: Dict[Tuple[int, int], DuelRoundView] = {}
         self._duel_tasks: Dict[Tuple[int, int], asyncio.Task] = {}
         self._duel_finishing: set = set()
+
+        self._learn_active: Dict[Tuple[int, int], LearnSessionState] = {}
+        self._learn_owner_threads: Dict[Tuple[int, int], int] = {}
+        self._learn_views: Dict[Tuple[int, int], LearnSessionView] = {}
 
         self._restore_started = False
 
@@ -681,6 +735,146 @@ class GuessYearCog(commands.Cog):
         embed.add_field(name="How to answer", value="Use `!bonus <answer>`", inline=False)
         embed.set_footer(text=f"Time limit: {max(0, bonus.ends_at - int(time.time()))} seconds")
         return embed
+
+    def _pick_learn_event(self, category_keys: List[str], used_event_ids: Optional[set[str]] = None) -> Optional[Dict[str, Any]]:
+        if category_keys:
+            allowed_tags = set()
+            for key in category_keys:
+                if key in CATEGORY_LOOKUP:
+                    allowed_tags.update(CATEGORY_LOOKUP[key]["tags"])
+            pool = [
+                evt for evt in self._events
+                if allowed_tags.intersection({str(tag) for tag in evt.get("tags", [])})
+            ]
+        else:
+            pool = list(self._events)
+        if not pool:
+            return None
+        used = used_event_ids or set()
+        fresh = [evt for evt in pool if str(evt.get("id")) not in used]
+        return random.choice(fresh or pool)
+
+    def _learn_thread_name(self, member: discord.Member) -> str:
+        base = re.sub(r"[^a-z0-9]+", "-", member.display_name.lower()).strip("-")[:20] or "learner"
+        return f"learn-{base}-{int(time.time()) % 10000}"
+
+    def _learn_feedback(self, diff: int) -> str:
+        if diff == 0:
+            return "Perfect — exact year. Great job."
+        if diff <= 3:
+            return "Very close. You clearly had the right time period in mind."
+        if diff <= 10:
+            return "Nice try. You were in the right neighborhood."
+        if diff <= 25:
+            return "Solid attempt. You were reasonably close for a learning round."
+        return "Good effort. This one is worth reviewing again later."
+
+    def _build_learn_intro_embed(self, member: discord.Member, state: LearnSessionState) -> discord.Embed:
+        embed = discord.Embed(
+            title="📚 GuessYear Learn Mode",
+            description=(
+                f"Welcome, {member.mention}. This private practice thread is for relaxed learning.\n\n"
+                "Type a year like `1789` as a normal message to answer. Use the buttons below or the commands "
+                "`!learnhint`, `!learnnext`, and `!learnstop`."
+            ),
+            color=discord.Color.blurple(),
+        )
+        embed.add_field(name="Categories", value=self._format_category_list(state.category_keys), inline=False)
+        embed.add_field(name="Goal", value="Learn with less pressure — no public leaderboard, just feedback.", inline=False)
+        return embed
+
+    def _build_learn_question_embed(self, state: LearnSessionState, member: discord.Member) -> discord.Embed:
+        embed = discord.Embed(
+            title=f"📖 Practice Question #{state.questions_answered + 1}",
+            description=state.prompt,
+            color=discord.Color.teal(),
+        )
+        embed.add_field(name="Learner", value=member.mention, inline=True)
+        embed.add_field(name="Categories", value=self._format_category_list(state.category_keys), inline=True)
+        embed.add_field(name="How to answer", value="Type a year like `1914` in this thread.", inline=False)
+        return embed
+
+    def _build_learn_result_embed(self, state: LearnSessionState, guess_year: int, evt: Dict[str, Any], diff: int) -> discord.Embed:
+        tags = [str(t) for t in evt.get("tags", [])[:5]]
+        hints = [str(h) for h in evt.get("hints", [])[:2]]
+        embed = discord.Embed(
+            title="🧠 Practice Result",
+            description=self._learn_feedback(diff),
+            color=discord.Color.green() if diff == 0 else discord.Color.orange(),
+        )
+        embed.add_field(name="Your guess", value=f"**{guess_year}**", inline=True)
+        embed.add_field(name="Correct year", value=f"**{state.correct_year}**", inline=True)
+        embed.add_field(name="Distance", value=f"**{diff} year(s)**", inline=True)
+        embed.add_field(name="What happened", value=state.prompt, inline=False)
+        if hints:
+            embed.add_field(name="Context clues", value=" • ".join(hints), inline=False)
+        if tags:
+            embed.add_field(name="Related tags", value=", ".join(tags), inline=False)
+        embed.set_footer(text="Use Next Question when you are ready for another one.")
+        return embed
+
+    async def _post_learn_question(self, channel: discord.abc.Messageable, state: LearnSessionState) -> None:
+        guild = self.bot.get_guild(state.guild_id)
+        member = guild.get_member(state.owner_user_id) if guild else None
+        if guild is None or member is None:
+            return
+        view = LearnSessionView(self, state)
+        key = (state.guild_id, state.channel_id)
+        self._learn_views[key] = view
+        await channel.send(embed=self._build_learn_question_embed(state, member), view=view)
+
+    async def _learn_hint_interaction(self, interaction: discord.Interaction, state: LearnSessionState) -> None:
+        if interaction.user.id != state.owner_user_id:
+            await interaction.response.send_message("Only the learner who owns this session can request hints.", ephemeral=True)
+            return
+        if not state.awaiting_answer:
+            await interaction.response.send_message("This question is already answered. Click Next Question for a new one.", ephemeral=True)
+            return
+        evt = self._events_by_id.get(state.current_event_id) or {}
+        hints = list(evt.get("hints", []))
+        if state.current_hints_used >= len(hints):
+            await interaction.response.send_message("No more hints are available for this practice question.", ephemeral=True)
+            return
+        hint_text = str(hints[state.current_hints_used])
+        state.current_hints_used += 1
+        await interaction.response.send_message(f"💡 Hint {state.current_hints_used}/{len(hints)}: **{hint_text}**", ephemeral=False)
+
+    async def _learn_next_interaction(self, interaction: discord.Interaction, state: LearnSessionState) -> None:
+        if interaction.user.id != state.owner_user_id:
+            await interaction.response.send_message("Only the learner who owns this session can start the next question.", ephemeral=True)
+            return
+        evt = self._pick_learn_event(state.category_keys, used_event_ids=set(state.used_event_ids))
+        if evt is None:
+            await interaction.response.send_message("No practice events are available for this category selection.", ephemeral=True)
+            return
+        state.current_event_id = str(evt["id"])
+        state.correct_year = int(evt["year"])
+        state.prompt = str(evt["prompt"])
+        state.current_hints_used = 0
+        state.awaiting_answer = True
+        state.used_event_ids.append(state.current_event_id)
+        await interaction.response.send_message("📖 New practice question posted below.", ephemeral=True)
+        channel = interaction.channel
+        if isinstance(channel, (discord.TextChannel, discord.Thread)):
+            await self._post_learn_question(channel, state)
+
+    async def _end_learn_session_interaction(self, interaction: discord.Interaction, state: LearnSessionState) -> None:
+        if interaction.user.id != state.owner_user_id and not (isinstance(interaction.user, discord.Member) and self._can_manage_rounds(interaction.user)):
+            await interaction.response.send_message("Only the learner or a moderator can end this session.", ephemeral=True)
+            return
+        key = (state.guild_id, state.channel_id)
+        self._learn_active.pop(key, None)
+        self._learn_owner_threads.pop((state.guild_id, state.owner_user_id), None)
+        self._learn_views.pop(key, None)
+        embed = discord.Embed(
+            title="📚 Learning Session Ended",
+            description=(
+                f"Questions completed: **{state.questions_answered}**\n"
+                f"Exact guesses: **{state.exact_hits}**"
+            ),
+            color=discord.Color.dark_grey(),
+        )
+        await interaction.response.send_message(embed=embed)
 
     def _can_manage_rounds(self, member: discord.Member) -> bool:
         is_mod_role = any(r.id == self.bot.cfg.MOD_ROLE_ID for r in member.roles)
@@ -1964,6 +2158,136 @@ class GuessYearCog(commands.Cog):
         embed.description = "This channel has been reset to **all categories** for future GuessYear rounds."
         await ctx.send(embed=embed)
 
+    @commands.command(name="learn")
+    async def learn(self, ctx: commands.Context):
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+        if not self.bot.cfg.GUESSYEAR_ENABLED:
+            return await ctx.send("Guess the Year is disabled on this server.", delete_after=10)
+        if not self._is_allowed_channel(ctx.channel.id):
+            return await ctx.send("Guess the Year is not enabled in this channel.", delete_after=10)
+        if self._find_duel_for_context(ctx.guild.id, ctx.channel.id):
+            return await ctx.send("A duel is active here. Start learning from a normal text channel instead.", delete_after=10)
+
+        owner_key = (ctx.guild.id, ctx.author.id)
+        existing_thread_id = self._learn_owner_threads.get(owner_key)
+        if existing_thread_id:
+            existing = self.bot.get_channel(existing_thread_id)
+            if existing is None:
+                try:
+                    existing = await self.bot.fetch_channel(existing_thread_id)
+                except Exception:
+                    existing = None
+            if isinstance(existing, discord.Thread):
+                return await ctx.send(f"You already have a learning thread open: {existing.mention}", delete_after=12)
+            self._learn_owner_threads.pop(owner_key, None)
+
+        if isinstance(ctx.channel, discord.Thread):
+            return await ctx.send("Start `!learn` from a normal server text channel so I can create your private practice thread.", delete_after=10)
+
+        evt = self._pick_learn_event(self._categories_for_channel(ctx.guild.id, ctx.channel.id))
+        if evt is None:
+            return await ctx.send("No practice events are available for this category selection.", delete_after=10)
+
+        try:
+            thread = await ctx.message.create_thread(
+                name=self._learn_thread_name(ctx.author),
+                type=discord.ChannelType.private_thread,
+                auto_archive_duration=60,
+                invitable=False,
+            )
+        except Exception:
+            log.exception("Failed to create learn thread")
+            return await ctx.send("I couldn't create your private practice thread. Check thread permissions and try again.", delete_after=12)
+
+        try:
+            await thread.add_user(ctx.author)
+        except Exception:
+            pass
+
+        now = int(time.time())
+        state = LearnSessionState(
+            guild_id=ctx.guild.id,
+            channel_id=thread.id,
+            host_channel_id=ctx.channel.id,
+            owner_user_id=ctx.author.id,
+            current_event_id=str(evt["id"]),
+            correct_year=int(evt["year"]),
+            prompt=str(evt["prompt"]),
+            category_keys=self._categories_for_channel(ctx.guild.id, ctx.channel.id),
+            started_at=now,
+            used_event_ids=[str(evt["id"])],
+        )
+        self._learn_active[(ctx.guild.id, thread.id)] = state
+        self._learn_owner_threads[owner_key] = thread.id
+
+        await ctx.send(f"📚 Your private practice thread is ready: {thread.mention}", delete_after=15)
+        await thread.send(embed=self._build_learn_intro_embed(ctx.author, state))
+        await self._post_learn_question(thread, state)
+
+    @commands.command(name="learnhint")
+    async def learnhint(self, ctx: commands.Context):
+        if not ctx.guild:
+            return
+        state = self._learn_active.get((ctx.guild.id, ctx.channel.id))
+        if not state:
+            return await ctx.send("No active learning session in this thread.", delete_after=8)
+        if ctx.author.id != state.owner_user_id:
+            return await ctx.send("Only the learner who owns this session can request hints.", delete_after=8)
+        evt = self._events_by_id.get(state.current_event_id) or {}
+        hints = list(evt.get("hints", []))
+        if not state.awaiting_answer:
+            return await ctx.send("This question is already answered. Use `!learnnext` for another one.", delete_after=8)
+        if state.current_hints_used >= len(hints):
+            return await ctx.send("No more hints are available for this practice question.", delete_after=8)
+        hint_text = str(hints[state.current_hints_used])
+        state.current_hints_used += 1
+        await ctx.send(f"💡 Hint {state.current_hints_used}/{len(hints)}: **{hint_text}**")
+
+    @commands.command(name="learnnext")
+    async def learnnext(self, ctx: commands.Context):
+        if not ctx.guild:
+            return
+        state = self._learn_active.get((ctx.guild.id, ctx.channel.id))
+        if not state:
+            return await ctx.send("No active learning session in this thread.", delete_after=8)
+        if ctx.author.id != state.owner_user_id:
+            return await ctx.send("Only the learner who owns this session can request the next question.", delete_after=8)
+        evt = self._pick_learn_event(state.category_keys, used_event_ids=set(state.used_event_ids))
+        if evt is None:
+            return await ctx.send("No more practice events are available for this category selection.", delete_after=8)
+        state.current_event_id = str(evt["id"])
+        state.correct_year = int(evt["year"])
+        state.prompt = str(evt["prompt"])
+        state.current_hints_used = 0
+        state.awaiting_answer = True
+        state.used_event_ids.append(state.current_event_id)
+        await self._post_learn_question(ctx.channel, state)
+
+    @commands.command(name="learnstop")
+    async def learnstop(self, ctx: commands.Context):
+        if not ctx.guild:
+            return
+        state = self._learn_active.get((ctx.guild.id, ctx.channel.id))
+        if not state:
+            return await ctx.send("No active learning session in this thread.", delete_after=8)
+        member = ctx.author if isinstance(ctx.author, discord.Member) else None
+        if ctx.author.id != state.owner_user_id and not (member and self._can_manage_rounds(member)):
+            return await ctx.send("Only the learner or a moderator can end this session.", delete_after=8)
+        key = (state.guild_id, state.channel_id)
+        self._learn_active.pop(key, None)
+        self._learn_owner_threads.pop((state.guild_id, state.owner_user_id), None)
+        self._learn_views.pop(key, None)
+        embed = discord.Embed(
+            title="📚 Learning Session Ended",
+            description=(
+                f"Questions completed: **{state.questions_answered}**\n"
+                f"Exact guesses: **{state.exact_hits}**"
+            ),
+            color=discord.Color.dark_grey(),
+        )
+        await ctx.send(embed=embed)
+
     @commands.command(name="hint")
     async def hint(self, ctx: commands.Context):
         if not ctx.guild:
@@ -2109,10 +2433,44 @@ class GuessYearCog(commands.Cog):
             return
         if not message.guild:
             return
+
+        if await self._handle_learn_guess(message):
+            return
+
         if message.content and message.content.lstrip().startswith("!"):
             return
 
         await self._handle_guess(message, override_text=None)
+
+    async def _handle_learn_guess(self, message: discord.Message) -> bool:
+        state = self._learn_active.get((message.guild.id, message.channel.id))
+        if not state:
+            return False
+        if message.author.id != state.owner_user_id:
+            return True
+        if message.content and message.content.lstrip().startswith("!"):
+            return False
+        if not state.awaiting_answer:
+            return True
+
+        m = YEAR_RE.match(message.content or "")
+        if not m:
+            return True
+
+        guess_year = int(m.group(1))
+        diff = abs(guess_year - state.correct_year)
+        state.questions_answered += 1
+        if diff == 0:
+            state.exact_hits += 1
+        state.awaiting_answer = False
+
+        evt = self._events_by_id.get(state.current_event_id) or {
+            "tags": [],
+            "hints": [],
+        }
+        embed = self._build_learn_result_embed(state, guess_year, evt, diff)
+        await message.channel.send(embed=embed)
+        return True
 
     async def _handle_guess(self, message: discord.Message, override_text: Optional[str]):
         if not message.guild:
