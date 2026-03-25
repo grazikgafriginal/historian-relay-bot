@@ -1,1 +1,1 @@
-worker: python historian_relay_bot/bot.py
+worker: python -m historian_relay_bot.bot
