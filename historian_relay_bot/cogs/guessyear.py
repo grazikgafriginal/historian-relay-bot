@@ -758,6 +758,40 @@ class GuessYearCog(commands.Cog):
         base = re.sub(r"[^a-z0-9]+", "-", member.display_name.lower()).strip("-")[:20] or "learner"
         return f"learn-{base}-{int(time.time()) % 10000}"
 
+    async def _create_learn_thread(
+        self,
+        ctx: commands.Context,
+    ) -> discord.Thread:
+        channel = ctx.channel
+        guild = ctx.guild
+
+        if not isinstance(channel, discord.TextChannel) or guild is None:
+            raise RuntimeError("Learn mode can only be started from a normal server text channel.")
+
+        owner = ctx.author if isinstance(ctx.author, discord.Member) else guild.get_member(ctx.author.id)
+        if owner is None:
+            try:
+                owner = await guild.fetch_member(ctx.author.id)
+            except Exception:
+                owner = None
+
+        if owner is None:
+            raise RuntimeError("Could not resolve the learner for thread creation.")
+
+        thread = await channel.create_thread(
+            name=self._learn_thread_name(owner),
+            type=discord.ChannelType.private_thread,
+            auto_archive_duration=60,
+            invitable=False,
+        )
+
+        try:
+            await thread.add_user(owner)
+        except Exception:
+            pass
+
+        return thread
+
     def _learn_feedback(self, diff: int) -> str:
         if diff == 0:
             return "Perfect — exact year. Great job."
@@ -2190,20 +2224,13 @@ class GuessYearCog(commands.Cog):
             return await ctx.send("No practice events are available for this category selection.", delete_after=10)
 
         try:
-            thread = await ctx.message.create_thread(
-                name=self._learn_thread_name(ctx.author),
-                type=discord.ChannelType.private_thread,
-                auto_archive_duration=60,
-                invitable=False,
-            )
-        except Exception:
+            thread = await self._create_learn_thread(ctx)
+        except Exception as e:
             log.exception("Failed to create learn thread")
-            return await ctx.send("I couldn't create your private practice thread. Check thread permissions and try again.", delete_after=12)
-
-        try:
-            await thread.add_user(ctx.author)
-        except Exception:
-            pass
+            return await ctx.send(
+                f"I couldn't create your private practice thread: `{type(e).__name__}: {e}`",
+                delete_after=15,
+            )
 
         now = int(time.time())
         state = LearnSessionState(
