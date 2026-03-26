@@ -803,6 +803,21 @@ class GuessYearCog(commands.Cog):
             return "Solid attempt. You were reasonably close for a learning round."
         return "Good effort. This one is worth reviewing again later."
 
+    def _get_learn_explanation(self, evt: Dict[str, Any]) -> str:
+        return str(evt.get("learn_explanation") or evt.get("learn_summary") or "").strip()
+
+    def _build_learn_fallback_context(self, evt: Dict[str, Any]) -> str:
+        tags = [str(t) for t in evt.get("tags", [])[:3]]
+        year = evt.get("year")
+        if tags and year is not None:
+            return (
+                f"This event sits in the wider story of {', '.join(tags)} history and is useful for anchoring "
+                f"other events around {year}."
+            )
+        if year is not None:
+            return f"This event is a useful anchor point for understanding developments around {year}."
+        return "This event is a useful anchor point for understanding the broader period."
+
     def _build_learn_intro_embed(self, member: discord.Member, state: LearnSessionState) -> discord.Embed:
         embed = discord.Embed(
             title="📚 GuessYear Learn Mode",
@@ -830,7 +845,7 @@ class GuessYearCog(commands.Cog):
 
     def _build_learn_result_embed(self, state: LearnSessionState, guess_year: int, evt: Dict[str, Any], diff: int) -> discord.Embed:
         tags = [str(t) for t in evt.get("tags", [])[:5]]
-        hints = [str(h) for h in evt.get("hints", [])[:2]]
+        explanation = self._get_learn_explanation(evt)
         embed = discord.Embed(
             title="🧠 Practice Result",
             description=self._learn_feedback(diff),
@@ -840,8 +855,10 @@ class GuessYearCog(commands.Cog):
         embed.add_field(name="Correct year", value=f"**{state.correct_year}**", inline=True)
         embed.add_field(name="Distance", value=f"**{diff} year(s)**", inline=True)
         embed.add_field(name="What happened", value=state.prompt, inline=False)
-        if hints:
-            embed.add_field(name="Context clues", value=" • ".join(hints), inline=False)
+        if explanation:
+            embed.add_field(name="Why it matters", value=explanation, inline=False)
+        else:
+            embed.add_field(name="Bigger picture", value=self._build_learn_fallback_context(evt), inline=False)
         if tags:
             embed.add_field(name="Related tags", value=", ".join(tags), inline=False)
         embed.set_footer(text="Use Next Question when you are ready for another one.")
