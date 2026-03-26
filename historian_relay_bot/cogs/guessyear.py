@@ -849,9 +849,33 @@ class GuessYearCog(commands.Cog):
 
     async def _post_learn_question(self, channel: discord.abc.Messageable, state: LearnSessionState) -> None:
         guild = self.bot.get_guild(state.guild_id)
-        member = guild.get_member(state.owner_user_id) if guild else None
-        if guild is None or member is None:
+        if guild is None:
             return
+
+        member = guild.get_member(state.owner_user_id)
+        if member is None:
+            try:
+                member = await guild.fetch_member(state.owner_user_id)
+            except Exception:
+                member = None
+
+        if member is None:
+            # Fallback: still post the question instead of silently failing
+            embed = discord.Embed(
+                title=f"📖 Practice Question #{state.questions_answered + 1}",
+                description=state.prompt,
+                color=discord.Color.teal(),
+            )
+            embed.add_field(name="Learner", value=f"<@{state.owner_user_id}>", inline=True)
+            embed.add_field(name="Categories", value=self._format_category_list(state.category_keys), inline=True)
+            embed.add_field(name="How to answer", value="Type a year like `1914` in this thread.", inline=False)
+
+            view = LearnSessionView(self, state)
+            key = (state.guild_id, state.channel_id)
+            self._learn_views[key] = view
+            await channel.send(embed=embed, view=view)
+            return
+
         view = LearnSessionView(self, state)
         key = (state.guild_id, state.channel_id)
         self._learn_views[key] = view
