@@ -2774,7 +2774,7 @@
   {
     "id": "evt_0101",
     "prompt": "A decisive naval battle halts a major attempted invasion of Greece by a Persian king.",
-    "year": 480,
+    "year": -480,
     "hints": [
       "One nearby event: Clovis I converting to Christianity. That was 16 years after this event.",
       "One nearby event: the traditional fall of the Western Roman Empire. That was 4 years before this event.",
@@ -3863,7 +3863,9 @@
           "adolf hitler",
           "hitler",
           "georgy zhukov",
-          "zhukov"
+          "zhukov",
+          "stalin",
+          "joseph stalin"
         ]
       }
     },
