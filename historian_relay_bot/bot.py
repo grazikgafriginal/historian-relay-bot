@@ -450,22 +450,26 @@ class HistorianRelayBot(commands.Bot):
                     continue
 
 async def main():
-    delay = 5  # start with 5 seconds
-    max_delay = 300  # cap at 5 minutes
+    _SingleInstanceLock().acquire_or_exit()
+    
+    bot = HistorianRelayBot()  # <-- this was missing
+    
+    delay = 5
+    max_delay = 300
 
     while True:
         try:
             await bot.start(bot.cfg.DISCORD_TOKEN)
-            break  # clean exit, stop retrying
+            break
         except discord.errors.HTTPException as e:
             if e.status == 429:
                 retry_after = e.response.headers.get("Retry-After")
                 wait = float(retry_after) if retry_after else delay
                 print(f"Rate limited on login. Waiting {wait:.1f}s before retrying...")
                 await asyncio.sleep(wait)
-                delay = min(delay * 2, max_delay)  # exponential backoff
+                delay = min(delay * 2, max_delay)
             else:
-                raise  # re-raise other HTTP errors
+                raise
 
 if __name__ == "__main__":
     asyncio.run(main())
