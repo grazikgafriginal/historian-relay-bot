@@ -96,14 +96,13 @@ class HistorianRelayBot(commands.Bot):
         await self.load_extension("historian_relay_bot.cogs.askhist")
         await self.load_extension("historian_relay_bot.cogs.moderation")
         await self.load_extension("historian_relay_bot.cogs.suggest")
-    if config.GUESSYEAR_ENABLED:
-        await self.load_extension("historian_relay_bot.cogs.guessyear")
-        await self.load_extension("historian_relay_bot.cogs.duel_tournament")
 
         # Sync commands (global sync can take time; for a single server consider guild-specific sync)
         await self.tree.sync()
+
         if self.cfg.GUESSYEAR_ENABLED:
             await self.load_extension("historian_relay_bot.cogs.guessyear")
+            await self.load_extension("historian_relay_bot.cogs.duel_tournament")
 
 
     async def on_ready(self):
