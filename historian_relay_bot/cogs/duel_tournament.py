@@ -399,12 +399,19 @@ class DuelTournamentCog(commands.Cog):
         await self.bot.db.conn.commit()
 
     def _build_signup_embed(self, state: TournamentSignupState, guild: discord.Guild) -> discord.Embed:
-        entrants = [guild.get_member(uid) for uid in sorted(state.entrants)]
-        entrant_lines = [m.mention for m in entrants if m is not None]
+        entrant_lines: list[str] = []
+        for uid in sorted(state.entrants):
+            member = guild.get_member(uid)
+            if member is not None:
+                entrant_lines.append(f"{member.display_name} ({member.mention})")
+            else:
+                entrant_lines.append(f"<@{uid}>")
+
         description = (
             "Friday mini cup signups are open. Join now and the bot will seed a single-elimination bracket.\n\n"
-            f"**Bracket size:** {state.bracket_size}\n"
+            f"**Signup cap:** {state.bracket_size}\n"
             f"**Match format:** best of {state.best_of}\n"
+            "**Start rule:** the tournament can start with any even number of entrants from 2 up to the signup cap.\n"
             "**Tiebreaker:** if both guesses are equally close, the earlier guess wins the point."
         )
         embed = discord.Embed(
@@ -492,19 +499,27 @@ class DuelTournamentCog(commands.Cog):
             await interaction.response.send_message("This tournament has already started.", ephemeral=True)
             return
         entrants = list(state.entrants)
-        if len(entrants) < 4:
-            await interaction.response.send_message("You need at least 4 entrants to start the tournament.", ephemeral=True)
+        if len(entrants) < 2:
+            await interaction.response.send_message("You need at least 2 entrants to start the tournament.", ephemeral=True)
+            return
+        if len(entrants) % 2 != 0:
+            await interaction.response.send_message(
+                "You currently have an odd number of entrants. Add one more player or remove one before starting.",
+                ephemeral=True,
+            )
             return
         random.shuffle(entrants)
         state.status = "active"
         self._signups.pop((state.guild_id, state.channel_id), None)
+        actual_size = len(entrants)
+        state.bracket_size = actual_size
         tournament = TournamentState(
             tournament_id=state.tournament_id,
             guild_id=state.guild_id,
             channel_id=state.channel_id,
             created_by_user_id=state.created_by_user_id,
             title=state.title,
-            bracket_size=state.bracket_size,
+            bracket_size=actual_size,
             best_of=state.best_of,
             signup_message_id=state.signup_message_id,
             entrants=entrants,
@@ -847,9 +862,9 @@ class DuelTournamentCog(commands.Cog):
         if (ctx.guild.id, ctx.channel.id) in self._signups:
             await ctx.send("A tournament signup is already open in this channel.", delete_after=10)
             return
-        size = max(4, min(size, 16))
-        if size & (size - 1):
-            await ctx.send("Bracket size must be a power of two, for example 4, 8, or 16.", delete_after=12)
+        size = int(size)
+        if size < 2 or size > 16:
+            await ctx.send("Signup cap must be between 2 and 16.", delete_after=12)
             return
         if best_of not in {1, 3, 5}:
             await ctx.send("best_of must be 1, 3, or 5.", delete_after=10)
@@ -921,19 +936,27 @@ class DuelTournamentCog(commands.Cog):
             await ctx.send("There is no open tournament signup in this channel.", delete_after=10)
             return
         entrants = list(state.entrants)
-        if len(entrants) < 4:
-            await ctx.send("You need at least 4 entrants to start.", delete_after=10)
+        if len(entrants) < 2:
+            await ctx.send("You need at least 2 entrants to start.", delete_after=10)
+            return
+        if len(entrants) % 2 != 0:
+            await ctx.send(
+                "You currently have an odd number of entrants. Add one more player or remove one before starting.",
+                delete_after=12,
+            )
             return
         random.shuffle(entrants)
         state.status = "active"
         self._signups.pop((ctx.guild.id, ctx.channel.id), None)
+        actual_size = len(entrants)
+        state.bracket_size = actual_size
         tournament = TournamentState(
             tournament_id=state.tournament_id,
             guild_id=state.guild_id,
             channel_id=state.channel_id,
             created_by_user_id=state.created_by_user_id,
             title=state.title,
-            bracket_size=state.bracket_size,
+            bracket_size=actual_size,
             best_of=state.best_of,
             signup_message_id=state.signup_message_id,
             entrants=entrants,
