@@ -18715,5 +18715,322 @@
       }
     },
     "learn_explanation": "In -307, Ptolemy I founded the Museum and Library of Alexandria with the help of Demetrius Phalereus. Moments like this mattered because control of the center determined who could make law, raise troops, and claim legitimacy. Once authority was reorganized, later politics tended to revolve around institutions created or strengthened in this moment."
+  }, 
+  {
+    "id": "evt_0960",
+    "prompt": "The last emperor of the Western Roman Empire is deposed by a Germanic chieftain, conventionally marking the end of ancient Rome in the West.",
+    "year": 476,
+    "hints": [
+      "One nearby event: Attila the Hun dies, ending the most feared nomadic threat to Rome. That was 23 years before this event.",
+      "One nearby event: The Vandals sack Rome itself. That was 21 years before this event.",
+      "One nearby event: Clovis I becomes king of the Franks and begins consolidating Gaul. That was 5 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Ancient",
+      "Politics"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the last Western Roman emperor deposed in 476?",
+        "answers": [
+          "september",
+          "sep"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the Germanic chieftain who deposed the last Western Roman emperor.",
+        "answers": [
+          "odoacer",
+          "odovacer",
+          "odoacer the barbarian"
+        ]
+      }
+    },
+    "learn_explanation": "In 476, Odoacer deposed Romulus Augustulus, the last emperor of the Western Roman Empire. Historians have long treated this as a symbolic endpoint of classical antiquity, though the Eastern Empire continued for nearly a thousand more years as Byzantium. The fall was less a sudden collapse than a slow transformation: Roman law, Latin, and the Church all survived, shaping medieval Europe for centuries to come."
+  },
+  {
+    "id": "evt_0961",
+    "prompt": "A devastating plague arrives in Europe from the east, eventually killing roughly a third of the continent's population.",
+    "year": 1347,
+    "hints": [
+      "One nearby event: English and French forces clash at the Battle of Crécy during the Hundred Years' War. That was 1 year before this event.",
+      "One nearby event: The Hundred Years' War between England and France begins. That was 10 years before this event.",
+      "One nearby event: The Black Prince wins a decisive victory at the Battle of Poitiers. That was 9 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Disease",
+      "Medieval"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did plague-carrying ships first arrive at the Sicilian port of Messina, bringing the Black Death to Europe?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the Italian writer who described survivors of the plague in his famous story collection set in Florence.",
+        "answers": [
+          "boccaccio",
+          "giovanni boccaccio"
+        ]
+      }
+    },
+    "learn_explanation": "The Black Death arrived in Sicily in October 1347, carried by Genoese trading ships returning from the Black Sea. Within four years it had swept across Europe, killing an estimated 30–50% of the population in the worst-affected regions. The catastrophe disrupted feudal labour relations, accelerated social change, prompted intense religious questioning, and left a psychological mark on European culture that lasted for generations."
+  },
+  {
+    "id": "evt_0962",
+    "prompt": "A great ancient city falls after a prolonged siege, ending the last remnant of a classical empire that had endured for over a millennium.",
+    "year": 1453,
+    "hints": [
+      "One nearby event: Joan of Arc is burned at the stake in France. That was 22 years before this event.",
+      "One nearby event: A craftsman in a German city completes the first major book produced with movable type. That was 2 years after this event.",
+      "One nearby event: A Spanish expedition reaches the Americas and begins sustained European contact. That was 39 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Middle East",
+      "War"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did Constantinople fall to Ottoman forces in 1453?",
+        "answers": [
+          "may"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the Ottoman sultan who led the conquest of Constantinople.",
+        "answers": [
+          "mehmed ii",
+          "mehmed 2",
+          "mehmed the conqueror"
+        ]
+      }
+    },
+    "learn_explanation": "On 29 May 1453, Sultan Mehmed II's forces breached the walls of Constantinople after a 53-day siege, killing the last Byzantine emperor Constantine XI and ending the Eastern Roman Empire. The fall sent Greek scholars fleeing to Italy, helping fuel the Renaissance. It also cut off overland trade routes to Asia, motivating European powers to seek sea routes—directly spurring the Age of Exploration."
+  },
+  {
+    "id": "evt_0963",
+    "prompt": "A craftsman completes the first major book produced using a mechanical printing press with movable type, transforming how knowledge spreads across Europe.",
+    "year": 1455,
+    "hints": [
+      "One nearby event: A great ancient city falls after a prolonged siege, ending the Byzantine Empire. That was 2 years before this event.",
+      "One nearby event: A new religious movement begins when a reformer's theses are circulated, criticizing church practices. That was 62 years after this event.",
+      "One nearby event: A Spanish expedition reaches the Americas and begins sustained European contact. That was 37 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Culture",
+      "Science"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the craftsman whose printing press produced this famous Bible.",
+        "answers": [
+          "johannes gutenberg",
+          "gutenberg",
+          "johan gutenberg"
+        ]
+      }
+    },
+    "learn_explanation": "Around 1455, Johannes Gutenberg of Mainz completed his famous printed Bible, the first major European book produced with movable metal type. The press he developed allowed books to be reproduced far faster and more cheaply than hand-copying, collapsing the price of texts and spreading ideas across language barriers with unprecedented speed. Within fifty years, millions of books circulated in Europe, enabling the Renaissance, the Reformation, and the Scientific Revolution."
+  },
+  {
+    "id": "evt_0964",
+    "prompt": "Thirteen colonies issue a formal declaration severing their political ties from a distant monarchy, founding a new independent republic.",
+    "year": 1776,
+    "hints": [
+      "One nearby event: A group of colonists disguised as indigenous people throw a ship's cargo of tea into a harbour to protest taxation. That was 3 years before this event.",
+      "One nearby event: A coalition of colonial forces wins a decisive military victory at Yorktown, effectively ending the war. That was 5 years after this event.",
+      "One nearby event: Revolutionaries storm a royal fortress-prison, igniting a revolution that reshapes a European monarchy. That was 13 years after this event."
+    ],
+    "tags": [
+      "Americas",
+      "Politics"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the Declaration of Independence formally adopted in 1776?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the principal author of the Declaration of Independence.",
+        "answers": [
+          "thomas jefferson",
+          "jefferson"
+        ]
+      }
+    },
+    "learn_explanation": "On 4 July 1776, the Continental Congress adopted the Declaration of Independence, asserting that the thirteen American colonies were no longer subject to British rule. Drafted chiefly by Thomas Jefferson, it grounded the new state in Enlightenment ideas about natural rights and government by consent. The document became one of the most influential political texts in history, inspiring independence and reform movements around the world."
+  },
+  {
+    "id": "evt_0965",
+    "prompt": "Revolutionaries storm a royal fortress-prison in the capital, igniting a revolution that will transform a European monarchy and send shockwaves across the world.",
+    "year": 1789,
+    "hints": [
+      "One nearby event: Thirteen colonies issue a formal declaration of independence from British rule. That was 13 years before this event.",
+      "One nearby event: A ruling king is executed in public, deepening the revolution's radical phase. That was 4 years after this event.",
+      "One nearby event: A military leader seizes power as First Consul, channelling the revolution into empire. That was 10 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Politics",
+      "War"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the Bastille stormed in 1789?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the French king who was later executed during this revolution.",
+        "answers": [
+          "louis xvi",
+          "louis 16",
+          "king louis xvi"
+        ]
+      }
+    },
+    "learn_explanation": "On 14 July 1789, a Parisian crowd stormed the Bastille fortress, a symbol of royal tyranny, in search of arms and prisoners. The act became the founding symbol of the French Revolution—a sweeping transformation that abolished feudalism, executed the king, and spread revolutionary ideas of liberty and equality across Europe. Its legacy includes both modern democracy and the violence of the Terror, and it shaped politics for centuries."
+  },
+  {
+    "id": "evt_0966",
+    "prompt": "A famous general suffers his final and decisive defeat at the hands of a coalition army, ending over two decades of European warfare.",
+    "year": 1815,
+    "hints": [
+      "One nearby event: A revolution in Haiti establishes the first Black republic in the Western Hemisphere. That was 11 years before this event.",
+      "One nearby event: A coalition of powers defeats a European empire's forces in a large battle near Leipzig, Germany. That was 2 years before this event.",
+      "One nearby event: Greece begins a war of independence against Ottoman rule. That was 6 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the Battle of Waterloo fought in 1815?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the British commander who led the coalition forces to victory at Waterloo.",
+        "answers": [
+          "duke of wellington",
+          "wellington",
+          "arthur wellesley"
+        ]
+      }
+    },
+    "learn_explanation": "On 18 June 1815, Napoleon Bonaparte was decisively defeated at Waterloo in present-day Belgium by British and Prussian forces under Wellington and Blücher. It ended the Napoleonic Wars and Napoleon's brief return from exile—the Hundred Days—and led to his final exile on Saint Helena. The Congress of Vienna had already begun redrawing Europe's map, and Waterloo cemented a conservative order that shaped the continent for decades."
+  },
+  {
+    "id": "evt_0967",
+    "prompt": "Two brothers achieve the first successful powered and controlled flight in a heavier-than-air machine at a windswept coastal location.",
+    "year": 1903,
+    "hints": [
+      "One nearby event: The United States defeats Spain in a short war and acquires overseas territories. That was 5 years before this event.",
+      "One nearby event: A car manufacturer introduces an affordable model that puts automobiles within reach of ordinary workers. That was 5 years after this event.",
+      "One nearby event: A world war begins after an assassination in a Balkan city. That was 11 years after this event."
+    ],
+    "tags": [
+      "Americas",
+      "Science",
+      "Technology"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Wright Brothers make their first powered flight in 1903?",
+        "answers": [
+          "december",
+          "dec"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name either of the brothers who made the first powered flight.",
+        "answers": [
+          "orville wright",
+          "wilbur wright",
+          "orville",
+          "wilbur"
+        ]
+      }
+    },
+    "learn_explanation": "On 17 December 1903, Orville and Wilbur Wright made four brief powered flights at Kitty Hawk, North Carolina, the longest lasting 59 seconds. The brothers had solved the problems of lift, propulsion, and—crucially—three-axis control that had defeated all earlier attempts. Within two decades their invention had transformed warfare, commerce, and exploration, and within sixty-six years humans would reach the Moon using technology that traced its lineage to that windswept beach."
+  },
+  {
+    "id": "evt_0968",
+    "prompt": "Humans set foot on the Moon for the first time, watched live by hundreds of millions of people around the world.",
+    "year": 1969,
+    "hints": [
+      "One nearby event: A human orbits the Earth for the first time, launching the space race into a new phase. That was 8 years before this event.",
+      "One nearby event: The United States and Soviet Union sign a major arms-limitation treaty. That was 3 years after this event.",
+      "One nearby event: A spacecraft meant to repeat this feat suffers a life-threatening malfunction but its crew returns safely. That was 1 year after this event."
+    ],
+    "tags": [
+      "Americas",
+      "Science",
+      "Technology"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did humans first walk on the Moon in 1969?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the first human to walk on the Moon.",
+        "answers": [
+          "neil armstrong",
+          "armstrong",
+          "neil a. armstrong"
+        ]
+      }
+    },
+    "learn_explanation": "On 20 July 1969, Neil Armstrong and Buzz Aldrin landed on the Moon during the Apollo 11 mission, while Michael Collins orbited above. Armstrong's first steps, broadcast live on television, were watched by roughly 600 million people worldwide. The achievement fulfilled President Kennedy's 1961 pledge and represented the culmination of the Space Race against the Soviet Union—a demonstration of what large-scale, state-funded scientific and engineering effort could accomplish."
+  },
+  {
+    "id": "evt_0969",
+    "prompt": "A heavily guarded barrier dividing a major European city is suddenly opened, symbolising the collapse of the ideological divide that had split the continent for decades.",
+    "year": 1989,
+    "hints": [
+      "One nearby event: A nuclear disaster at a Soviet power plant shocks the world and accelerates calls for political openness. That was 3 years before this event.",
+      "One nearby event: A divided European nation is formally reunified as a single sovereign state. That was 1 year after this event.",
+      "One nearby event: The Soviet Union formally dissolves, ending the Cold War era. That was 2 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Politics"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Berlin Wall open in 1989?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the Soviet leader whose reform policies helped make this event possible.",
+        "answers": [
+          "mikhail gorbachev",
+          "gorbachev"
+        ]
+      }
+    },
+    "learn_explanation": "On 9 November 1989, the East German government announced that citizens could cross the Berlin Wall freely, and jubilant crowds tore it down. The Wall had stood since 1961 as the most visible symbol of the Iron Curtain dividing communist Eastern Europe from the West. Its fall accelerated German reunification in 1990 and the dissolution of the Soviet Union in 1991, marking the end of the Cold War and reshaping the entire global order."
   }
 ]

@@ -7,6 +7,7 @@ import random
 import re
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -30,6 +31,36 @@ class TournamentSignupState:
     best_of: int
     entrants: set[int] = field(default_factory=set)
     status: str = "signup"
+    signup_window_minutes: int | None = None
+    signup_deadline_at: int | None = None
+
+
+
+
+@dataclass(slots=True)
+class TournamentScheduleState:
+    guild_id: int
+    channel_id: int
+    created_by_user_id: int
+    title: str
+    weekday: int
+    hour_utc: int
+    minute_utc: int
+    signup_window_minutes: int
+    bracket_size: int
+    best_of: int
+    enabled: bool = True
+    last_fire_key: str | None = None
+
+
+@dataclass(slots=True)
+class GuildTournamentConfig:
+    guild_id: int
+    champion_role_id: int | None = None
+    season_role_id: int | None = None
+    ping_role_id: int | None = None
+    reminder_minutes_before: int = 30
+    signup_last_call_minutes: int = 2
 
 
 @dataclass(slots=True)
@@ -60,6 +91,7 @@ class TournamentMatchState:
     event_id: str
     correct_year: int
     prompt: str
+    is_final: bool = False
     current_question: int = 1
     round_started_at: int = 0
     round_ends_at: int = 0
@@ -91,6 +123,9 @@ class TournamentState:
     next_round_players: list[int] = field(default_factory=list)
     status: str = "signup"
     winner_user_id: int | None = None
+    bracket_message_id: int | None = None
+    round_pairings: dict[int, list[tuple[int, int | None]]] = field(default_factory=dict)
+    round_winners: dict[int, dict[int, int | None]] = field(default_factory=dict)
 
 
 class TournamentGuessModal(discord.ui.Modal, title="Submit hidden tournament guess"):
@@ -165,13 +200,31 @@ class DuelTournamentCog(commands.Cog):
         self._tournaments: dict[int, TournamentState] = {}
         self._matches: dict[int, TournamentMatchState] = {}
         self._match_tasks: dict[int, asyncio.Task[Any]] = {}
+        self._auto_signup_tasks: dict[tuple[int, int], asyncio.Task[Any]] = {}
+        self._last_call_tasks: dict[tuple[int, int], asyncio.Task[Any]] = {}
+        self._schedules: dict[tuple[int, int], TournamentScheduleState] = {}
+        self._guild_configs: dict[int, GuildTournamentConfig] = {}
+        self._sent_announcement_keys: set[str] = set()
+        self._schedule_task: asyncio.Task[Any] | None = None
         self._load_dataset()
 
     async def cog_load(self) -> None:
         await self._ensure_schema()
+        await self._load_schedules()
+        await self._load_guild_configs()
+        if self._schedule_task is None:
+            self._schedule_task = asyncio.create_task(self._schedule_loop())
 
     async def cog_unload(self) -> None:
+        if self._schedule_task and not self._schedule_task.done():
+            self._schedule_task.cancel()
         for task in self._match_tasks.values():
+            if not task.done():
+                task.cancel()
+        for task in self._auto_signup_tasks.values():
+            if not task.done():
+                task.cancel()
+        for task in self._last_call_tasks.values():
             if not task.done():
                 task.cancel()
 
@@ -242,9 +295,486 @@ class DuelTournamentCog(commands.Cog):
 
             CREATE INDEX IF NOT EXISTS idx_guessyear_tournament_matches_round
             ON guessyear_tournament_matches(tournament_id, round_number, status);
+
+            CREATE TABLE IF NOT EXISTS guessyear_tournament_schedules (
+              guild_id TEXT NOT NULL,
+              channel_id TEXT NOT NULL,
+              created_by_user_id TEXT NOT NULL,
+              title TEXT NOT NULL,
+              weekday INTEGER NOT NULL,
+              hour_utc INTEGER NOT NULL,
+              minute_utc INTEGER NOT NULL,
+              signup_window_minutes INTEGER NOT NULL DEFAULT 10,
+              bracket_size INTEGER NOT NULL DEFAULT 8,
+              best_of INTEGER NOT NULL DEFAULT 3,
+              enabled INTEGER NOT NULL DEFAULT 1,
+              last_fire_key TEXT,
+              updated_at INTEGER NOT NULL,
+              PRIMARY KEY (guild_id, channel_id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_guessyear_tournament_schedules_enabled
+            ON guessyear_tournament_schedules(enabled, weekday, hour_utc, minute_utc);
+
+            CREATE TABLE IF NOT EXISTS guessyear_tournament_guild_config (
+              guild_id TEXT PRIMARY KEY,
+              champion_role_id TEXT,
+              season_role_id TEXT,
+              ping_role_id TEXT,
+              reminder_minutes_before INTEGER NOT NULL DEFAULT 30,
+              signup_last_call_minutes INTEGER NOT NULL DEFAULT 2,
+              updated_at INTEGER NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS guessyear_tournament_seasons (
+              season_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              guild_id TEXT NOT NULL,
+              name TEXT NOT NULL,
+              starts_at INTEGER NOT NULL,
+              ends_at INTEGER NOT NULL,
+              is_active INTEGER NOT NULL DEFAULT 1,
+              created_by_user_id TEXT,
+              created_at INTEGER NOT NULL
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_guessyear_tournament_seasons_guild_active
+            ON guessyear_tournament_seasons(guild_id, is_active, starts_at, ends_at);
+
+            CREATE TABLE IF NOT EXISTS guessyear_tournament_season_points (
+              season_id INTEGER NOT NULL,
+              user_id TEXT NOT NULL,
+              points INTEGER NOT NULL DEFAULT 0,
+              tournaments_entered INTEGER NOT NULL DEFAULT 0,
+              match_wins INTEGER NOT NULL DEFAULT 0,
+              tournament_wins INTEGER NOT NULL DEFAULT 0,
+              finals_reached INTEGER NOT NULL DEFAULT 0,
+              updated_at INTEGER NOT NULL,
+              PRIMARY KEY (season_id, user_id),
+              FOREIGN KEY (season_id) REFERENCES guessyear_tournament_seasons(season_id) ON DELETE CASCADE
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_guessyear_tournament_season_points_rank
+            ON guessyear_tournament_season_points(season_id, points DESC, tournament_wins DESC, match_wins DESC);
             """
         )
         await self.bot.db.conn.commit()
+
+    async def _load_schedules(self) -> None:
+        if not getattr(self.bot, "db", None) or not getattr(self.bot.db, "conn", None):
+            return
+        cur = await self.bot.db.conn.execute(
+            """
+            SELECT guild_id, channel_id, created_by_user_id, title, weekday, hour_utc, minute_utc,
+                   signup_window_minutes, bracket_size, best_of, enabled, last_fire_key
+            FROM guessyear_tournament_schedules
+            WHERE enabled=1
+            """
+        )
+        rows = await cur.fetchall()
+        self._schedules.clear()
+        for row in rows:
+            schedule = TournamentScheduleState(
+                guild_id=int(row[0]),
+                channel_id=int(row[1]),
+                created_by_user_id=int(row[2]),
+                title=str(row[3]),
+                weekday=int(row[4]),
+                hour_utc=int(row[5]),
+                minute_utc=int(row[6]),
+                signup_window_minutes=int(row[7]),
+                bracket_size=int(row[8]),
+                best_of=int(row[9]),
+                enabled=bool(row[10]),
+                last_fire_key=str(row[11]) if row[11] is not None else None,
+            )
+            self._schedules[(schedule.guild_id, schedule.channel_id)] = schedule
+
+    async def _load_guild_configs(self) -> None:
+        if not getattr(self.bot, "db", None) or not getattr(self.bot.db, "conn", None):
+            return
+        cur = await self.bot.db.conn.execute(
+            """
+            SELECT guild_id, champion_role_id, season_role_id, ping_role_id,
+                   reminder_minutes_before, signup_last_call_minutes
+            FROM guessyear_tournament_guild_config
+            """
+        )
+        rows = await cur.fetchall()
+        self._guild_configs.clear()
+        for row in rows:
+            self._guild_configs[int(row[0])] = GuildTournamentConfig(
+                guild_id=int(row[0]),
+                champion_role_id=int(row[1]) if row[1] is not None else None,
+                season_role_id=int(row[2]) if row[2] is not None else None,
+                ping_role_id=int(row[3]) if row[3] is not None else None,
+                reminder_minutes_before=int(row[4] or 30),
+                signup_last_call_minutes=int(row[5] or 2),
+            )
+
+    def _get_guild_config(self, guild_id: int) -> GuildTournamentConfig:
+        cfg = self._guild_configs.get(guild_id)
+        if cfg is None:
+            cfg = GuildTournamentConfig(guild_id=guild_id)
+            self._guild_configs[guild_id] = cfg
+        return cfg
+
+    async def _save_guild_config(self, config: GuildTournamentConfig) -> None:
+        now = int(time.time())
+        await self.bot.db.conn.execute(
+            """
+            INSERT INTO guessyear_tournament_guild_config (
+              guild_id, champion_role_id, season_role_id, ping_role_id,
+              reminder_minutes_before, signup_last_call_minutes, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(guild_id) DO UPDATE SET
+              champion_role_id=excluded.champion_role_id,
+              season_role_id=excluded.season_role_id,
+              ping_role_id=excluded.ping_role_id,
+              reminder_minutes_before=excluded.reminder_minutes_before,
+              signup_last_call_minutes=excluded.signup_last_call_minutes,
+              updated_at=excluded.updated_at
+            """,
+            (
+                str(config.guild_id),
+                str(config.champion_role_id) if config.champion_role_id else None,
+                str(config.season_role_id) if config.season_role_id else None,
+                str(config.ping_role_id) if config.ping_role_id else None,
+                int(config.reminder_minutes_before),
+                int(config.signup_last_call_minutes),
+                now,
+            ),
+        )
+        await self.bot.db.conn.commit()
+        self._guild_configs[config.guild_id] = config
+
+    def _month_bounds(self, now: datetime) -> tuple[datetime, datetime]:
+        start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if start.month == 12:
+            end = start.replace(year=start.year + 1, month=1)
+        else:
+            end = start.replace(month=start.month + 1)
+        return start, end
+
+    async def _ensure_active_season(self, guild_id: int, created_by_user_id: int | None = None) -> tuple[int, str, int, int]:
+        now = datetime.now(timezone.utc)
+        now_ts = int(now.timestamp())
+        cur = await self.bot.db.conn.execute(
+            """
+            SELECT season_id, name, starts_at, ends_at
+            FROM guessyear_tournament_seasons
+            WHERE guild_id=? AND starts_at<=? AND ends_at>?
+            ORDER BY starts_at DESC
+            LIMIT 1
+            """,
+            (str(guild_id), now_ts, now_ts),
+        )
+        row = await cur.fetchone()
+        if row is not None:
+            return int(row[0]), str(row[1]), int(row[2]), int(row[3])
+
+        start_dt, end_dt = self._month_bounds(now)
+        name = start_dt.strftime('%B %Y')
+        start_ts = int(start_dt.timestamp())
+        end_ts = int(end_dt.timestamp())
+        cur = await self.bot.db.conn.execute(
+            """
+            INSERT INTO guessyear_tournament_seasons (
+              guild_id, name, starts_at, ends_at, is_active, created_by_user_id, created_at
+            ) VALUES (?, ?, ?, ?, 1, ?, ?)
+            """,
+            (
+                str(guild_id),
+                name,
+                start_ts,
+                end_ts,
+                str(created_by_user_id) if created_by_user_id else None,
+                now_ts,
+            ),
+        )
+        await self.bot.db.conn.commit()
+        return int(cur.lastrowid), name, start_ts, end_ts
+
+    async def _season_standings(self, guild_id: int, limit: int = 10) -> tuple[tuple[int, str, int, int], list[tuple[int, int, int, int, int, int]]]:
+        season = await self._ensure_active_season(guild_id)
+        cur = await self.bot.db.conn.execute(
+            """
+            SELECT user_id, points, tournaments_entered, match_wins, tournament_wins, finals_reached
+            FROM guessyear_tournament_season_points
+            WHERE season_id=?
+            ORDER BY points DESC, tournament_wins DESC, match_wins DESC, user_id ASC
+            LIMIT ?
+            """,
+            (season[0], int(limit)),
+        )
+        rows = await cur.fetchall()
+        parsed = [
+            (int(row[0]), int(row[1]), int(row[2]), int(row[3]), int(row[4]), int(row[5]))
+            for row in rows
+        ]
+        return season, parsed
+
+    async def _season_add_points(
+        self,
+        guild_id: int,
+        user_id: int,
+        *,
+        points: int = 0,
+        tournaments_entered: int = 0,
+        match_wins: int = 0,
+        tournament_wins: int = 0,
+        finals_reached: int = 0,
+    ) -> None:
+        season_id, _name, _start, _end = await self._ensure_active_season(guild_id)
+        now = int(time.time())
+        await self.bot.db.conn.execute(
+            """
+            INSERT INTO guessyear_tournament_season_points (
+              season_id, user_id, points, tournaments_entered, match_wins, tournament_wins, finals_reached, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(season_id, user_id) DO UPDATE SET
+              points=guessyear_tournament_season_points.points + excluded.points,
+              tournaments_entered=guessyear_tournament_season_points.tournaments_entered + excluded.tournaments_entered,
+              match_wins=guessyear_tournament_season_points.match_wins + excluded.match_wins,
+              tournament_wins=guessyear_tournament_season_points.tournament_wins + excluded.tournament_wins,
+              finals_reached=guessyear_tournament_season_points.finals_reached + excluded.finals_reached,
+              updated_at=excluded.updated_at
+            """,
+            (
+                int(season_id),
+                str(user_id),
+                int(points),
+                int(tournaments_entered),
+                int(match_wins),
+                int(tournament_wins),
+                int(finals_reached),
+                now,
+            ),
+        )
+        await self.bot.db.conn.commit()
+        guild = self.bot.get_guild(guild_id)
+        if guild is not None:
+            await self._refresh_season_leader_role(guild)
+
+    async def _award_entry_points(self, tournament: TournamentState) -> None:
+        for user_id in tournament.entrants:
+            await self._season_add_points(tournament.guild_id, user_id, points=1, tournaments_entered=1)
+
+    async def _award_finalist_points(self, tournament: TournamentState, player_ids: list[int]) -> None:
+        for user_id in player_ids:
+            await self._season_add_points(tournament.guild_id, user_id, finals_reached=1)
+
+    async def _refresh_season_leader_role(self, guild: discord.Guild) -> None:
+        config = self._get_guild_config(guild.id)
+        if not config.season_role_id:
+            return
+        role = guild.get_role(config.season_role_id)
+        if role is None:
+            return
+        season, standings = await self._season_standings(guild.id, limit=50)
+        leader_points = standings[0][1] if standings else None
+        leader_ids = {row[0] for row in standings if leader_points is not None and row[1] == leader_points}
+        current_holders = list(role.members)
+        for member in current_holders:
+            if member.id not in leader_ids:
+                try:
+                    await member.remove_roles(role, reason=f'Removed season leader role for {season[1]}')
+                except Exception:
+                    log.exception('Failed removing season role from %s', member.id)
+        for user_id in leader_ids:
+            member = guild.get_member(user_id)
+            if member is not None and role not in member.roles:
+                try:
+                    await member.add_roles(role, reason=f'Granted season leader role for {season[1]}')
+                except Exception:
+                    log.exception('Failed adding season role to %s', user_id)
+
+    async def _apply_champion_role(self, guild: discord.Guild, winner_user_id: int) -> None:
+        config = self._get_guild_config(guild.id)
+        if not config.champion_role_id:
+            return
+        role = guild.get_role(config.champion_role_id)
+        if role is None:
+            return
+        for member in list(role.members):
+            if member.id != winner_user_id:
+                try:
+                    await member.remove_roles(role, reason='Removed previous Friday champion role holder')
+                except Exception:
+                    log.exception('Failed removing champion role from %s', member.id)
+        member = guild.get_member(winner_user_id)
+        if member is not None and role not in member.roles:
+            try:
+                await member.add_roles(role, reason='Granted Friday champion role')
+            except Exception:
+                log.exception('Failed adding champion role to %s', winner_user_id)
+
+    def _user_ref(self, guild: discord.Guild | None, user_id: int, *, mention: bool = True) -> str:
+        member = guild.get_member(user_id) if guild is not None else None
+        if member is None:
+            return f'<@{user_id}>' if mention else str(user_id)
+        return member.mention if mention else member.display_name
+
+    def _role_ping_text(self, guild: discord.Guild | None, guild_id: int) -> str:
+        config = self._get_guild_config(guild_id)
+        if guild is None or not config.ping_role_id:
+            return ''
+        role = guild.get_role(config.ping_role_id)
+        return f'{role.mention} ' if role is not None else ''
+
+    async def _upsert_schedule(
+        self,
+        guild_id: int,
+        channel_id: int,
+        created_by_user_id: int,
+        title: str,
+        weekday: int,
+        hour_utc: int,
+        minute_utc: int,
+        signup_window_minutes: int,
+        bracket_size: int,
+        best_of: int,
+    ) -> TournamentScheduleState:
+        now = int(time.time())
+        await self.bot.db.conn.execute(
+            """
+            INSERT INTO guessyear_tournament_schedules (
+              guild_id, channel_id, created_by_user_id, title, weekday, hour_utc, minute_utc,
+              signup_window_minutes, bracket_size, best_of, enabled, last_fire_key, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NULL, ?)
+            ON CONFLICT(guild_id, channel_id) DO UPDATE SET
+              created_by_user_id=excluded.created_by_user_id,
+              title=excluded.title,
+              weekday=excluded.weekday,
+              hour_utc=excluded.hour_utc,
+              minute_utc=excluded.minute_utc,
+              signup_window_minutes=excluded.signup_window_minutes,
+              bracket_size=excluded.bracket_size,
+              best_of=excluded.best_of,
+              enabled=1,
+              updated_at=excluded.updated_at
+            """,
+            (
+                str(guild_id),
+                str(channel_id),
+                str(created_by_user_id),
+                title,
+                int(weekday),
+                int(hour_utc),
+                int(minute_utc),
+                int(signup_window_minutes),
+                int(bracket_size),
+                int(best_of),
+                now,
+            ),
+        )
+        await self.bot.db.conn.commit()
+        schedule = TournamentScheduleState(
+            guild_id=guild_id,
+            channel_id=channel_id,
+            created_by_user_id=created_by_user_id,
+            title=title,
+            weekday=weekday,
+            hour_utc=hour_utc,
+            minute_utc=minute_utc,
+            signup_window_minutes=signup_window_minutes,
+            bracket_size=bracket_size,
+            best_of=best_of,
+            enabled=True,
+            last_fire_key=self._schedules.get((guild_id, channel_id)).last_fire_key if (guild_id, channel_id) in self._schedules else None,
+        )
+        self._schedules[(guild_id, channel_id)] = schedule
+        return schedule
+
+    async def _delete_schedule(self, guild_id: int, channel_id: int) -> None:
+        await self.bot.db.conn.execute(
+            "DELETE FROM guessyear_tournament_schedules WHERE guild_id=? AND channel_id=?",
+            (str(guild_id), str(channel_id)),
+        )
+        await self.bot.db.conn.commit()
+        self._schedules.pop((guild_id, channel_id), None)
+
+    async def _set_schedule_last_fire_key(self, guild_id: int, channel_id: int, fire_key: str) -> None:
+        schedule = self._schedules.get((guild_id, channel_id))
+        if schedule is not None:
+            schedule.last_fire_key = fire_key
+        await self.bot.db.conn.execute(
+            "UPDATE guessyear_tournament_schedules SET last_fire_key=?, updated_at=? WHERE guild_id=? AND channel_id=?",
+            (fire_key, int(time.time()), str(guild_id), str(channel_id)),
+        )
+        await self.bot.db.conn.commit()
+
+    def _weekly_fire_key(self, now: datetime, weekday: int) -> str:
+        iso = now.isocalendar()
+        return f"{iso.year}-W{iso.week:02d}-{weekday}"
+
+    def _next_schedule_datetime(self, now: datetime, schedule: TournamentScheduleState) -> datetime:
+        days_ahead = (schedule.weekday - now.weekday()) % 7
+        target = now.replace(hour=schedule.hour_utc, minute=schedule.minute_utc, second=0, microsecond=0) + timedelta(days=days_ahead)
+        if target <= now:
+            target += timedelta(days=7)
+        return target
+
+    async def _maybe_send_schedule_reminder(self, schedule: TournamentScheduleState, now: datetime) -> None:
+        guild = self.bot.get_guild(schedule.guild_id)
+        channel = self.bot.get_channel(schedule.channel_id)
+        if guild is None or not isinstance(channel, discord.TextChannel):
+            return
+        config = self._get_guild_config(schedule.guild_id)
+        if config.reminder_minutes_before <= 0:
+            return
+        target = self._next_schedule_datetime(now, schedule)
+        delta_seconds = int((target - now).total_seconds())
+        if delta_seconds < 0 or delta_seconds > config.reminder_minutes_before * 60:
+            return
+        fire_key = self._weekly_fire_key(target, schedule.weekday)
+        reminder_key = f'reminder:{schedule.guild_id}:{schedule.channel_id}:{fire_key}:{config.reminder_minutes_before}'
+        if reminder_key in self._sent_announcement_keys:
+            return
+        self._sent_announcement_keys.add(reminder_key)
+        ping = self._role_ping_text(guild, guild.id)
+        await channel.send(
+            f"{ping}⏰ **{schedule.title}** starts in about **{config.reminder_minutes_before} minute(s)** "
+            f"at **{self._format_weekday(schedule.weekday)} {schedule.hour_utc:02d}:{schedule.minute_utc:02d} UTC**."
+        )
+
+    def _channel_has_live_tournament(self, guild_id: int, channel_id: int) -> bool:
+        if (guild_id, channel_id) in self._signups:
+            return True
+        return any(
+            t.guild_id == guild_id and t.channel_id == channel_id and t.status == "active"
+            for t in self._tournaments.values()
+        )
+
+    async def _schedule_loop(self) -> None:
+        await self.bot.wait_until_ready()
+        while not self.bot.is_closed():
+            try:
+                now = datetime.now(timezone.utc)
+                for schedule in list(self._schedules.values()):
+                    if not schedule.enabled:
+                        continue
+                    await self._maybe_send_schedule_reminder(schedule, now)
+                    if now.weekday() != schedule.weekday:
+                        continue
+                    if now.hour != schedule.hour_utc or now.minute != schedule.minute_utc:
+                        continue
+                    fire_key = self._weekly_fire_key(now, schedule.weekday)
+                    if schedule.last_fire_key == fire_key:
+                        continue
+                    await self._set_schedule_last_fire_key(schedule.guild_id, schedule.channel_id, fire_key)
+                    if self._channel_has_live_tournament(schedule.guild_id, schedule.channel_id):
+                        log.info(
+                            "Skipping scheduled duel tournament for guild=%s channel=%s because one is already live",
+                            schedule.guild_id,
+                            schedule.channel_id,
+                        )
+                        continue
+                    await self._open_scheduled_signup(schedule)
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                log.exception("DuelTournament schedule loop failed")
+            await asyncio.sleep(20)
 
     def _can_manage(self, member: discord.Member) -> bool:
         cfg = getattr(self.bot, "cfg", None)
@@ -305,6 +835,14 @@ class DuelTournamentCog(commands.Cog):
             (str(message_id), int(tournament_id)),
         )
         await self.bot.db.conn.commit()
+
+    async def _cancel_auto_signup_task(self, guild_id: int, channel_id: int) -> None:
+        task = self._auto_signup_tasks.pop((guild_id, channel_id), None)
+        if task and not task.done():
+            task.cancel()
+        last_call = self._last_call_tasks.pop((guild_id, channel_id), None)
+        if last_call and not last_call.done():
+            last_call.cancel()
 
     async def _set_tournament_status(self, tournament_id: int, status: str, *, winner_user_id: int | None = None) -> None:
         now = int(time.time())
@@ -398,6 +936,173 @@ class DuelTournamentCog(commands.Cog):
         )
         await self.bot.db.conn.commit()
 
+    async def _open_signup_internal(
+        self,
+        channel: discord.TextChannel,
+        *,
+        created_by_user_id: int,
+        title: str,
+        bracket_size: int,
+        best_of: int,
+        auto_join_user_id: int | None = None,
+        signup_window_minutes: int | None = None,
+    ) -> TournamentSignupState:
+        now = int(time.time())
+        tournament_id = await self._create_tournament_row(
+            channel.guild.id,
+            channel.id,
+            created_by_user_id,
+            title,
+            bracket_size,
+            best_of,
+            now,
+        )
+        state = TournamentSignupState(
+            tournament_id=tournament_id,
+            guild_id=channel.guild.id,
+            channel_id=channel.id,
+            created_by_user_id=created_by_user_id,
+            created_at=now,
+            signup_message_id=None,
+            title=title,
+            bracket_size=bracket_size,
+            best_of=best_of,
+            entrants={auto_join_user_id} if auto_join_user_id is not None else set(),
+            signup_window_minutes=signup_window_minutes,
+            signup_deadline_at=(now + signup_window_minutes * 60) if signup_window_minutes else None,
+        )
+        if auto_join_user_id is not None:
+            await self._upsert_entry(tournament_id, auto_join_user_id)
+        self._signups[(channel.guild.id, channel.id)] = state
+        view = self._signup_view_for(state)
+        message = await channel.send(embed=self._build_signup_embed(state, channel.guild), view=view)
+        state.signup_message_id = message.id
+        view.message = message
+        await self._set_signup_message_id(tournament_id, message.id)
+
+        if signup_window_minutes:
+            await self._cancel_auto_signup_task(channel.guild.id, channel.id)
+            self._auto_signup_tasks[(channel.guild.id, channel.id)] = asyncio.create_task(
+                self._auto_start_signup_after_delay(state.guild_id, state.channel_id, signup_window_minutes * 60)
+            )
+        return state
+
+    async def _open_scheduled_signup(self, schedule: TournamentScheduleState) -> None:
+        channel = self.bot.get_channel(schedule.channel_id)
+        if not isinstance(channel, discord.TextChannel):
+            return
+        bot_user_id = self.bot.user.id if self.bot.user else schedule.created_by_user_id
+        state = await self._open_signup_internal(
+            channel,
+            created_by_user_id=bot_user_id,
+            title=schedule.title,
+            bracket_size=schedule.bracket_size,
+            best_of=schedule.best_of,
+            auto_join_user_id=None,
+            signup_window_minutes=schedule.signup_window_minutes,
+        )
+        guild = channel.guild
+        ping = self._role_ping_text(guild, guild.id)
+        await channel.send(
+            f"{ping}📣 **Scheduled duel tournament signup is open.** "
+            f"Join within **{schedule.signup_window_minutes} minute(s)**. "
+            "The bracket will auto-start if at least 2 players joined and the count is even."
+        )
+        config = self._get_guild_config(guild.id)
+        last_call_minutes = max(0, min(config.signup_last_call_minutes, schedule.signup_window_minutes - 1))
+        if last_call_minutes > 0:
+            self._last_call_tasks[(guild.id, channel.id)] = asyncio.create_task(
+                self._send_signup_last_call_after_delay(guild.id, channel.id, (schedule.signup_window_minutes - last_call_minutes) * 60, last_call_minutes)
+            )
+        await self._refresh_signup_message(state)
+
+    async def _auto_start_signup_after_delay(self, guild_id: int, channel_id: int, delay_seconds: int) -> None:
+        try:
+            await asyncio.sleep(max(1, delay_seconds))
+        except asyncio.CancelledError:
+            return
+        state = self._signups.get((guild_id, channel_id))
+        if state is None or state.status != "signup":
+            return
+        channel = self.bot.get_channel(channel_id)
+        guild = self.bot.get_guild(guild_id)
+        if not isinstance(channel, discord.TextChannel) or guild is None:
+            return
+        entrants = list(state.entrants)
+        if len(entrants) >= 2 and len(entrants) % 2 == 0:
+            random.shuffle(entrants)
+            state.status = "active"
+            self._signups.pop((guild_id, channel_id), None)
+            actual_size = len(entrants)
+            state.bracket_size = actual_size
+            tournament = TournamentState(
+                tournament_id=state.tournament_id,
+                guild_id=state.guild_id,
+                channel_id=state.channel_id,
+                created_by_user_id=state.created_by_user_id,
+                title=state.title,
+                bracket_size=actual_size,
+                best_of=state.best_of,
+                signup_message_id=state.signup_message_id,
+                entrants=entrants,
+                round_number=1,
+                status="active",
+            )
+            self._tournaments[tournament.tournament_id] = tournament
+            await self._set_tournament_status(tournament.tournament_id, "active")
+            await self._award_entry_points(tournament)
+            await self._disable_signup_message(state, guild, new_title=f"{state.title} • Started")
+            await channel.send(f"🏁 Scheduled tournament is starting now with **{len(entrants)}** entrants.")
+            await self._start_round(channel, tournament, entrants)
+            self._auto_signup_tasks.pop((guild_id, channel_id), None)
+            self._last_call_tasks.pop((guild_id, channel_id), None)
+            return
+
+        reason = "Not enough players joined before the signup window closed."
+        if len(entrants) >= 3 and len(entrants) % 2 != 0:
+            reason = "Signup closed with an odd number of players, so the bracket could not start automatically."
+        self._signups.pop((guild_id, channel_id), None)
+        state.status = "cancelled"
+        await self._set_tournament_status(state.tournament_id, "cancelled")
+        await self._disable_signup_message(state, guild, new_title=f"{state.title} • Cancelled")
+        await channel.send(f"❌ Scheduled tournament cancelled. {reason}")
+        self._auto_signup_tasks.pop((guild_id, channel_id), None)
+
+    async def _send_signup_last_call_after_delay(self, guild_id: int, channel_id: int, delay_seconds: int, minutes_left: int) -> None:
+        try:
+            await asyncio.sleep(max(1, delay_seconds))
+        except asyncio.CancelledError:
+            return
+        state = self._signups.get((guild_id, channel_id))
+        channel = self.bot.get_channel(channel_id)
+        guild = self.bot.get_guild(guild_id)
+        if state is None or state.status != 'signup' or not isinstance(channel, discord.TextChannel) or guild is None:
+            return
+        ping = self._role_ping_text(guild, guild.id)
+        await channel.send(
+            f"{ping}⏳ **Last call** — **{state.title}** closes in about **{minutes_left} minute(s)**. "
+            f"Current entrants: **{len(state.entrants)}**."
+        )
+        self._last_call_tasks.pop((guild_id, channel_id), None)
+
+    async def _disable_signup_message(self, state: TournamentSignupState, guild: discord.Guild, *, new_title: str | None = None) -> None:
+        channel = self.bot.get_channel(state.channel_id)
+        if not isinstance(channel, discord.TextChannel) or state.signup_message_id is None:
+            return
+        try:
+            msg = await channel.fetch_message(state.signup_message_id)
+        except Exception:
+            return
+        view = self._signup_view_for(state)
+        for child in view.children:
+            child.disabled = True
+        embed = self._build_signup_embed(state, guild)
+        if new_title:
+            embed.title = new_title
+        if state.status == "cancelled":
+            embed.color = discord.Color.dark_grey()
+        await msg.edit(embed=embed, view=view)
+
     def _build_signup_embed(self, state: TournamentSignupState, guild: discord.Guild) -> discord.Embed:
         entrant_lines: list[str] = []
         for uid in sorted(state.entrants):
@@ -411,8 +1116,10 @@ class DuelTournamentCog(commands.Cog):
             "Friday mini cup signups are open. Join now and the bot will seed a single-elimination bracket.\n\n"
             f"**Signup cap:** {state.bracket_size}\n"
             f"**Match format:** best of {state.best_of}\n"
-            "**Start rule:** the tournament can start with any even number of entrants from 2 up to the signup cap.\n"
-            "**Tiebreaker:** if both guesses are equally close, the earlier guess wins the point."
+            + (f"**Signup window:** {state.signup_window_minutes} minute(s)\n" if state.signup_window_minutes else "")
+            + (f"**Auto-start:** <t:{state.signup_deadline_at}:R> if the entrant count is even and at least 2.\n" if state.signup_deadline_at else "")
+            + "**Start rule:** the tournament can start with any even number of entrants from 2 up to the signup cap.\n"
+            + "**Tiebreaker:** if both guesses are equally close, the earlier guess wins the point."
         )
         embed = discord.Embed(
             title=state.title,
@@ -432,8 +1139,9 @@ class DuelTournamentCog(commands.Cog):
         p2 = guild.get_member(match.player2_user_id)
         s1 = match.scores.get(match.player1_user_id, 0)
         s2 = match.scores.get(match.player2_user_id, 0)
+        round_title = 'Final' if match.is_final else f'Round {match.round_number}'
         embed = discord.Embed(
-            title=f"Tournament Match • Round {match.round_number}",
+            title=f"Tournament Match • {round_title}",
             description=match.prompt,
             color=discord.Color.blurple(),
         )
@@ -443,6 +1151,48 @@ class DuelTournamentCog(commands.Cog):
         embed.add_field(name="How to play", value="Use **Submit hidden guess** and enter a year.", inline=False)
         embed.set_footer(text="Earliest guess wins equal-distance ties.")
         return embed
+
+    def _build_bracket_embed(self, tournament: TournamentState, guild: discord.Guild | None) -> discord.Embed:
+        lines: list[str] = []
+        for round_number in sorted(tournament.round_pairings):
+            lines.append(f"**Round {round_number}**")
+            pairings = tournament.round_pairings.get(round_number, [])
+            winners = tournament.round_winners.get(round_number, {})
+            for idx, (player1, player2) in enumerate(pairings, start=1):
+                if player2 is None:
+                    lines.append(f"Match {idx}: {self._user_ref(guild, player1)} gets a bye")
+                    continue
+                winner_user_id = winners.get(idx)
+                status = f" — winner: {self._user_ref(guild, winner_user_id)}" if winner_user_id else " — in progress"
+                lines.append(
+                    f"Match {idx}: {self._user_ref(guild, player1)} vs {self._user_ref(guild, player2)}{status}"
+                )
+            lines.append("")
+        description = "\n".join(lines).strip() or "Bracket will appear once matches are seeded."
+        embed = discord.Embed(
+            title=f"{tournament.title} • Bracket Board",
+            description=description,
+            color=discord.Color.gold(),
+        )
+        if tournament.winner_user_id:
+            embed.add_field(name="Champion", value=self._user_ref(guild, tournament.winner_user_id), inline=False)
+        else:
+            embed.add_field(name="Status", value=f"{tournament.status.title()} • Round {tournament.round_number}", inline=False)
+        return embed
+
+    async def _refresh_bracket_message(self, host_channel: discord.TextChannel, tournament: TournamentState) -> None:
+        guild = host_channel.guild
+        embed = self._build_bracket_embed(tournament, guild)
+        if tournament.bracket_message_id is None:
+            msg = await host_channel.send(embed=embed)
+            tournament.bracket_message_id = msg.id
+            return
+        try:
+            msg = await host_channel.fetch_message(tournament.bracket_message_id)
+            await msg.edit(embed=embed)
+        except Exception:
+            msg = await host_channel.send(embed=embed)
+            tournament.bracket_message_id = msg.id
 
     async def _refresh_signup_message(self, state: TournamentSignupState) -> None:
         channel = self.bot.get_channel(state.channel_id)
@@ -485,6 +1235,7 @@ class DuelTournamentCog(commands.Cog):
     async def _cancel_signup(self, interaction: discord.Interaction, state: TournamentSignupState) -> None:
         self._signups.pop((state.guild_id, state.channel_id), None)
         state.status = "cancelled"
+        await self._cancel_auto_signup_task(state.guild_id, state.channel_id)
         await self._set_tournament_status(state.tournament_id, "cancelled")
         view = self._signup_view_for(state)
         for child in view.children:
@@ -510,6 +1261,7 @@ class DuelTournamentCog(commands.Cog):
             return
         random.shuffle(entrants)
         state.status = "active"
+        await self._cancel_auto_signup_task(state.guild_id, state.channel_id)
         self._signups.pop((state.guild_id, state.channel_id), None)
         actual_size = len(entrants)
         state.bracket_size = actual_size
@@ -528,6 +1280,7 @@ class DuelTournamentCog(commands.Cog):
         )
         self._tournaments[tournament.tournament_id] = tournament
         await self._set_tournament_status(tournament.tournament_id, "active")
+        await self._award_entry_points(tournament)
 
         view = self._signup_view_for(state)
         for child in view.children:
@@ -550,19 +1303,27 @@ class DuelTournamentCog(commands.Cog):
             player2 = work.pop(0) if work else None
             pairings.append((player1, player2))
 
+        tournament.round_pairings[round_number] = pairings
+        tournament.round_winners.setdefault(round_number, {})
+
         bracket_lines: list[str] = []
         guild = self.bot.get_guild(tournament.guild_id)
+        is_final_round = len([pair for pair in pairings if pair[1] is not None]) == 1 and len(pairings) == 1
+        if is_final_round and len(players) == 2 and isinstance(host_channel, discord.TextChannel):
+            await self._award_finalist_points(tournament, [players[0], players[1]])
+            await host_channel.send(
+                f"🔥 **Final is live** — {self._user_ref(guild, players[0])} vs {self._user_ref(guild, players[1])}"
+            )
+
         for idx, (player1, player2) in enumerate(pairings, start=1):
             if player2 is None:
                 tournament.next_round_players.append(player1)
-                label1 = guild.get_member(player1).mention if guild and guild.get_member(player1) else f"<@{player1}>"
-                bracket_lines.append(f"Match {idx}: {label1} gets a bye")
+                tournament.round_winners[round_number][idx] = player1
+                bracket_lines.append(f"Match {idx}: {self._user_ref(guild, player1)} gets a bye")
                 continue
 
-            label1 = guild.get_member(player1).mention if guild and guild.get_member(player1) else f"<@{player1}>"
-            label2 = guild.get_member(player2).mention if guild and guild.get_member(player2) else f"<@{player2}>"
-            bracket_lines.append(f"Match {idx}: {label1} vs {label2}")
-            match = await self._launch_match(host_channel, tournament, round_number, idx, player1, player2)
+            bracket_lines.append(f"Match {idx}: {self._user_ref(guild, player1)} vs {self._user_ref(guild, player2)}")
+            match = await self._launch_match(host_channel, tournament, round_number, idx, player1, player2, is_final=is_final_round)
             tournament.active_match_ids.add(match.match_id)
 
         embed = discord.Embed(
@@ -571,6 +1332,8 @@ class DuelTournamentCog(commands.Cog):
             color=discord.Color.gold(),
         )
         await host_channel.send(embed=embed)
+        if isinstance(host_channel, discord.TextChannel):
+            await self._refresh_bracket_message(host_channel, tournament)
 
         if not tournament.active_match_ids:
             await self._advance_or_finish(host_channel, tournament)
@@ -583,6 +1346,8 @@ class DuelTournamentCog(commands.Cog):
         bracket_position: int,
         player1_user_id: int,
         player2_user_id: int,
+        *,
+        is_final: bool = False,
     ) -> TournamentMatchState:
         evt = self._pick_event()
         if evt is None:
@@ -634,6 +1399,7 @@ class DuelTournamentCog(commands.Cog):
             event_id=str(evt["id"]),
             correct_year=int(evt["year"]),
             prompt=str(evt["prompt"]),
+            is_final=is_final,
             scores={player1_user_id: 0, player2_user_id: 0},
         )
         self._matches[match.match_id] = match
@@ -814,14 +1580,17 @@ class DuelTournamentCog(commands.Cog):
         score1 = match.scores.get(match.player1_user_id, 0)
         score2 = match.scores.get(match.player2_user_id, 0)
         winner_mention = f"<@{match.winner_user_id}>" if match.winner_user_id else "No winner"
+        if match.winner_user_id is not None:
+            await self._season_add_points(tournament.guild_id, match.winner_user_id, points=3, match_wins=1)
+            tournament.next_round_players.append(match.winner_user_id)
+            tournament.round_winners.setdefault(match.round_number, {})[match.bracket_position] = match.winner_user_id
         await host_channel.send(
             f"🏁 **Round {match.round_number}, Match {match.bracket_position} finished** — "
             f"winner: {winner_mention} (`{score1}-{score2}`)"
             + (f" • Thread: {thread.mention}" if isinstance(thread, discord.Thread) else "")
         )
-        if match.winner_user_id is not None:
-            tournament.next_round_players.append(match.winner_user_id)
         tournament.active_match_ids.discard(match.match_id)
+        await self._refresh_bracket_message(host_channel, tournament)
         if not tournament.active_match_ids:
             await self._advance_or_finish(host_channel, tournament)
 
@@ -832,15 +1601,97 @@ class DuelTournamentCog(commands.Cog):
             tournament.winner_user_id = players[0] if players else None
             await self._set_tournament_status(tournament.tournament_id, "finished", winner_user_id=tournament.winner_user_id)
             if tournament.winner_user_id is not None:
+                await self._season_add_points(tournament.guild_id, tournament.winner_user_id, points=8, tournament_wins=1)
                 await host_channel.send(
                     f"🏆 **{tournament.title} champion:** <@{tournament.winner_user_id}>"
                 )
+                await self._apply_champion_role(host_channel.guild, tournament.winner_user_id)
             else:
                 await host_channel.send(f"{tournament.title} ended without a winner.")
+            await self._refresh_bracket_message(host_channel, tournament)
             return
         tournament.round_number += 1
         tournament.next_round_players = []
         await self._start_round(host_channel, tournament, players)
+
+    async def _all_time_profile(self, guild_id: int, user_id: int) -> dict[str, int]:
+        cur = await self.bot.db.conn.execute(
+            """
+            SELECT
+              COALESCE((SELECT COUNT(DISTINCT e.tournament_id)
+                        FROM guessyear_tournament_entries e
+                        JOIN guessyear_tournaments t ON t.tournament_id=e.tournament_id
+                        WHERE t.guild_id=? AND e.user_id=? AND t.status IN ('active', 'finished')), 0),
+              COALESCE((SELECT COUNT(*)
+                        FROM guessyear_tournament_matches m
+                        JOIN guessyear_tournaments t ON t.tournament_id=m.tournament_id
+                        WHERE t.guild_id=? AND m.winner_user_id=?), 0),
+              COALESCE((SELECT COUNT(*)
+                        FROM guessyear_tournaments t
+                        WHERE t.guild_id=? AND t.winner_user_id=? AND t.status='finished'), 0),
+              COALESCE((SELECT COUNT(*)
+                        FROM guessyear_tournament_matches m
+                        JOIN guessyear_tournaments t ON t.tournament_id=m.tournament_id
+                        JOIN (
+                            SELECT tournament_id, MAX(round_number) AS final_round
+                            FROM guessyear_tournament_matches
+                            GROUP BY tournament_id
+                        ) finals ON finals.tournament_id=m.tournament_id AND finals.final_round=m.round_number
+                        WHERE t.guild_id=? AND t.status='finished' AND (m.player1_user_id=? OR m.player2_user_id=?)), 0)
+            """,
+            (str(guild_id), str(user_id), str(guild_id), str(user_id), str(guild_id), str(user_id), str(guild_id), str(user_id), str(user_id)),
+        )
+        row = await cur.fetchone()
+        return {
+            'cups_entered': int(row[0] or 0),
+            'match_wins': int(row[1] or 0),
+            'titles': int(row[2] or 0),
+            'finals_reached': int(row[3] or 0),
+        }
+
+    async def _recent_tournament_history(self, guild_id: int, limit: int = 8) -> list[tuple[int, str, int, int | None, int, int]]:
+        cur = await self.bot.db.conn.execute(
+            """
+            SELECT t.tournament_id, t.title, t.ended_at, t.winner_user_id, t.bracket_size,
+                   COALESCE((SELECT COUNT(*) FROM guessyear_tournament_entries e WHERE e.tournament_id=t.tournament_id), 0) AS entrants
+            FROM guessyear_tournaments t
+            WHERE t.guild_id=? AND t.status='finished'
+            ORDER BY t.ended_at DESC
+            LIMIT ?
+            """,
+            (str(guild_id), int(limit)),
+        )
+        rows = await cur.fetchall()
+        parsed: list[tuple[int, str, int, int | None, int, int]] = []
+        for row in rows:
+            parsed.append((
+                int(row[0]), str(row[1]), int(row[2] or 0), int(row[3]) if row[3] is not None else None, int(row[4] or 0), int(row[5] or 0)
+            ))
+        return parsed
+
+    def _parse_weekday(self, raw: str) -> int | None:
+        lookup = {
+            "mon": 0, "monday": 0,
+            "tue": 1, "tues": 1, "tuesday": 1,
+            "wed": 2, "wednesday": 2,
+            "thu": 3, "thur": 3, "thurs": 3, "thursday": 3,
+            "fri": 4, "friday": 4,
+            "sat": 5, "saturday": 5,
+            "sun": 6, "sunday": 6,
+        }
+        return lookup.get(raw.strip().lower())
+
+    def _format_weekday(self, weekday: int) -> str:
+        names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        if 0 <= weekday < len(names):
+            return names[weekday]
+        return str(weekday)
+
+    def _parse_utc_time(self, raw: str) -> tuple[int, int] | None:
+        m = re.match(r"^([01]?\d|2[0-3]):([0-5]\d)$", raw.strip())
+        if not m:
+            return None
+        return int(m.group(1)), int(m.group(2))
 
     @commands.group(name="dueltourney", invoke_without_command=True)
     async def dueltourney(self, ctx: commands.Context) -> None:
@@ -869,28 +1720,16 @@ class DuelTournamentCog(commands.Cog):
         if best_of not in {1, 3, 5}:
             await ctx.send("best_of must be 1, 3, or 5.", delete_after=10)
             return
-        now = int(time.time())
         title = "Friday Mini Duel Cup"
-        tournament_id = await self._create_tournament_row(ctx.guild.id, ctx.channel.id, ctx.author.id, title, size, best_of, now)
-        state = TournamentSignupState(
-            tournament_id=tournament_id,
-            guild_id=ctx.guild.id,
-            channel_id=ctx.channel.id,
+        await self._open_signup_internal(
+            ctx.channel,
             created_by_user_id=ctx.author.id,
-            created_at=now,
-            signup_message_id=None,
             title=title,
             bracket_size=size,
             best_of=best_of,
-            entrants={ctx.author.id},
+            auto_join_user_id=ctx.author.id,
+            signup_window_minutes=None,
         )
-        await self._upsert_entry(tournament_id, ctx.author.id)
-        self._signups[(ctx.guild.id, ctx.channel.id)] = state
-        view = self._signup_view_for(state)
-        message = await ctx.send(embed=self._build_signup_embed(state, ctx.guild), view=view)
-        state.signup_message_id = message.id
-        view.message = message
-        await self._set_signup_message_id(tournament_id, message.id)
 
     @dueltourney.command(name="join")
     async def dueltourney_join(self, ctx: commands.Context) -> None:
@@ -947,6 +1786,7 @@ class DuelTournamentCog(commands.Cog):
             return
         random.shuffle(entrants)
         state.status = "active"
+        await self._cancel_auto_signup_task(ctx.guild.id, ctx.channel.id)
         self._signups.pop((ctx.guild.id, ctx.channel.id), None)
         actual_size = len(entrants)
         state.bracket_size = actual_size
@@ -965,8 +1805,268 @@ class DuelTournamentCog(commands.Cog):
         )
         self._tournaments[tournament.tournament_id] = tournament
         await self._set_tournament_status(tournament.tournament_id, "active")
+        await self._award_entry_points(tournament)
+        await self._disable_signup_message(state, ctx.guild, new_title=f"{state.title} • Started")
         await ctx.send(f"🏁 Starting **{state.title}** with **{len(entrants)}** entrants.")
         await self._start_round(ctx.channel, tournament, entrants)
+
+    @dueltourney.command(name="schedule")
+    async def dueltourney_schedule(
+        self,
+        ctx: commands.Context,
+        weekday_or_status: str | None = None,
+        time_utc: str | None = None,
+        signup_minutes: int = 10,
+        size: int = 8,
+        best_of: int = 3,
+    ) -> None:
+        if not ctx.guild or not isinstance(ctx.channel, discord.TextChannel):
+            return
+        if not self._can_manage(ctx.author):
+            await ctx.send("Only moderators can schedule the Friday duel tournament.", delete_after=10)
+            return
+        if weekday_or_status is None or weekday_or_status.lower() == "help":
+            await ctx.send(
+                "Use `!dueltourney schedule fri 19:00 [signup_minutes] [cap] [best_of]` or `!dueltourney schedule status`. Times are UTC.",
+                delete_after=20,
+            )
+            return
+        if weekday_or_status.lower() == "status":
+            schedule = self._schedules.get((ctx.guild.id, ctx.channel.id))
+            if not schedule:
+                await ctx.send("No recurring duel tournament is scheduled for this channel.", delete_after=10)
+                return
+            embed = discord.Embed(
+                title="Scheduled Duel Tournament",
+                description=(
+                    f"**When:** {self._format_weekday(schedule.weekday)} {schedule.hour_utc:02d}:{schedule.minute_utc:02d} UTC\n"
+                    f"**Signup window:** {schedule.signup_window_minutes} minute(s)\n"
+                    f"**Signup cap:** {schedule.bracket_size}\n"
+                    f"**Best of:** {schedule.best_of}"
+                ),
+                color=discord.Color.gold(),
+            )
+            if schedule.last_fire_key:
+                embed.set_footer(text=f"Last fired key: {schedule.last_fire_key}")
+            await ctx.send(embed=embed)
+            return
+        weekday = self._parse_weekday(weekday_or_status)
+        parsed_time = self._parse_utc_time(time_utc or "")
+        if weekday is None or parsed_time is None:
+            await ctx.send("Example: `!dueltourney schedule fri 19:00 10 8 3` (UTC).", delete_after=15)
+            return
+        hour_utc, minute_utc = parsed_time
+        if signup_minutes < 1 or signup_minutes > 180:
+            await ctx.send("signup_minutes must be between 1 and 180.", delete_after=10)
+            return
+        if size < 2 or size > 16:
+            await ctx.send("Signup cap must be between 2 and 16.", delete_after=10)
+            return
+        if best_of not in {1, 3, 5}:
+            await ctx.send("best_of must be 1, 3, or 5.", delete_after=10)
+            return
+        schedule = await self._upsert_schedule(
+            ctx.guild.id,
+            ctx.channel.id,
+            ctx.author.id,
+            "Friday Mini Duel Cup",
+            weekday,
+            hour_utc,
+            minute_utc,
+            signup_minutes,
+            size,
+            best_of,
+        )
+        await ctx.send(
+            f"✅ Scheduled **{schedule.title}** for **{self._format_weekday(schedule.weekday)} {schedule.hour_utc:02d}:{schedule.minute_utc:02d} UTC** "
+            f"with a **{schedule.signup_window_minutes}-minute** signup window."
+        )
+
+    @dueltourney.command(name="unschedule")
+    async def dueltourney_unschedule(self, ctx: commands.Context) -> None:
+        if not ctx.guild:
+            return
+        if not self._can_manage(ctx.author):
+            await ctx.send("Only moderators can remove the duel tournament schedule.", delete_after=10)
+            return
+        schedule = self._schedules.get((ctx.guild.id, ctx.channel.id))
+        if not schedule:
+            await ctx.send("No recurring duel tournament is scheduled for this channel.", delete_after=10)
+            return
+        await self._delete_schedule(ctx.guild.id, ctx.channel.id)
+        await ctx.send("🗑️ Removed the recurring duel tournament schedule for this channel.")
+
+    @dueltourney.command(name="profile")
+    async def dueltourney_profile(self, ctx: commands.Context, member: discord.Member | None = None) -> None:
+        if not ctx.guild:
+            return
+        target = member or ctx.author
+        stats = await self._all_time_profile(ctx.guild.id, target.id)
+        season, standings = await self._season_standings(ctx.guild.id, limit=100)
+        season_row = next((row for row in standings if row[0] == target.id), None)
+        embed = discord.Embed(
+            title=f"Duel Tournament Profile • {target.display_name}",
+            color=discord.Color.blurple(),
+        )
+        embed.add_field(name="Cups entered", value=str(stats['cups_entered']), inline=True)
+        embed.add_field(name="Match wins", value=str(stats['match_wins']), inline=True)
+        embed.add_field(name="Titles", value=str(stats['titles']), inline=True)
+        embed.add_field(name="Finals reached", value=str(stats['finals_reached']), inline=True)
+        if season_row:
+            embed.add_field(name=f"{season[1]} points", value=str(season_row[1]), inline=True)
+            embed.add_field(name="Season match wins", value=str(season_row[3]), inline=True)
+        else:
+            embed.add_field(name=f"{season[1]} points", value="0", inline=True)
+        await ctx.send(embed=embed)
+
+    @dueltourney.command(name="stats")
+    async def dueltourney_stats(self, ctx: commands.Context, member: discord.Member | None = None) -> None:
+        await self.dueltourney_profile(ctx, member)
+
+    @dueltourney.command(name="history")
+    async def dueltourney_history(self, ctx: commands.Context) -> None:
+        if not ctx.guild:
+            return
+        history = await self._recent_tournament_history(ctx.guild.id)
+        if not history:
+            await ctx.send("No finished duel tournaments yet.", delete_after=10)
+            return
+        lines = []
+        for _tid, title, ended_at, winner_user_id, bracket_size, entrants in history:
+            winner = f"<@{winner_user_id}>" if winner_user_id else "No winner"
+            timestamp = f"<t:{ended_at}:R>" if ended_at else "Unknown time"
+            lines.append(f"**{title}** — winner: {winner} • entrants: {entrants}/{bracket_size} • ended {timestamp}")
+        embed = discord.Embed(title="Recent Duel Tournament History", description="\n".join(lines), color=discord.Color.gold())
+        await ctx.send(embed=embed)
+
+    @dueltourney.command(name="season")
+    async def dueltourney_season(self, ctx: commands.Context) -> None:
+        if not ctx.guild:
+            return
+        season, standings = await self._season_standings(ctx.guild.id)
+        if not standings:
+            await ctx.send(f"No points have been earned in **{season[1]}** yet.")
+            return
+        lines = []
+        for idx, (user_id, points, entered, match_wins, titles, finals) in enumerate(standings[:10], start=1):
+            lines.append(
+                f"**{idx}.** <@{user_id}> — **{points}** pts • cups {entered} • wins {match_wins} • titles {titles} • finals {finals}"
+            )
+        embed = discord.Embed(
+            title=f"Friday Duel Season • {season[1]}",
+            description="\n".join(lines),
+            color=discord.Color.gold(),
+        )
+        await ctx.send(embed=embed)
+
+    @dueltourney.command(name="leaderboard")
+    async def dueltourney_leaderboard(self, ctx: commands.Context) -> None:
+        await self.dueltourney_season(ctx)
+
+    @dueltourney.group(name="role", invoke_without_command=True)
+    async def dueltourney_role(self, ctx: commands.Context) -> None:
+        await ctx.send("Use `!dueltourney role status`, `!dueltourney role champion @Role`, `!dueltourney role season @Role`, `!dueltourney role ping @Role`, or `!dueltourney role clear champion|season|ping`.")
+
+    @dueltourney_role.command(name="status")
+    async def dueltourney_role_status(self, ctx: commands.Context) -> None:
+        if not ctx.guild:
+            return
+        config = self._get_guild_config(ctx.guild.id)
+        embed = discord.Embed(title="Duel Tournament Roles", color=discord.Color.blurple())
+        embed.add_field(name="Champion role", value=(f"<@&{config.champion_role_id}>" if config.champion_role_id else "Not set"), inline=False)
+        embed.add_field(name="Season leader role", value=(f"<@&{config.season_role_id}>" if config.season_role_id else "Not set"), inline=False)
+        embed.add_field(name="Ping role", value=(f"<@&{config.ping_role_id}>" if config.ping_role_id else "Not set"), inline=False)
+        await ctx.send(embed=embed)
+
+    @dueltourney_role.command(name="champion")
+    async def dueltourney_role_champion(self, ctx: commands.Context, role: discord.Role) -> None:
+        if not ctx.guild:
+            return
+        if not self._can_manage(ctx.author):
+            await ctx.send("Only moderators can change tournament roles.", delete_after=10)
+            return
+        config = self._get_guild_config(ctx.guild.id)
+        config.champion_role_id = role.id
+        await self._save_guild_config(config)
+        await ctx.send(f"✅ Champion role set to {role.mention}.")
+
+    @dueltourney_role.command(name="season")
+    async def dueltourney_role_season(self, ctx: commands.Context, role: discord.Role) -> None:
+        if not ctx.guild:
+            return
+        if not self._can_manage(ctx.author):
+            await ctx.send("Only moderators can change tournament roles.", delete_after=10)
+            return
+        config = self._get_guild_config(ctx.guild.id)
+        config.season_role_id = role.id
+        await self._save_guild_config(config)
+        await self._refresh_season_leader_role(ctx.guild)
+        await ctx.send(f"✅ Season leader role set to {role.mention}.")
+
+    @dueltourney_role.command(name="ping")
+    async def dueltourney_role_ping(self, ctx: commands.Context, role: discord.Role) -> None:
+        if not ctx.guild:
+            return
+        if not self._can_manage(ctx.author):
+            await ctx.send("Only moderators can change tournament roles.", delete_after=10)
+            return
+        config = self._get_guild_config(ctx.guild.id)
+        config.ping_role_id = role.id
+        await self._save_guild_config(config)
+        await ctx.send(f"✅ Ping role set to {role.mention}.")
+
+    @dueltourney_role.command(name="clear")
+    async def dueltourney_role_clear(self, ctx: commands.Context, kind: str) -> None:
+        if not ctx.guild:
+            return
+        if not self._can_manage(ctx.author):
+            await ctx.send("Only moderators can change tournament roles.", delete_after=10)
+            return
+        config = self._get_guild_config(ctx.guild.id)
+        kind = kind.lower().strip()
+        if kind == 'champion':
+            config.champion_role_id = None
+        elif kind == 'season':
+            config.season_role_id = None
+        elif kind == 'ping':
+            config.ping_role_id = None
+        else:
+            await ctx.send("Use `champion`, `season`, or `ping`.", delete_after=10)
+            return
+        await self._save_guild_config(config)
+        await ctx.send(f"🧹 Cleared the {kind} role setting.")
+
+    @dueltourney.group(name="reminders", invoke_without_command=True)
+    async def dueltourney_reminders(self, ctx: commands.Context) -> None:
+        await ctx.send("Use `!dueltourney reminders status` or `!dueltourney reminders set <before_minutes> <last_call_minutes>`.")
+
+    @dueltourney_reminders.command(name="status")
+    async def dueltourney_reminders_status(self, ctx: commands.Context) -> None:
+        if not ctx.guild:
+            return
+        config = self._get_guild_config(ctx.guild.id)
+        embed = discord.Embed(title="Duel Tournament Reminders", color=discord.Color.blurple())
+        embed.add_field(name="Before tournament", value=f"{config.reminder_minutes_before} minute(s)", inline=False)
+        embed.add_field(name="Last call during signup", value=f"{config.signup_last_call_minutes} minute(s)", inline=False)
+        await ctx.send(embed=embed)
+
+    @dueltourney_reminders.command(name="set")
+    async def dueltourney_reminders_set(self, ctx: commands.Context, before_minutes: int, last_call_minutes: int) -> None:
+        if not ctx.guild:
+            return
+        if not self._can_manage(ctx.author):
+            await ctx.send("Only moderators can change tournament reminders.", delete_after=10)
+            return
+        if before_minutes < 0 or before_minutes > 1440 or last_call_minutes < 0 or last_call_minutes > 60:
+            await ctx.send("Use sensible values: before 0-1440, last call 0-60.", delete_after=10)
+            return
+        config = self._get_guild_config(ctx.guild.id)
+        config.reminder_minutes_before = before_minutes
+        config.signup_last_call_minutes = last_call_minutes
+        await self._save_guild_config(config)
+        await ctx.send(
+            f"✅ Updated reminders: {before_minutes} minute(s) before the event and {last_call_minutes} minute(s) before signup closes."
+        )
 
     @dueltourney.command(name="status")
     async def dueltourney_status(self, ctx: commands.Context) -> None:
@@ -1014,7 +2114,9 @@ class DuelTournamentCog(commands.Cog):
         signup = self._signups.pop((ctx.guild.id, ctx.channel.id), None)
         if signup:
             signup.status = "cancelled"
+            await self._cancel_auto_signup_task(ctx.guild.id, ctx.channel.id)
             await self._set_tournament_status(signup.tournament_id, "cancelled")
+            await self._disable_signup_message(signup, ctx.guild, new_title=f"{signup.title} • Cancelled")
             await ctx.send("Cancelled the signup.")
             return
         active = next(
