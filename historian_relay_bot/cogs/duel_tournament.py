@@ -354,6 +354,21 @@ class DuelTournamentCog(commands.Cog):
               updated_at INTEGER NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS guessyear_tournament_no_shows (
+              guild_id TEXT NOT NULL,
+              user_id TEXT NOT NULL,
+              readycheck_missed INTEGER NOT NULL DEFAULT 0,
+              match_no_shows INTEGER NOT NULL DEFAULT 0,
+              inactivity_dqs INTEGER NOT NULL DEFAULT 0,
+              total_flags INTEGER NOT NULL DEFAULT 0,
+              last_no_show_at INTEGER,
+              updated_at INTEGER NOT NULL,
+              PRIMARY KEY (guild_id, user_id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_guessyear_tournament_no_shows_rank
+            ON guessyear_tournament_no_shows(guild_id, total_flags DESC, readycheck_missed DESC, match_no_shows DESC, inactivity_dqs DESC, user_id ASC);
+
             CREATE TABLE IF NOT EXISTS guessyear_tournament_seasons (
               season_id INTEGER PRIMARY KEY AUTOINCREMENT,
               guild_id TEXT NOT NULL,
@@ -474,6 +489,99 @@ class DuelTournamentCog(commands.Cog):
         )
         await self.bot.db.conn.commit()
         self._guild_configs[config.guild_id] = config
+
+    async def _get_no_show_stats(self, guild_id: int, user_id: int) -> dict[str, int | None]:
+        cur = await self.bot.db.conn.execute(
+            """
+            SELECT readycheck_missed, match_no_shows, inactivity_dqs, total_flags, last_no_show_at
+            FROM guessyear_tournament_no_shows
+            WHERE guild_id=? AND user_id=?
+            """,
+            (str(guild_id), str(user_id)),
+        )
+        row = await cur.fetchone()
+        if row is None:
+            return {
+                "readycheck_missed": 0,
+                "match_no_shows": 0,
+                "inactivity_dqs": 0,
+                "total_flags": 0,
+                "last_no_show_at": None,
+            }
+        return {
+            "readycheck_missed": int(row[0] or 0),
+            "match_no_shows": int(row[1] or 0),
+            "inactivity_dqs": int(row[2] or 0),
+            "total_flags": int(row[3] or 0),
+            "last_no_show_at": int(row[4]) if row[4] is not None else None,
+        }
+
+    async def _record_no_show(
+        self,
+        guild_id: int,
+        user_id: int,
+        *,
+        readycheck_missed: int = 0,
+        match_no_shows: int = 0,
+        inactivity_dqs: int = 0,
+    ) -> None:
+        total_delta = int(readycheck_missed) + int(match_no_shows) + int(inactivity_dqs)
+        if total_delta <= 0:
+            return
+        now = int(time.time())
+        await self.bot.db.conn.execute(
+            """
+            INSERT INTO guessyear_tournament_no_shows (
+              guild_id, user_id, readycheck_missed, match_no_shows, inactivity_dqs,
+              total_flags, last_no_show_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(guild_id, user_id) DO UPDATE SET
+              readycheck_missed=guessyear_tournament_no_shows.readycheck_missed + excluded.readycheck_missed,
+              match_no_shows=guessyear_tournament_no_shows.match_no_shows + excluded.match_no_shows,
+              inactivity_dqs=guessyear_tournament_no_shows.inactivity_dqs + excluded.inactivity_dqs,
+              total_flags=guessyear_tournament_no_shows.total_flags + excluded.total_flags,
+              last_no_show_at=excluded.last_no_show_at,
+              updated_at=excluded.updated_at
+            """,
+            (
+                str(guild_id),
+                str(user_id),
+                int(readycheck_missed),
+                int(match_no_shows),
+                int(inactivity_dqs),
+                int(total_delta),
+                now,
+                now,
+            ),
+        )
+        await self.bot.db.conn.commit()
+
+    def _reliability_percent(self, *, cups_entered: int, total_flags: int) -> int:
+        denominator = max(1, int(cups_entered) + int(total_flags))
+        return max(0, min(100, round((int(cups_entered) / denominator) * 100)))
+
+    def _match_submission_counts(self, match: TournamentMatchState) -> dict[int, int]:
+        counts = {
+            match.player1_user_id: 0,
+            match.player2_user_id: 0,
+        }
+        for result in match.history:
+            for user_id in result.guesses:
+                counts[user_id] = counts.get(user_id, 0) + 1
+        return counts
+
+    async def _join_warning_suffix(self, guild_id: int, user_id: int) -> str:
+        stats = await self._get_no_show_stats(guild_id, user_id)
+        total_flags = int(stats["total_flags"] or 0)
+        if total_flags <= 0:
+            return ""
+        reliability = self._reliability_percent(cups_entered=0, total_flags=total_flags)
+        return (
+            f"\n\n⚠️ You currently have **{total_flags}** no-show flag(s) "
+            f"({int(stats['readycheck_missed'])} missed ready-check, "
+            f"{int(stats['match_no_shows'])} match no-show, "
+            f"{int(stats['inactivity_dqs'])} inactivity DQ)."
+        )
 
     def _month_bounds(self, now: datetime) -> tuple[datetime, datetime]:
         start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -1564,6 +1672,10 @@ class DuelTournamentCog(commands.Cog):
         unconfirmed = [uid for uid in state.entrants if uid not in state.ready_confirmed]
         await self._cancel_ready_check_task(state.guild_id, state.channel_id)
 
+        if unconfirmed:
+            for uid in unconfirmed:
+                await self._record_no_show(state.guild_id, uid, readycheck_missed=1)
+
         if len(confirmed) < 2:
             for uid in unconfirmed:
                 await self._remove_entry(state.tournament_id, uid)
@@ -1572,7 +1684,13 @@ class DuelTournamentCog(commands.Cog):
             await self._set_tournament_status(state.tournament_id, "cancelled")
             await self._disable_signup_message(state, guild, new_title=f"{state.title} • Cancelled")
             await self._delete_signup_runtime(state)
-            await channel.send("❌ Tournament cancelled. Fewer than 2 players confirmed during ready check.")
+            if unconfirmed:
+                await channel.send(
+                    "❌ Tournament cancelled. Fewer than 2 players confirmed during ready check. "
+                    f"Removed {len(unconfirmed)} unready player(s)."
+                )
+            else:
+                await channel.send("❌ Tournament cancelled. Fewer than 2 players confirmed during ready check.")
             return
 
         for uid in unconfirmed:
@@ -1601,9 +1719,10 @@ class DuelTournamentCog(commands.Cog):
         await self._award_entry_points(tournament)
         await self._disable_signup_message(state, guild, new_title=f"{state.title} • Started")
         await self._delete_signup_runtime(state)
+        removed_suffix = f" Removed **{len(unconfirmed)}** unready player(s)." if unconfirmed else ""
         await channel.send(
-            f"🏁 Starting **{state.title}** with **{len(entrants)}** confirmed entrant(s). "
-            f"Byes will be assigned automatically if needed."
+            f"🏁 Starting **{state.title}** with **{len(entrants)}** confirmed entrant(s)."
+            f"{removed_suffix} Byes will be assigned automatically if needed."
         )
         await self._start_round(channel, tournament, entrants)
 
@@ -1867,7 +1986,14 @@ class DuelTournamentCog(commands.Cog):
                 continue
             await self._restore_match_after_ready(match, paused=False)
 
-    async def _admin_finish_match(self, match: TournamentMatchState, winner_user_id: int, *, reason: str) -> None:
+    async def _admin_finish_match(
+        self,
+        match: TournamentMatchState,
+        winner_user_id: int,
+        *,
+        reason: str,
+        penalize_user_id: int | None = None,
+    ) -> None:
         if winner_user_id not in {match.player1_user_id, match.player2_user_id}:
             raise ValueError("winner_user_id must be one of the match players")
         task = self._match_tasks.pop(match.match_id, None)
@@ -1891,6 +2017,8 @@ class DuelTournamentCog(commands.Cog):
         match.winner_user_id = winner_user_id
         match.finished = True
         await self._update_match_result(match)
+        if penalize_user_id is not None:
+            await self._record_no_show(match.guild_id, penalize_user_id, inactivity_dqs=1)
         thread = await self._resolve_channel(match.thread_id)
         if isinstance(thread, discord.Thread):
             await thread.send(f"🛠️ Moderator ruling: <@{winner_user_id}> advances. Reason: {reason}")
@@ -2015,7 +2143,8 @@ class DuelTournamentCog(commands.Cog):
         state.entrants.add(interaction.user.id)
         await self._upsert_entry(state.tournament_id, interaction.user.id)
         await self._save_signup_runtime(state)
-        await interaction.response.send_message("You joined the tournament.", ephemeral=True)
+        warning_suffix = await self._join_warning_suffix(state.guild_id, interaction.user.id)
+        await interaction.response.send_message("You joined the tournament." + warning_suffix, ephemeral=True)
         await self._refresh_signup_message(state)
 
     async def _leave_signup(self, interaction: discord.Interaction, state: TournamentSignupState) -> None:
@@ -2371,10 +2500,20 @@ class DuelTournamentCog(commands.Cog):
             await self._season_add_points(tournament.guild_id, match.winner_user_id, points=3, match_wins=1)
             tournament.next_round_players.append(match.winner_user_id)
             tournament.round_winners.setdefault(match.round_number, {})[match.bracket_position] = match.winner_user_id
+
+        submission_counts = self._match_submission_counts(match)
+        flagged_user_ids = [user_id for user_id, submitted in submission_counts.items() if submitted <= 0]
+        for user_id in flagged_user_ids:
+            await self._record_no_show(tournament.guild_id, user_id, match_no_shows=1)
+
         await host_channel.send(
             f"🏁 **Round {match.round_number}, Match {match.bracket_position} finished** — "
             f"winner: {winner_mention} (`{score1}-{score2}`)"
             + (f" • Thread: {thread.mention}" if isinstance(thread, discord.Thread) else "")
+            + (
+                f" • no-show flagged: {', '.join(f'<@{user_id}>' for user_id in flagged_user_ids)}"
+                if flagged_user_ids else ""
+            )
         )
         tournament.active_match_ids.discard(match.match_id)
         task = self._match_tasks.pop(match.match_id, None)
@@ -2572,7 +2711,7 @@ class DuelTournamentCog(commands.Cog):
     async def dueltourney(self, ctx: commands.Context) -> None:
         await ctx.send(
             "Use `!dueltourney open`, `!dueltourney join`, `!dueltourney leave`, `!dueltourney start`, "
-            "`!dueltourney ready`, `!dueltourney drop`, `!dueltourney pause`, `!dueltourney resume`, "
+            "`!dueltourney ready`, `!dueltourney drop`, `!dueltourney noshow`, `!dueltourney pause`, `!dueltourney resume`, "
             "`!dueltourney dq`, `!dueltourney advance`, `!dueltourney remake`, `!dueltourney status`, or `!dueltourney cancel`."
         )
 
@@ -2623,6 +2762,9 @@ class DuelTournamentCog(commands.Cog):
         await self._save_signup_runtime(state)
         await self._refresh_signup_message(state)
         await ctx.message.add_reaction("✅")
+        warning_suffix = await self._join_warning_suffix(ctx.guild.id, ctx.author.id)
+        if warning_suffix:
+            await ctx.send("You joined the tournament." + warning_suffix, delete_after=15)
 
     @dueltourney.command(name="leave")
     async def dueltourney_leave(self, ctx: commands.Context) -> None:
@@ -2807,6 +2949,11 @@ class DuelTournamentCog(commands.Cog):
             return
         target = member or ctx.author
         stats = await self._all_time_profile(ctx.guild.id, target.id)
+        no_show_stats = await self._get_no_show_stats(ctx.guild.id, target.id)
+        reliability = self._reliability_percent(
+            cups_entered=stats['cups_entered'],
+            total_flags=int(no_show_stats['total_flags'] or 0),
+        )
         season, standings = await self._season_standings(ctx.guild.id, limit=100)
         season_row = next((row for row in standings if row[0] == target.id), None)
         embed = discord.Embed(
@@ -2817,6 +2964,17 @@ class DuelTournamentCog(commands.Cog):
         embed.add_field(name="Match wins", value=str(stats['match_wins']), inline=True)
         embed.add_field(name="Titles", value=str(stats['titles']), inline=True)
         embed.add_field(name="Finals reached", value=str(stats['finals_reached']), inline=True)
+        embed.add_field(name="Reliability", value=f"{reliability}%", inline=True)
+        embed.add_field(name="No-show flags", value=str(no_show_stats['total_flags']), inline=True)
+        embed.add_field(
+            name="No-show detail",
+            value=(
+                f"Ready-check misses: {no_show_stats['readycheck_missed']}\n"
+                f"Match no-shows: {no_show_stats['match_no_shows']}\n"
+                f"Inactivity DQs: {no_show_stats['inactivity_dqs']}"
+            ),
+            inline=False,
+        )
         if season_row:
             embed.add_field(name=f"{season[1]} points", value=str(season_row[1]), inline=True)
             embed.add_field(name="Season match wins", value=str(season_row[3]), inline=True)
@@ -2827,6 +2985,36 @@ class DuelTournamentCog(commands.Cog):
     @dueltourney.command(name="stats")
     async def dueltourney_stats(self, ctx: commands.Context, member: discord.Member | None = None) -> None:
         await self.dueltourney_profile(ctx, member)
+
+
+    @dueltourney.command(name="noshow")
+    async def dueltourney_noshow(self, ctx: commands.Context, member: discord.Member | None = None) -> None:
+        if not ctx.guild:
+            return
+        target = member or ctx.author
+        stats = await self._all_time_profile(ctx.guild.id, target.id)
+        no_show_stats = await self._get_no_show_stats(ctx.guild.id, target.id)
+        reliability = self._reliability_percent(
+            cups_entered=stats['cups_entered'],
+            total_flags=int(no_show_stats['total_flags'] or 0),
+        )
+        embed = discord.Embed(
+            title=f"No-show record • {target.display_name}",
+            color=discord.Color.orange() if int(no_show_stats['total_flags'] or 0) else discord.Color.green(),
+        )
+        embed.add_field(name="Reliability", value=f"{reliability}%", inline=True)
+        embed.add_field(name="Total flags", value=str(no_show_stats['total_flags']), inline=True)
+        embed.add_field(name="Cups entered", value=str(stats['cups_entered']), inline=True)
+        embed.add_field(name="Missed ready-checks", value=str(no_show_stats['readycheck_missed']), inline=True)
+        embed.add_field(name="Match no-shows", value=str(no_show_stats['match_no_shows']), inline=True)
+        embed.add_field(name="Inactivity DQs", value=str(no_show_stats['inactivity_dqs']), inline=True)
+        last_no_show_at = no_show_stats['last_no_show_at']
+        embed.add_field(
+            name="Last flagged",
+            value=(f"<t:{int(last_no_show_at)}:R>" if last_no_show_at else "No no-show events recorded."),
+            inline=False,
+        )
+        await ctx.send(embed=embed)
 
     @dueltourney.command(name="history")
     async def dueltourney_history(self, ctx: commands.Context) -> None:
@@ -3036,9 +3224,12 @@ class DuelTournamentCog(commands.Cog):
             if member.id not in signup.entrants:
                 await ctx.send("That user is not in the current signup/ready-check.", delete_after=10)
                 return
+            was_ready = member.id in signup.ready_confirmed
             signup.entrants.discard(member.id)
             signup.ready_confirmed.discard(member.id)
             await self._remove_entry(signup.tournament_id, member.id)
+            if signup.status == "ready_check" and not was_ready:
+                await self._record_no_show(ctx.guild.id, member.id, readycheck_missed=1)
             await self._save_signup_runtime(signup)
             await self._refresh_signup_message(signup)
             if signup.status == "ready_check":
@@ -3066,7 +3257,12 @@ class DuelTournamentCog(commands.Cog):
             await ctx.send(error or "Could not find that player's active match.", delete_after=12)
             return
         winner_user_id = match.player1_user_id if match.player2_user_id == member.id else match.player2_user_id
-        await self._admin_finish_match(match, winner_user_id, reason=f"{member.display_name} was disqualified by a moderator")
+        await self._admin_finish_match(
+            match,
+            winner_user_id,
+            reason=f"{member.display_name} was disqualified by a moderator",
+            penalize_user_id=member.id,
+        )
         await ctx.send(f"🚫 Disqualified {member.mention}. Their opponent advances.")
 
     @dueltourney.command(name="advance")
@@ -3090,8 +3286,8 @@ class DuelTournamentCog(commands.Cog):
         if member.id not in {match.player1_user_id, match.player2_user_id}:
             await ctx.send("That user is not one of the two players in the selected match.", delete_after=10)
             return
-        await self._admin_finish_match(match, member.id, reason=f"{member.display_name} was advanced by a moderator")
         await ctx.send(f"🏁 Advanced {member.mention} to the next round.")
+        await self._admin_finish_match(match, member.id, reason=f"{member.display_name} was advanced by a moderator")
 
     @dueltourney.command(name="remake")
     async def dueltourney_remake(self, ctx: commands.Context, member: discord.Member | None = None) -> None:
