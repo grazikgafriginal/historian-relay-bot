@@ -33,8 +33,8 @@ class TournamentSignupState:
     status: str = "signup"
     signup_window_minutes: int | None = None
     signup_deadline_at: int | None = None
-
-
+    ready_deadline_at: int | None = None
+    ready_confirmed: set[int] = field(default_factory=set)
 
 
 @dataclass(slots=True)
@@ -180,6 +180,22 @@ class TournamentSignupView(discord.ui.View):
         await self.cog._cancel_signup(interaction, self.state)
 
 
+class ReadyCheckView(discord.ui.View):
+    def __init__(self, cog: "DuelTournamentCog", state: TournamentSignupState):
+        super().__init__(timeout=None)
+        self.cog = cog
+        self.state = state
+        self.message: discord.Message | None = None
+
+    @discord.ui.button(label="Ready", style=discord.ButtonStyle.success, emoji="✅")
+    async def ready_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        await self.cog._ready_check_ready(interaction, self.state)
+
+    @discord.ui.button(label="Drop", style=discord.ButtonStyle.danger, emoji="🚪")
+    async def drop_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        await self.cog._ready_check_drop(interaction, self.state)
+
+
 class TournamentMatchView(discord.ui.View):
     def __init__(self, cog: "DuelTournamentCog", match: TournamentMatchState):
         super().__init__(timeout=None)
@@ -201,6 +217,7 @@ class DuelTournamentCog(commands.Cog):
         self._matches: dict[int, TournamentMatchState] = {}
         self._match_tasks: dict[int, asyncio.Task[Any]] = {}
         self._auto_signup_tasks: dict[tuple[int, int], asyncio.Task[Any]] = {}
+        self._ready_check_tasks: dict[tuple[int, int], asyncio.Task[Any]] = {}
         self._last_call_tasks: dict[tuple[int, int], asyncio.Task[Any]] = {}
         self._schedules: dict[tuple[int, int], TournamentScheduleState] = {}
         self._guild_configs: dict[int, GuildTournamentConfig] = {}
@@ -212,6 +229,7 @@ class DuelTournamentCog(commands.Cog):
         await self._ensure_schema()
         await self._load_schedules()
         await self._load_guild_configs()
+        await self._recover_runtime_signups()
         if self._schedule_task is None:
             self._schedule_task = asyncio.create_task(self._schedule_loop())
 
@@ -222,6 +240,9 @@ class DuelTournamentCog(commands.Cog):
             if not task.done():
                 task.cancel()
         for task in self._auto_signup_tasks.values():
+            if not task.done():
+                task.cancel()
+        for task in self._ready_check_tasks.values():
             if not task.done():
                 task.cancel()
         for task in self._last_call_tasks.values():
@@ -270,6 +291,12 @@ class DuelTournamentCog(commands.Cog):
               seed INTEGER,
               PRIMARY KEY (tournament_id, user_id),
               FOREIGN KEY (tournament_id) REFERENCES guessyear_tournaments(tournament_id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS guessyear_tournament_runtime (
+              scope TEXT PRIMARY KEY,
+              payload_json TEXT NOT NULL,
+              updated_at INTEGER NOT NULL
             );
 
             CREATE TABLE IF NOT EXISTS guessyear_tournament_matches (
@@ -844,6 +871,11 @@ class DuelTournamentCog(commands.Cog):
         if last_call and not last_call.done():
             last_call.cancel()
 
+    async def _cancel_ready_check_task(self, guild_id: int, channel_id: int) -> None:
+        task = self._ready_check_tasks.pop((guild_id, channel_id), None)
+        if task and not task.done():
+            task.cancel()
+
     async def _set_tournament_status(self, tournament_id: int, status: str, *, winner_user_id: int | None = None) -> None:
         now = int(time.time())
         if status == "active":
@@ -880,6 +912,125 @@ class DuelTournamentCog(commands.Cog):
             (int(tournament_id), str(user_id)),
         )
         await self.bot.db.conn.commit()
+
+    def _runtime_scope_for_signup(self, state: TournamentSignupState) -> str:
+        return f"signup:{state.guild_id}:{state.channel_id}:{state.tournament_id}"
+
+    def _serialize_signup_state(self, state: TournamentSignupState) -> dict[str, Any]:
+        return {
+            "tournament_id": state.tournament_id,
+            "guild_id": state.guild_id,
+            "channel_id": state.channel_id,
+            "created_by_user_id": state.created_by_user_id,
+            "created_at": state.created_at,
+            "signup_message_id": state.signup_message_id,
+            "title": state.title,
+            "bracket_size": state.bracket_size,
+            "best_of": state.best_of,
+            "entrants": sorted(state.entrants),
+            "status": state.status,
+            "signup_window_minutes": state.signup_window_minutes,
+            "signup_deadline_at": state.signup_deadline_at,
+            "ready_deadline_at": state.ready_deadline_at,
+            "ready_confirmed": sorted(state.ready_confirmed),
+        }
+
+    def _deserialize_signup_state(self, payload: dict[str, Any]) -> TournamentSignupState:
+        return TournamentSignupState(
+            tournament_id=int(payload["tournament_id"]),
+            guild_id=int(payload["guild_id"]),
+            channel_id=int(payload["channel_id"]),
+            created_by_user_id=int(payload["created_by_user_id"]),
+            created_at=int(payload["created_at"]),
+            signup_message_id=int(payload["signup_message_id"]) if payload.get("signup_message_id") is not None else None,
+            title=str(payload["title"]),
+            bracket_size=int(payload["bracket_size"]),
+            best_of=int(payload["best_of"]),
+            entrants={int(x) for x in payload.get("entrants", [])},
+            status=str(payload.get("status") or "signup"),
+            signup_window_minutes=int(payload["signup_window_minutes"]) if payload.get("signup_window_minutes") is not None else None,
+            signup_deadline_at=int(payload["signup_deadline_at"]) if payload.get("signup_deadline_at") is not None else None,
+            ready_deadline_at=int(payload["ready_deadline_at"]) if payload.get("ready_deadline_at") is not None else None,
+            ready_confirmed={int(x) for x in payload.get("ready_confirmed", [])},
+        )
+
+    async def _runtime_set(self, scope: str, payload: dict[str, Any]) -> None:
+        await self.bot.db.conn.execute(
+            """
+            INSERT INTO guessyear_tournament_runtime (scope, payload_json, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(scope) DO UPDATE SET payload_json=excluded.payload_json, updated_at=excluded.updated_at
+            """,
+            (scope, json.dumps(payload, ensure_ascii=False), int(time.time())),
+        )
+        await self.bot.db.conn.commit()
+
+    async def _runtime_delete(self, scope: str) -> None:
+        await self.bot.db.conn.execute(
+            "DELETE FROM guessyear_tournament_runtime WHERE scope=?",
+            (scope,),
+        )
+        await self.bot.db.conn.commit()
+
+    async def _save_signup_runtime(self, state: TournamentSignupState) -> None:
+        await self._runtime_set(self._runtime_scope_for_signup(state), self._serialize_signup_state(state))
+
+    async def _delete_signup_runtime(self, state: TournamentSignupState) -> None:
+        await self._runtime_delete(self._runtime_scope_for_signup(state))
+
+    async def _recover_runtime_signups(self) -> None:
+        if not getattr(self.bot, "db", None) or not getattr(self.bot.db, "conn", None):
+            return
+        cur = await self.bot.db.conn.execute(
+            "SELECT scope, payload_json FROM guessyear_tournament_runtime WHERE scope LIKE 'signup:%'"
+        )
+        rows = await cur.fetchall()
+        now = int(time.time())
+        for scope, payload_json in rows:
+            try:
+                payload = json.loads(str(payload_json))
+                state = self._deserialize_signup_state(payload)
+            except Exception:
+                log.exception("Failed to recover signup runtime for %s", scope)
+                continue
+            if state.status in {"cancelled", "active", "finished"}:
+                await self._runtime_delete(str(scope))
+                continue
+            self._signups[(state.guild_id, state.channel_id)] = state
+            if state.status == "signup" and state.signup_deadline_at and state.signup_deadline_at > now:
+                self._auto_signup_tasks[(state.guild_id, state.channel_id)] = asyncio.create_task(
+                    self._auto_start_signup_after_delay(state.guild_id, state.channel_id, state.signup_deadline_at - now)
+                )
+            elif state.status == "ready_check" and state.ready_deadline_at and state.ready_deadline_at > now:
+                self._ready_check_tasks[(state.guild_id, state.channel_id)] = asyncio.create_task(
+                    self._finalize_ready_check_after_delay(state.guild_id, state.channel_id, state.ready_deadline_at - now)
+                )
+                for user_id in state.entrants:
+                    if user_id not in state.ready_confirmed:
+                        asyncio.create_task(self._send_ready_dm(state, user_id, recovered=True))
+        if rows:
+            log.info("Recovered %d duel tournament signup/ready-check state(s)", len(rows))
+            for state in list(self._signups.values()):
+                asyncio.create_task(self._restore_signup_message_after_ready(state))
+
+    async def _restore_signup_message_after_ready(self, state: TournamentSignupState) -> None:
+        await self.bot.wait_until_ready()
+        try:
+            await self._refresh_signup_message(state)
+        except Exception:
+            channel = self.bot.get_channel(state.channel_id)
+            if isinstance(channel, discord.TextChannel):
+                try:
+                    view = self._signup_view_for(state)
+                    message = await channel.send(
+                        embed=self._build_signup_embed(state, channel.guild),
+                        view=view,
+                    )
+                    state.signup_message_id = message.id
+                    await self._set_signup_message_id(state.tournament_id, message.id)
+                    await self._save_signup_runtime(state)
+                except Exception:
+                    log.exception("Failed to restore signup/ready-check message for tournament %s", state.tournament_id)
 
     async def _create_match_row(
         self,
@@ -979,6 +1130,7 @@ class DuelTournamentCog(commands.Cog):
         state.signup_message_id = message.id
         view.message = message
         await self._set_signup_message_id(tournament_id, message.id)
+        await self._save_signup_runtime(state)
 
         if signup_window_minutes:
             await self._cancel_auto_signup_task(channel.guild.id, channel.id)
@@ -1006,7 +1158,7 @@ class DuelTournamentCog(commands.Cog):
         await channel.send(
             f"{ping}📣 **Scheduled duel tournament signup is open.** "
             f"Join within **{schedule.signup_window_minutes} minute(s)**. "
-            "The bracket will auto-start if at least 2 players joined and the count is even."
+            "After signup closes, the bot will run a DM-backed ready check and then start with any confirmed count of 2 or more."
         )
         config = self._get_guild_config(guild.id)
         last_call_minutes = max(0, min(config.signup_last_call_minutes, schedule.signup_window_minutes - 1))
@@ -1029,43 +1181,21 @@ class DuelTournamentCog(commands.Cog):
         if not isinstance(channel, discord.TextChannel) or guild is None:
             return
         entrants = list(state.entrants)
-        if len(entrants) >= 2 and len(entrants) % 2 == 0:
-            random.shuffle(entrants)
-            state.status = "active"
-            self._signups.pop((guild_id, channel_id), None)
-            actual_size = len(entrants)
-            state.bracket_size = actual_size
-            tournament = TournamentState(
-                tournament_id=state.tournament_id,
-                guild_id=state.guild_id,
-                channel_id=state.channel_id,
-                created_by_user_id=state.created_by_user_id,
-                title=state.title,
-                bracket_size=actual_size,
-                best_of=state.best_of,
-                signup_message_id=state.signup_message_id,
-                entrants=entrants,
-                round_number=1,
-                status="active",
+        if len(entrants) >= 2:
+            await channel.send(
+                f"⏳ Signup closed for **{state.title}**. Starting a **2-minute ready check** now."
             )
-            self._tournaments[tournament.tournament_id] = tournament
-            await self._set_tournament_status(tournament.tournament_id, "active")
-            await self._award_entry_points(tournament)
-            await self._disable_signup_message(state, guild, new_title=f"{state.title} • Started")
-            await channel.send(f"🏁 Scheduled tournament is starting now with **{len(entrants)}** entrants.")
-            await self._start_round(channel, tournament, entrants)
+            await self._begin_ready_check(channel, state)
             self._auto_signup_tasks.pop((guild_id, channel_id), None)
             self._last_call_tasks.pop((guild_id, channel_id), None)
             return
 
-        reason = "Not enough players joined before the signup window closed."
-        if len(entrants) >= 3 and len(entrants) % 2 != 0:
-            reason = "Signup closed with an odd number of players, so the bracket could not start automatically."
         self._signups.pop((guild_id, channel_id), None)
         state.status = "cancelled"
         await self._set_tournament_status(state.tournament_id, "cancelled")
         await self._disable_signup_message(state, guild, new_title=f"{state.title} • Cancelled")
-        await channel.send(f"❌ Scheduled tournament cancelled. {reason}")
+        await self._delete_signup_runtime(state)
+        await channel.send("❌ Scheduled tournament cancelled. Not enough players joined before the signup window closed.")
         self._auto_signup_tasks.pop((guild_id, channel_id), None)
 
     async def _send_signup_last_call_after_delay(self, guild_id: int, channel_id: int, delay_seconds: int, minutes_left: int) -> None:
@@ -1084,6 +1214,150 @@ class DuelTournamentCog(commands.Cog):
             f"Current entrants: **{len(state.entrants)}**."
         )
         self._last_call_tasks.pop((guild_id, channel_id), None)
+
+    async def _begin_ready_check(self, channel: discord.TextChannel, state: TournamentSignupState) -> None:
+        if state.status != "signup":
+            return
+        state.status = "ready_check"
+        state.signup_deadline_at = None
+        state.ready_deadline_at = int(time.time()) + 120
+        state.ready_confirmed.clear()
+        await self._set_tournament_status(state.tournament_id, "ready_check")
+        await self._save_signup_runtime(state)
+        await self._refresh_signup_message(state)
+        for user_id in list(state.entrants):
+            await self._send_ready_dm(state, user_id)
+        await self._cancel_ready_check_task(state.guild_id, state.channel_id)
+        self._ready_check_tasks[(state.guild_id, state.channel_id)] = asyncio.create_task(
+            self._finalize_ready_check_after_delay(state.guild_id, state.channel_id, 120)
+        )
+        await channel.send(
+            "📨 **Ready check started.** Please confirm within **2 minutes** using the button below, "
+            "`!dueltourney ready`, or the DM the bot just sent you."
+        )
+
+    async def _send_ready_dm(self, state: TournamentSignupState, user_id: int, *, recovered: bool = False) -> None:
+        user = self.bot.get_user(user_id)
+        if user is None:
+            try:
+                user = await self.bot.fetch_user(user_id)
+            except Exception:
+                return
+        guild = self.bot.get_guild(state.guild_id)
+        channel = self.bot.get_channel(state.channel_id)
+        channel_hint = channel.mention if isinstance(channel, discord.TextChannel) else f"channel {state.channel_id}"
+        prefix = "[Recovered] " if recovered else ""
+        try:
+            await user.send(
+                f"{prefix}Ready check for **{state.title}** in **{guild.name if guild else state.guild_id}**.\n"
+                f"Please confirm within 2 minutes. Use **!dueltourney ready** here in DM, or in {channel_hint}.\n"
+                f"If you cannot play, use **!dueltourney drop**."
+            )
+        except Exception:
+            log.info("Could not DM ready check to user %s", user_id)
+
+    async def _finalize_ready_check_after_delay(self, guild_id: int, channel_id: int, delay_seconds: int) -> None:
+        try:
+            await asyncio.sleep(max(1, delay_seconds))
+        except asyncio.CancelledError:
+            return
+        state = self._signups.get((guild_id, channel_id))
+        if state is None or state.status != "ready_check":
+            return
+        await self._finalize_ready_check(state)
+
+    async def _finalize_ready_check(self, state: TournamentSignupState) -> None:
+        channel = self.bot.get_channel(state.channel_id)
+        guild = self.bot.get_guild(state.guild_id)
+        if not isinstance(channel, discord.TextChannel) or guild is None:
+            return
+        confirmed = [uid for uid in state.entrants if uid in state.ready_confirmed]
+        unconfirmed = [uid for uid in state.entrants if uid not in state.ready_confirmed]
+        await self._cancel_ready_check_task(state.guild_id, state.channel_id)
+
+        if len(confirmed) < 2:
+            for uid in unconfirmed:
+                await self._remove_entry(state.tournament_id, uid)
+            self._signups.pop((state.guild_id, state.channel_id), None)
+            state.status = "cancelled"
+            await self._set_tournament_status(state.tournament_id, "cancelled")
+            await self._disable_signup_message(state, guild, new_title=f"{state.title} • Cancelled")
+            await self._delete_signup_runtime(state)
+            await channel.send("❌ Tournament cancelled. Fewer than 2 players confirmed during ready check.")
+            return
+
+        for uid in unconfirmed:
+            await self._remove_entry(state.tournament_id, uid)
+        entrants = list(confirmed)
+        random.shuffle(entrants)
+        state.status = "active"
+        self._signups.pop((state.guild_id, state.channel_id), None)
+        actual_size = len(entrants)
+        state.bracket_size = actual_size
+        tournament = TournamentState(
+            tournament_id=state.tournament_id,
+            guild_id=state.guild_id,
+            channel_id=state.channel_id,
+            created_by_user_id=state.created_by_user_id,
+            title=state.title,
+            bracket_size=actual_size,
+            best_of=state.best_of,
+            signup_message_id=state.signup_message_id,
+            entrants=entrants,
+            round_number=1,
+            status="active",
+        )
+        self._tournaments[tournament.tournament_id] = tournament
+        await self._set_tournament_status(tournament.tournament_id, "active")
+        await self._award_entry_points(tournament)
+        await self._disable_signup_message(state, guild, new_title=f"{state.title} • Started")
+        await self._delete_signup_runtime(state)
+        await channel.send(
+            f"🏁 Starting **{state.title}** with **{len(entrants)}** confirmed entrant(s). "
+            f"Byes will be assigned automatically if needed."
+        )
+        await self._start_round(channel, tournament, entrants)
+
+    async def _mark_ready(self, state: TournamentSignupState, user_id: int) -> tuple[bool, str]:
+        if state.status != "ready_check":
+            return False, "Ready check is not active right now."
+        if user_id not in state.entrants:
+            return False, "You are not entered in this tournament."
+        if user_id in state.ready_confirmed:
+            return False, "You are already marked ready."
+        state.ready_confirmed.add(user_id)
+        await self._save_signup_runtime(state)
+        await self._refresh_signup_message(state)
+        if state.ready_confirmed == state.entrants and len(state.ready_confirmed) >= 2:
+            await self._finalize_ready_check(state)
+            return True, "Everyone is ready. Starting the tournament now."
+        return True, "You are marked ready."
+
+    async def _drop_ready_participant(self, state: TournamentSignupState, user_id: int) -> tuple[bool, str]:
+        if state.status != "ready_check":
+            return False, "Ready check is not active right now."
+        if user_id not in state.entrants:
+            return False, "You are not entered in this tournament."
+        state.entrants.discard(user_id)
+        state.ready_confirmed.discard(user_id)
+        await self._remove_entry(state.tournament_id, user_id)
+        await self._save_signup_runtime(state)
+        await self._refresh_signup_message(state)
+        if len(state.entrants) < 2:
+            await self._finalize_ready_check(state)
+            return True, "You dropped from the tournament."
+        if state.ready_confirmed == state.entrants and len(state.ready_confirmed) >= 2:
+            await self._finalize_ready_check(state)
+            return True, "You dropped from the tournament. Everyone else is ready, so it is starting now."
+        return True, "You dropped from the tournament."
+
+    async def _ready_check_ready(self, interaction: discord.Interaction, state: TournamentSignupState) -> None:
+        ok, message = await self._mark_ready(state, interaction.user.id)
+        await interaction.response.send_message(message, ephemeral=True)
+
+    async def _ready_check_drop(self, interaction: discord.Interaction, state: TournamentSignupState) -> None:
+        ok, message = await self._drop_ready_participant(state, interaction.user.id)
+        await interaction.response.send_message(message, ephemeral=True)
 
     async def _disable_signup_message(self, state: TournamentSignupState, guild: discord.Guild, *, new_title: str | None = None) -> None:
         channel = self.bot.get_channel(state.channel_id)
@@ -1107,31 +1381,46 @@ class DuelTournamentCog(commands.Cog):
         entrant_lines: list[str] = []
         for uid in sorted(state.entrants):
             member = guild.get_member(uid)
-            if member is not None:
-                entrant_lines.append(f"{member.display_name} ({member.mention})")
+            if state.status == "ready_check":
+                marker = "✅" if uid in state.ready_confirmed else "⏳"
             else:
-                entrant_lines.append(f"<@{uid}>")
+                marker = "•"
+            if member is not None:
+                entrant_lines.append(f"{marker} {member.display_name} ({member.mention})")
+            else:
+                entrant_lines.append(f"{marker} <@{uid}>")
 
-        description = (
-            "Friday mini cup signups are open. Join now and the bot will seed a single-elimination bracket.\n\n"
-            f"**Signup cap:** {state.bracket_size}\n"
-            f"**Match format:** best of {state.best_of}\n"
-            + (f"**Signup window:** {state.signup_window_minutes} minute(s)\n" if state.signup_window_minutes else "")
-            + (f"**Auto-start:** <t:{state.signup_deadline_at}:R> if the entrant count is even and at least 2.\n" if state.signup_deadline_at else "")
-            + "**Start rule:** the tournament can start with any even number of entrants from 2 up to the signup cap.\n"
-            + "**Tiebreaker:** if both guesses are equally close, the earlier guess wins the point."
-        )
-        embed = discord.Embed(
-            title=state.title,
-            description=description,
-            color=discord.Color.gold(),
-        )
-        embed.add_field(
-            name=f"Entrants ({len(state.entrants)}/{state.bracket_size})",
-            value="\n".join(entrant_lines) if entrant_lines else "No entrants yet.",
-            inline=False,
-        )
-        embed.set_footer(text="Use the buttons below or !dueltourney join / !dueltourney leave.")
+        if state.status == "ready_check":
+            description = (
+                "Ready check is live. Confirm now so the bracket can start.\n\n"
+                f"**Confirmed:** {len(state.ready_confirmed)}/{len(state.entrants)}\n"
+                f"**Match format:** best of {state.best_of}\n"
+                + (f"**Deadline:** <t:{state.ready_deadline_at}:R>\n" if state.ready_deadline_at else "")
+                + "**DMs sent:** yes, with channel fallback if a DM cannot be delivered.\n"
+                + "**Bracket rule:** the tournament starts with any confirmed player count from 2 to 16, with byes assigned automatically when needed."
+            )
+            title = f"{state.title} • Ready Check"
+            footer = "Use Ready / Drop below, or !dueltourney ready / !dueltourney drop."
+            color = discord.Color.orange()
+            field_name = f"Players ({len(state.entrants)}/{state.bracket_size})"
+        else:
+            description = (
+                "Friday mini cup signups are open. Join now and the bot will seed a single-elimination bracket.\n\n"
+                f"**Signup cap:** {state.bracket_size}\n"
+                f"**Match format:** best of {state.best_of}\n"
+                + (f"**Signup window:** {state.signup_window_minutes} minute(s)\n" if state.signup_window_minutes else "")
+                + (f"**Auto-ready-check:** <t:{state.signup_deadline_at}:R>\n" if state.signup_deadline_at else "")
+                + "**Start rule:** the tournament can start with 2 or more confirmed players. Byes are assigned automatically when needed.\n"
+                + "**Tiebreaker:** if both guesses are equally close, the earlier guess wins the point."
+            )
+            title = state.title
+            footer = "Use the buttons below or !dueltourney join / !dueltourney leave."
+            color = discord.Color.gold()
+            field_name = f"Entrants ({len(state.entrants)}/{state.bracket_size})"
+
+        embed = discord.Embed(title=title, description=description, color=color)
+        embed.add_field(name=field_name, value="\n".join(entrant_lines) if entrant_lines else "No entrants yet.", inline=False)
+        embed.set_footer(text=footer)
         return embed
 
     def _build_match_embed(self, match: TournamentMatchState, guild: discord.Guild) -> discord.Embed:
@@ -1208,7 +1497,9 @@ class DuelTournamentCog(commands.Cog):
         view.message = msg
         await msg.edit(embed=self._build_signup_embed(state, channel.guild), view=view)
 
-    def _signup_view_for(self, state: TournamentSignupState) -> TournamentSignupView:
+    def _signup_view_for(self, state: TournamentSignupState) -> discord.ui.View:
+        if state.status == "ready_check":
+            return ReadyCheckView(self, state)
         return TournamentSignupView(self, state)
 
     async def _join_signup(self, interaction: discord.Interaction, state: TournamentSignupState) -> None:
@@ -1220,6 +1511,7 @@ class DuelTournamentCog(commands.Cog):
             return
         state.entrants.add(interaction.user.id)
         await self._upsert_entry(state.tournament_id, interaction.user.id)
+        await self._save_signup_runtime(state)
         await interaction.response.send_message("You joined the tournament.", ephemeral=True)
         await self._refresh_signup_message(state)
 
@@ -1229,6 +1521,7 @@ class DuelTournamentCog(commands.Cog):
             return
         state.entrants.discard(interaction.user.id)
         await self._remove_entry(state.tournament_id, interaction.user.id)
+        await self._save_signup_runtime(state)
         await interaction.response.send_message("You left the tournament.", ephemeral=True)
         await self._refresh_signup_message(state)
 
@@ -1236,7 +1529,9 @@ class DuelTournamentCog(commands.Cog):
         self._signups.pop((state.guild_id, state.channel_id), None)
         state.status = "cancelled"
         await self._cancel_auto_signup_task(state.guild_id, state.channel_id)
+        await self._cancel_ready_check_task(state.guild_id, state.channel_id)
         await self._set_tournament_status(state.tournament_id, "cancelled")
+        await self._delete_signup_runtime(state)
         view = self._signup_view_for(state)
         for child in view.children:
             child.disabled = True
@@ -1247,61 +1542,37 @@ class DuelTournamentCog(commands.Cog):
 
     async def _start_signup_tournament(self, interaction: discord.Interaction, state: TournamentSignupState) -> None:
         if state.status != "signup":
-            await interaction.response.send_message("This tournament has already started.", ephemeral=True)
+            await interaction.response.send_message("This tournament has already moved past signup.", ephemeral=True)
             return
         entrants = list(state.entrants)
         if len(entrants) < 2:
-            await interaction.response.send_message("You need at least 2 entrants to start the tournament.", ephemeral=True)
+            await interaction.response.send_message("You need at least 2 entrants to begin ready check.", ephemeral=True)
             return
-        if len(entrants) % 2 != 0:
-            await interaction.response.send_message(
-                "You currently have an odd number of entrants. Add one more player or remove one before starting.",
-                ephemeral=True,
-            )
-            return
-        random.shuffle(entrants)
-        state.status = "active"
         await self._cancel_auto_signup_task(state.guild_id, state.channel_id)
-        self._signups.pop((state.guild_id, state.channel_id), None)
-        actual_size = len(entrants)
-        state.bracket_size = actual_size
-        tournament = TournamentState(
-            tournament_id=state.tournament_id,
-            guild_id=state.guild_id,
-            channel_id=state.channel_id,
-            created_by_user_id=state.created_by_user_id,
-            title=state.title,
-            bracket_size=actual_size,
-            best_of=state.best_of,
-            signup_message_id=state.signup_message_id,
-            entrants=entrants,
-            round_number=1,
-            status="active",
-        )
-        self._tournaments[tournament.tournament_id] = tournament
-        await self._set_tournament_status(tournament.tournament_id, "active")
-        await self._award_entry_points(tournament)
+        await self._begin_ready_check(interaction.channel, state)
+        await interaction.response.send_message("Ready check started. Entrants were pinged in DMs where possible.", ephemeral=True)
 
-        view = self._signup_view_for(state)
-        for child in view.children:
-            child.disabled = True
-        embed = self._build_signup_embed(state, interaction.guild)
-        embed.title = f"{state.title} • Started"
-        await interaction.response.edit_message(embed=embed, view=view)
-
-        await self._start_round(interaction.channel, tournament, entrants)
+    def _seed_pairings_with_byes(self, players: list[int]) -> list[tuple[int, int | None]]:
+        seeded = list(players)
+        bracket_slots = 1
+        while bracket_slots < max(2, len(seeded)):
+            bracket_slots *= 2
+        byes_needed = max(0, bracket_slots - len(seeded))
+        bye_players = seeded[:byes_needed]
+        remaining = seeded[byes_needed:]
+        pairings: list[tuple[int, int | None]] = [(user_id, None) for user_id in bye_players]
+        while remaining:
+            player1 = remaining.pop(0)
+            player2 = remaining.pop(0) if remaining else None
+            pairings.append((player1, player2))
+        return pairings
 
     async def _start_round(self, host_channel: discord.abc.Messageable, tournament: TournamentState, players: list[int]) -> None:
         round_number = tournament.round_number
         tournament.next_round_players = []
         tournament.active_match_ids.clear()
 
-        pairings: list[tuple[int, int | None]] = []
-        work = list(players)
-        while work:
-            player1 = work.pop(0)
-            player2 = work.pop(0) if work else None
-            pairings.append((player1, player2))
+        pairings = self._seed_pairings_with_byes(players)
 
         tournament.round_pairings[round_number] = pairings
         tournament.round_winners.setdefault(round_number, {})
@@ -1696,8 +1967,8 @@ class DuelTournamentCog(commands.Cog):
     @commands.group(name="dueltourney", invoke_without_command=True)
     async def dueltourney(self, ctx: commands.Context) -> None:
         await ctx.send(
-            "Use `!dueltourney open`, `!dueltourney join`, `!dueltourney leave`, "
-            "`!dueltourney start`, `!dueltourney status`, or `!dueltourney cancel`."
+            "Use `!dueltourney open`, `!dueltourney join`, `!dueltourney leave`, `!dueltourney start`, "
+            "`!dueltourney ready`, `!dueltourney drop`, `!dueltourney status`, or `!dueltourney cancel`."
         )
 
     @dueltourney.command(name="open")
@@ -1736,7 +2007,7 @@ class DuelTournamentCog(commands.Cog):
         if not ctx.guild:
             return
         state = self._signups.get((ctx.guild.id, ctx.channel.id))
-        if not state:
+        if not state or state.status != "signup":
             await ctx.send("There is no open tournament signup in this channel.", delete_after=10)
             return
         if len(state.entrants) >= state.bracket_size and ctx.author.id not in state.entrants:
@@ -1744,6 +2015,7 @@ class DuelTournamentCog(commands.Cog):
             return
         state.entrants.add(ctx.author.id)
         await self._upsert_entry(state.tournament_id, ctx.author.id)
+        await self._save_signup_runtime(state)
         await self._refresh_signup_message(state)
         await ctx.message.add_reaction("✅")
 
@@ -1755,13 +2027,69 @@ class DuelTournamentCog(commands.Cog):
         if not state:
             await ctx.send("There is no open tournament signup in this channel.", delete_after=10)
             return
+        if state.status == "ready_check":
+            await ctx.send("Ready check is active. Use `!dueltourney drop` if you need to withdraw.", delete_after=10)
+            return
         if ctx.author.id not in state.entrants:
             await ctx.send("You are not signed up for this tournament.", delete_after=10)
             return
         state.entrants.discard(ctx.author.id)
         await self._remove_entry(state.tournament_id, ctx.author.id)
+        await self._save_signup_runtime(state)
         await self._refresh_signup_message(state)
         await ctx.message.add_reaction("👋")
+
+    def _find_ready_check_for_user(self, user_id: int, guild_id: int | None = None, channel_id: int | None = None) -> TournamentSignupState | None:
+        matches: list[TournamentSignupState] = []
+        for state in self._signups.values():
+            if state.status != "ready_check":
+                continue
+            if user_id not in state.entrants:
+                continue
+            if guild_id is not None and state.guild_id != guild_id:
+                continue
+            if channel_id is not None and state.channel_id != channel_id:
+                continue
+            matches.append(state)
+        if len(matches) == 1:
+            return matches[0]
+        return None
+
+    @dueltourney.command(name="ready")
+    async def dueltourney_ready(self, ctx: commands.Context) -> None:
+        state: TournamentSignupState | None
+        if ctx.guild and isinstance(ctx.channel, discord.TextChannel):
+            state = self._find_ready_check_for_user(ctx.author.id, ctx.guild.id, ctx.channel.id)
+        else:
+            state = self._find_ready_check_for_user(ctx.author.id)
+            if state is None:
+                count = sum(1 for s in self._signups.values() if s.status == "ready_check" and ctx.author.id in s.entrants)
+                if count > 1:
+                    await ctx.send("You are in more than one ready check. Use `!dueltourney ready` in the correct server channel.")
+                    return
+        if state is None:
+            await ctx.send("You are not currently in an active ready check.")
+            return
+        _ok, message = await self._mark_ready(state, ctx.author.id)
+        await ctx.send(message)
+
+    @dueltourney.command(name="drop")
+    async def dueltourney_drop(self, ctx: commands.Context) -> None:
+        state: TournamentSignupState | None
+        if ctx.guild and isinstance(ctx.channel, discord.TextChannel):
+            state = self._find_ready_check_for_user(ctx.author.id, ctx.guild.id, ctx.channel.id)
+        else:
+            state = self._find_ready_check_for_user(ctx.author.id)
+            if state is None:
+                count = sum(1 for s in self._signups.values() if s.status == "ready_check" and ctx.author.id in s.entrants)
+                if count > 1:
+                    await ctx.send("You are in more than one ready check. Use `!dueltourney drop` in the correct server channel.")
+                    return
+        if state is None:
+            await ctx.send("You are not currently in an active ready check.")
+            return
+        _ok, message = await self._drop_ready_participant(state, ctx.author.id)
+        await ctx.send(message)
 
     @dueltourney.command(name="start")
     async def dueltourney_start(self, ctx: commands.Context) -> None:
@@ -1776,39 +2104,11 @@ class DuelTournamentCog(commands.Cog):
             return
         entrants = list(state.entrants)
         if len(entrants) < 2:
-            await ctx.send("You need at least 2 entrants to start.", delete_after=10)
+            await ctx.send("You need at least 2 entrants to begin ready check.", delete_after=10)
             return
-        if len(entrants) % 2 != 0:
-            await ctx.send(
-                "You currently have an odd number of entrants. Add one more player or remove one before starting.",
-                delete_after=12,
-            )
-            return
-        random.shuffle(entrants)
-        state.status = "active"
         await self._cancel_auto_signup_task(ctx.guild.id, ctx.channel.id)
-        self._signups.pop((ctx.guild.id, ctx.channel.id), None)
-        actual_size = len(entrants)
-        state.bracket_size = actual_size
-        tournament = TournamentState(
-            tournament_id=state.tournament_id,
-            guild_id=state.guild_id,
-            channel_id=state.channel_id,
-            created_by_user_id=state.created_by_user_id,
-            title=state.title,
-            bracket_size=actual_size,
-            best_of=state.best_of,
-            signup_message_id=state.signup_message_id,
-            entrants=entrants,
-            round_number=1,
-            status="active",
-        )
-        self._tournaments[tournament.tournament_id] = tournament
-        await self._set_tournament_status(tournament.tournament_id, "active")
-        await self._award_entry_points(tournament)
-        await self._disable_signup_message(state, ctx.guild, new_title=f"{state.title} • Started")
-        await ctx.send(f"🏁 Starting **{state.title}** with **{len(entrants)}** entrants.")
-        await self._start_round(ctx.channel, tournament, entrants)
+        await self._begin_ready_check(ctx.channel, state)
+        await ctx.send("📨 Ready check started. Players were DM'd where possible.")
 
     @dueltourney.command(name="schedule")
     async def dueltourney_schedule(
@@ -2115,7 +2415,9 @@ class DuelTournamentCog(commands.Cog):
         if signup:
             signup.status = "cancelled"
             await self._cancel_auto_signup_task(ctx.guild.id, ctx.channel.id)
+            await self._cancel_ready_check_task(ctx.guild.id, ctx.channel.id)
             await self._set_tournament_status(signup.tournament_id, "cancelled")
+            await self._delete_signup_runtime(signup)
             await self._disable_signup_message(signup, ctx.guild, new_title=f"{signup.title} • Cancelled")
             await ctx.send("Cancelled the signup.")
             return
