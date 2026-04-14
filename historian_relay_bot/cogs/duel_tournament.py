@@ -872,10 +872,20 @@ class DuelTournamentCog(commands.Cog):
         if last_call and not last_call.done():
             last_call.cancel()
 
-    async def _cancel_ready_check_task(self, guild_id: int, channel_id: int) -> None:
+    async def _cancel_ready_check_task(
+        self,
+        guild_id: int,
+        channel_id: int,
+        *,
+        cancel_current: bool = False,
+    ) -> None:
         task = self._ready_check_tasks.pop((guild_id, channel_id), None)
-        if task and not task.done():
-            task.cancel()
+        if task is None or task.done():
+            return
+        current = asyncio.current_task()
+        if task is current and not cancel_current:
+            return
+        task.cancel()
 
     async def _set_tournament_status(self, tournament_id: int, status: str, *, winner_user_id: int | None = None) -> None:
         now = int(time.time())
@@ -1162,13 +1172,16 @@ class DuelTournamentCog(commands.Cog):
                 self._auto_signup_tasks[(state.guild_id, state.channel_id)] = asyncio.create_task(
                     self._auto_start_signup_after_delay(state.guild_id, state.channel_id, state.signup_deadline_at - now)
                 )
-            elif state.status == "ready_check" and state.ready_deadline_at and state.ready_deadline_at > now:
-                self._ready_check_tasks[(state.guild_id, state.channel_id)] = asyncio.create_task(
-                    self._finalize_ready_check_after_delay(state.guild_id, state.channel_id, state.ready_deadline_at - now)
-                )
-                for user_id in state.entrants:
-                    if user_id not in state.ready_confirmed:
-                        asyncio.create_task(self._send_ready_dm(state, user_id, recovered=True))
+            elif state.status == "ready_check":
+                if state.ready_deadline_at and state.ready_deadline_at > now:
+                    self._ready_check_tasks[(state.guild_id, state.channel_id)] = asyncio.create_task(
+                        self._finalize_ready_check_after_delay(state.guild_id, state.channel_id, state.ready_deadline_at - now)
+                    )
+                    for user_id in state.entrants:
+                        if user_id not in state.ready_confirmed:
+                            asyncio.create_task(self._send_ready_dm(state, user_id, recovered=True))
+                else:
+                    asyncio.create_task(self._finalize_ready_check(state))
         if rows:
             log.info("Recovered %d duel tournament signup/ready-check state(s)", len(rows))
             for state in list(self._signups.values()):
@@ -1543,7 +1556,7 @@ class DuelTournamentCog(commands.Cog):
         await self._finalize_ready_check(state)
 
     async def _finalize_ready_check(self, state: TournamentSignupState) -> None:
-        channel = self.bot.get_channel(state.channel_id)
+        channel = await self._resolve_channel(state.channel_id)
         guild = self.bot.get_guild(state.guild_id)
         if not isinstance(channel, discord.TextChannel) or guild is None:
             return
@@ -3028,7 +3041,12 @@ class DuelTournamentCog(commands.Cog):
             await self._remove_entry(signup.tournament_id, member.id)
             await self._save_signup_runtime(signup)
             await self._refresh_signup_message(signup)
-            await ctx.send(f"🚫 Removed {member.mention} from the current tournament signup.")
+            if signup.status == "ready_check":
+                if len(signup.entrants) < 2 or signup.ready_confirmed == signup.entrants:
+                    await self._finalize_ready_check(signup)
+                await ctx.send(f"🚫 Removed {member.mention} from the current tournament ready-check.")
+            else:
+                await ctx.send(f"🚫 Removed {member.mention} from the current tournament signup.")
             return
 
         tournament = self._get_live_tournament(ctx.guild.id, ctx.channel.id)
