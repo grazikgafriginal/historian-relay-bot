@@ -757,6 +757,17 @@ class DuelTournamentCog(commands.Cog):
         role = guild.get_role(config.ping_role_id)
         return f'{role.mention} ' if role is not None else ''
 
+    async def _delete_message_later(self, message: discord.Message | None, delay_seconds: int = 120) -> None:
+        if message is None:
+            return
+        try:
+            await asyncio.sleep(max(1, delay_seconds))
+            await message.delete()
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            pass
+
     async def _upsert_schedule(
         self,
         guild_id: int,
@@ -787,6 +798,7 @@ class DuelTournamentCog(commands.Cog):
               bracket_size=excluded.bracket_size,
               best_of=excluded.best_of,
               enabled=1,
+              last_fire_key=NULL,
               updated_at=excluded.updated_at
             """,
             (
@@ -816,7 +828,7 @@ class DuelTournamentCog(commands.Cog):
             bracket_size=bracket_size,
             best_of=best_of,
             enabled=True,
-            last_fire_key=self._schedules.get((guild_id, channel_id)).last_fire_key if (guild_id, channel_id) in self._schedules else None,
+            last_fire_key=None,
         )
         self._schedules[(guild_id, channel_id)] = schedule
         return schedule
@@ -897,7 +909,6 @@ class DuelTournamentCog(commands.Cog):
                     fire_key = self._weekly_fire_key(now, schedule.weekday)
                     if schedule.last_fire_key == fire_key:
                         continue
-                    await self._set_schedule_last_fire_key(schedule.guild_id, schedule.channel_id, fire_key)
                     if self._channel_has_live_tournament(schedule.guild_id, schedule.channel_id):
                         log.info(
                             "Skipping scheduled duel tournament for guild=%s channel=%s because one is already live",
@@ -905,6 +916,7 @@ class DuelTournamentCog(commands.Cog):
                             schedule.channel_id,
                         )
                         continue
+                    await self._set_schedule_last_fire_key(schedule.guild_id, schedule.channel_id, fire_key)
                     await self._open_scheduled_signup(schedule)
             except asyncio.CancelledError:
                 raise
@@ -1579,9 +1591,10 @@ class DuelTournamentCog(commands.Cog):
             return
         entrants = list(state.entrants)
         if len(entrants) >= 2:
-            await channel.send(
+            notice = await channel.send(
                 f"⏳ Signup closed for **{state.title}**. Starting a **2-minute ready check** now."
             )
+            asyncio.create_task(self._delete_message_later(notice, 125))
             await self._begin_ready_check(channel, state)
             self._auto_signup_tasks.pop((guild_id, channel_id), None)
             self._last_call_tasks.pop((guild_id, channel_id), None)
@@ -1628,10 +1641,11 @@ class DuelTournamentCog(commands.Cog):
         self._ready_check_tasks[(state.guild_id, state.channel_id)] = asyncio.create_task(
             self._finalize_ready_check_after_delay(state.guild_id, state.channel_id, 120)
         )
-        await channel.send(
+        notice = await channel.send(
             "📨 **Ready check started.** Please confirm within **2 minutes** using the button below, "
             "`!dueltourney ready`, or the DM the bot just sent you."
         )
+        asyncio.create_task(self._delete_message_later(notice, 125))
 
     async def _send_ready_dm(self, state: TournamentSignupState, user_id: int, *, recovered: bool = False) -> None:
         user = self.bot.get_user(user_id)
@@ -1720,10 +1734,11 @@ class DuelTournamentCog(commands.Cog):
         await self._disable_signup_message(state, guild, new_title=f"{state.title} • Started")
         await self._delete_signup_runtime(state)
         removed_suffix = f" Removed **{len(unconfirmed)}** unready player(s)." if unconfirmed else ""
-        await channel.send(
+        notice = await channel.send(
             f"🏁 Starting **{state.title}** with **{len(entrants)}** confirmed entrant(s)."
             f"{removed_suffix} Byes will be assigned automatically if needed."
         )
+        asyncio.create_task(self._delete_message_later(notice, 125))
         await self._start_round(channel, tournament, entrants)
 
     async def _mark_ready(self, state: TournamentSignupState, user_id: int) -> tuple[bool, str]:
@@ -2232,12 +2247,6 @@ class DuelTournamentCog(commands.Cog):
 
         await self._save_tournament_runtime(tournament)
 
-        embed = discord.Embed(
-            title=f"{tournament.title} • Round {round_number}",
-            description="\n".join(bracket_lines) if bracket_lines else "No matches created.",
-            color=discord.Color.gold(),
-        )
-        await host_channel.send(embed=embed)
         if isinstance(host_channel, discord.TextChannel):
             await self._refresh_bracket_message(host_channel, tournament)
 
@@ -2855,7 +2864,10 @@ class DuelTournamentCog(commands.Cog):
             return
         await self._cancel_auto_signup_task(ctx.guild.id, ctx.channel.id)
         await self._begin_ready_check(ctx.channel, state)
-        await ctx.send("📨 Ready check started. Players were DM'd where possible.")
+        try:
+            await ctx.message.add_reaction("📨")
+        except Exception:
+            pass
 
     @dueltourney.command(name="schedule")
     async def dueltourney_schedule(
