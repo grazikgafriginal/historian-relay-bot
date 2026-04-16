@@ -102,9 +102,13 @@ class TournamentMatchState:
     winner_user_id: int | None = None
     status_message_id: int | None = None
 
+
     @property
     def wins_needed(self) -> int:
         return self.best_of // 2 + 1
+
+
+MATCH_MESSAGE_TTL_SECONDS = 3600
 
 
 @dataclass(slots=True)
@@ -126,9 +130,10 @@ class TournamentState:
     bracket_message_id: int | None = None
     round_pairings: dict[int, list[tuple[int, int | None]]] = field(default_factory=dict)
     round_winners: dict[int, dict[int, int | None]] = field(default_factory=dict)
+    pending_matchups: list[tuple[int, int, int, bool]] = field(default_factory=list)
 
 
-class TournamentGuessModal(discord.ui.Modal, title="Submit hidden tournament guess"):
+class TournamentGuessModal(discord.ui.Modal, title="Submit your tournament answer"):
     guess = discord.ui.TextInput(
         label="Year",
         placeholder="Enter a year like 1789",
@@ -202,7 +207,7 @@ class TournamentMatchView(discord.ui.View):
         self.cog = cog
         self.match = match
 
-    @discord.ui.button(label="Submit hidden guess", style=discord.ButtonStyle.primary, emoji="🕵️")
+    @discord.ui.button(label="Submit your answer", style=discord.ButtonStyle.primary, emoji="🕵️")
     async def submit_hidden_guess(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await self.cog._open_guess_modal(interaction, self.match)
 
@@ -757,7 +762,7 @@ class DuelTournamentCog(commands.Cog):
         role = guild.get_role(config.ping_role_id)
         return f'{role.mention} ' if role is not None else ''
 
-    async def _delete_message_later(self, message: discord.Message | None, delay_seconds: int = 120) -> None:
+    async def _delete_message_later(self, message: discord.Message | None, delay_seconds: int = MATCH_MESSAGE_TTL_SECONDS) -> None:
         if message is None:
             return
         try:
@@ -1142,6 +1147,7 @@ class DuelTournamentCog(commands.Cog):
                 str(round_number): {str(position): winner for position, winner in winners.items()}
                 for round_number, winners in tournament.round_winners.items()
             },
+            "pending_matchups": [list(item) for item in tournament.pending_matchups],
         }
 
     def _deserialize_tournament_state(self, payload: dict[str, Any]) -> TournamentState:
@@ -1175,6 +1181,10 @@ class DuelTournamentCog(commands.Cog):
                 }
                 for round_number, winners in (payload.get("round_winners") or {}).items()
             },
+            pending_matchups=[
+                (int(item[0]), int(item[1]), int(item[2]), bool(item[3]))
+                for item in payload.get("pending_matchups", [])
+            ],
         )
 
     def _serialize_match_result(self, result: TournamentMatchResult) -> dict[str, Any]:
@@ -1564,7 +1574,8 @@ class DuelTournamentCog(commands.Cog):
         )
         guild = channel.guild
         ping = self._role_ping_text(guild, guild.id)
-        await channel.send(
+        await self._send_managed_message(
+            channel,
             f"{ping}📣 **Scheduled duel tournament signup is open.** "
             f"Join within **{schedule.signup_window_minutes} minute(s)**. "
             "After signup closes, the bot will run a DM-backed ready check and then start with any confirmed count of 2 or more."
@@ -1591,10 +1602,9 @@ class DuelTournamentCog(commands.Cog):
             return
         entrants = list(state.entrants)
         if len(entrants) >= 2:
-            notice = await channel.send(
+            notice = await self._send_managed_message(channel,
                 f"⏳ Signup closed for **{state.title}**. Starting a **2-minute ready check** now."
             )
-            asyncio.create_task(self._delete_message_later(notice, 125))
             await self._begin_ready_check(channel, state)
             self._auto_signup_tasks.pop((guild_id, channel_id), None)
             self._last_call_tasks.pop((guild_id, channel_id), None)
@@ -1619,7 +1629,8 @@ class DuelTournamentCog(commands.Cog):
         if state is None or state.status != 'signup' or not isinstance(channel, discord.TextChannel) or guild is None:
             return
         ping = self._role_ping_text(guild, guild.id)
-        await channel.send(
+        await self._send_managed_message(
+            channel,
             f"{ping}⏳ **Last call** — **{state.title}** closes in about **{minutes_left} minute(s)**. "
             f"Current entrants: **{len(state.entrants)}**."
         )
@@ -1641,11 +1652,11 @@ class DuelTournamentCog(commands.Cog):
         self._ready_check_tasks[(state.guild_id, state.channel_id)] = asyncio.create_task(
             self._finalize_ready_check_after_delay(state.guild_id, state.channel_id, 120)
         )
-        notice = await channel.send(
+        await self._send_managed_message(
+            channel,
             "📨 **Ready check started.** Please confirm within **2 minutes** using the button below, "
             "`!dueltourney ready`, or the DM the bot just sent you."
         )
-        asyncio.create_task(self._delete_message_later(notice, 125))
 
     async def _send_ready_dm(self, state: TournamentSignupState, user_id: int, *, recovered: bool = False) -> None:
         user = self.bot.get_user(user_id)
@@ -1699,12 +1710,13 @@ class DuelTournamentCog(commands.Cog):
             await self._disable_signup_message(state, guild, new_title=f"{state.title} • Cancelled")
             await self._delete_signup_runtime(state)
             if unconfirmed:
-                await channel.send(
+                await self._send_managed_message(
+                    channel,
                     "❌ Tournament cancelled. Fewer than 2 players confirmed during ready check. "
                     f"Removed {len(unconfirmed)} unready player(s)."
                 )
             else:
-                await channel.send("❌ Tournament cancelled. Fewer than 2 players confirmed during ready check.")
+                await self._send_managed_message(channel, "❌ Tournament cancelled. Fewer than 2 players confirmed during ready check.")
             return
 
         for uid in unconfirmed:
@@ -1734,11 +1746,11 @@ class DuelTournamentCog(commands.Cog):
         await self._disable_signup_message(state, guild, new_title=f"{state.title} • Started")
         await self._delete_signup_runtime(state)
         removed_suffix = f" Removed **{len(unconfirmed)}** unready player(s)." if unconfirmed else ""
-        notice = await channel.send(
+        await self._send_managed_message(
+            channel,
             f"🏁 Starting **{state.title}** with **{len(entrants)}** confirmed entrant(s)."
             f"{removed_suffix} Byes will be assigned automatically if needed."
         )
-        asyncio.create_task(self._delete_message_later(notice, 125))
         await self._start_round(channel, tournament, entrants)
 
     async def _mark_ready(self, state: TournamentSignupState, user_id: int) -> tuple[bool, str]:
@@ -1860,7 +1872,7 @@ class DuelTournamentCog(commands.Cog):
         embed.add_field(name="Players", value=f"{p1.mention if p1 else f'<@{match.player1_user_id}>'} vs {p2.mention if p2 else f'<@{match.player2_user_id}>'}", inline=False)
         embed.add_field(name="Score", value=f"{s1} - {s2}", inline=True)
         embed.add_field(name="Question", value=f"{match.current_question}/{match.best_of}", inline=True)
-        embed.add_field(name="How to play", value="Use **Submit hidden guess** and enter a year.", inline=False)
+        embed.add_field(name="How to play", value="Press **Submit your answer** and enter the year.", inline=False)
         embed.set_footer(text="Earliest guess wins equal-distance ties.")
         return embed
     def _build_match_view(self, match: TournamentMatchState, *, disabled: bool = False) -> TournamentMatchView:
@@ -1881,7 +1893,7 @@ class DuelTournamentCog(commands.Cog):
             return None
         p1 = host_channel.guild.get_member(match.player1_user_id)
         p2 = host_channel.guild.get_member(match.player2_user_id)
-        seed_message = await host_channel.send(
+        seed_message = await self._send_managed_message(host_channel,
             f"🔁 **Recovered Match Thread** — "
             f"{p1.mention if p1 else f'<@{match.player1_user_id}>'} vs {p2.mention if p2 else f'<@{match.player2_user_id}>'}"
         )
@@ -2036,7 +2048,7 @@ class DuelTournamentCog(commands.Cog):
             await self._record_no_show(match.guild_id, penalize_user_id, inactivity_dqs=1)
         thread = await self._resolve_channel(match.thread_id)
         if isinstance(thread, discord.Thread):
-            await thread.send(f"🛠️ Moderator ruling: <@{winner_user_id}> advances. Reason: {reason}")
+            await self._send_managed_message(thread, f"🛠️ Moderator ruling: <@{winner_user_id}> advances. Reason: {reason}")
         await self._handle_finished_match(match)
 
     async def _admin_remake_match(self, match: TournamentMatchState, *, reason: str) -> None:
@@ -2062,7 +2074,7 @@ class DuelTournamentCog(commands.Cog):
         await self._update_match_result(match)
         await self._save_match_runtime(match)
         if isinstance(thread, discord.Thread):
-            await thread.send(f"🔁 Match remade by a moderator. Reason: {reason}")
+            await self._send_managed_message(thread, f"🔁 Match remade by a moderator. Reason: {reason}")
         await self._post_match_question(match)
 
     async def _admin_finish_tournament(self, tournament: TournamentState, *, winner_user_id: int, reason: str) -> None:
@@ -2079,7 +2091,7 @@ class DuelTournamentCog(commands.Cog):
         await self._season_add_points(tournament.guild_id, winner_user_id, points=8, tournament_wins=1)
         host_channel = await self._resolve_channel(tournament.channel_id)
         if isinstance(host_channel, discord.TextChannel):
-            await host_channel.send(f"🏆 Moderator ended **{tournament.title}** and awarded the title to <@{winner_user_id}>. Reason: {reason}")
+            await self._send_managed_message(host_channel, f"🏆 Moderator ended **{tournament.title}** and awarded the title to <@{winner_user_id}>. Reason: {reason}")
             await self._refresh_bracket_message(host_channel, tournament)
             await self._apply_champion_role(host_channel.guild, winner_user_id)
         await self._delete_tournament_runtime(tournament)
@@ -2200,7 +2212,7 @@ class DuelTournamentCog(commands.Cog):
         await interaction.response.send_message("Ready check started. Entrants were pinged in DMs where possible.", ephemeral=True)
 
     def _seed_pairings_with_byes(self, players: list[int]) -> list[tuple[int, int | None]]:
-        seeded = list(players)
+        seeded = self._dedupe_players(list(players))
         bracket_slots = 1
         while bracket_slots < max(2, len(seeded)):
             bracket_slots *= 2
@@ -2211,46 +2223,74 @@ class DuelTournamentCog(commands.Cog):
         while remaining:
             player1 = remaining.pop(0)
             player2 = remaining.pop(0) if remaining else None
-            pairings.append((player1, player2))
+            if player2 is not None and player1 == player2:
+                pairings.append((player1, None))
+            else:
+                pairings.append((player1, player2))
         return pairings
+
+    async def _launch_next_pending_match(self, host_channel: discord.TextChannel, tournament: TournamentState) -> TournamentMatchState | None:
+        if tournament.active_match_ids or not tournament.pending_matchups:
+            return None
+        bracket_position, player1_user_id, player2_user_id, is_final = tournament.pending_matchups.pop(0)
+        if player1_user_id == player2_user_id:
+            tournament.next_round_players.append(player1_user_id)
+            tournament.round_winners.setdefault(tournament.round_number, {})[bracket_position] = player1_user_id
+            await self._save_tournament_runtime(tournament)
+            await self._refresh_bracket_message(host_channel, tournament)
+            if not tournament.pending_matchups:
+                await self._advance_or_finish(host_channel, tournament)
+            return None
+        if is_final:
+            guild = self.bot.get_guild(tournament.guild_id)
+            await self._award_finalist_points(tournament, [player1_user_id, player2_user_id])
+            await self._send_managed_message(
+                host_channel,
+                f"🔥 **Final is live** — {self._user_ref(guild, player1_user_id)} vs {self._user_ref(guild, player2_user_id)}"
+            )
+        match = await self._launch_match(
+            host_channel,
+            tournament,
+            tournament.round_number,
+            bracket_position,
+            player1_user_id,
+            player2_user_id,
+            is_final=is_final,
+        )
+        tournament.active_match_ids.add(match.match_id)
+        await self._save_match_runtime(match)
+        await self._save_tournament_runtime(tournament)
+        await self._refresh_bracket_message(host_channel, tournament)
+        return match
 
     async def _start_round(self, host_channel: discord.abc.Messageable, tournament: TournamentState, players: list[int]) -> None:
         round_number = tournament.round_number
         tournament.next_round_players = []
         tournament.active_match_ids.clear()
+        tournament.pending_matchups = []
 
-        pairings = self._seed_pairings_with_byes(players)
+        normalized_players = self._dedupe_players(players)
+        pairings = self._seed_pairings_with_byes(normalized_players)
 
         tournament.round_pairings[round_number] = pairings
         tournament.round_winners.setdefault(round_number, {})
 
-        bracket_lines: list[str] = []
-        guild = self.bot.get_guild(tournament.guild_id)
         is_final_round = len([pair for pair in pairings if pair[1] is not None]) == 1 and len(pairings) == 1
-        if is_final_round and len(players) == 2 and isinstance(host_channel, discord.TextChannel):
-            await self._award_finalist_points(tournament, [players[0], players[1]])
-            await host_channel.send(
-                f"🔥 **Final is live** — {self._user_ref(guild, players[0])} vs {self._user_ref(guild, players[1])}"
-            )
 
         for idx, (player1, player2) in enumerate(pairings, start=1):
             if player2 is None:
                 tournament.next_round_players.append(player1)
                 tournament.round_winners[round_number][idx] = player1
-                bracket_lines.append(f"Match {idx}: {self._user_ref(guild, player1)} gets a bye")
                 continue
-
-            bracket_lines.append(f"Match {idx}: {self._user_ref(guild, player1)} vs {self._user_ref(guild, player2)}")
-            match = await self._launch_match(host_channel, tournament, round_number, idx, player1, player2, is_final=is_final_round)
-            tournament.active_match_ids.add(match.match_id)
-            await self._save_match_runtime(match)
+            tournament.pending_matchups.append((idx, player1, player2, is_final_round))
 
         await self._save_tournament_runtime(tournament)
 
         if isinstance(host_channel, discord.TextChannel):
             await self._refresh_bracket_message(host_channel, tournament)
+            await self._launch_next_pending_match(host_channel, tournament)
 
-        if not tournament.active_match_ids:
+        if not tournament.active_match_ids and not tournament.pending_matchups:
             await self._advance_or_finish(host_channel, tournament)
 
     async def _launch_match(
@@ -2279,10 +2319,12 @@ class DuelTournamentCog(commands.Cog):
 
         if not isinstance(host_channel, discord.TextChannel):
             raise RuntimeError("Tournament matches must be started from a normal text channel.")
+        if player1_user_id == player2_user_id:
+            raise RuntimeError("Refusing to create a duel tournament match where both players are the same user.")
 
         p1 = host_channel.guild.get_member(player1_user_id)
         p2 = host_channel.guild.get_member(player2_user_id)
-        seed_message = await host_channel.send(
+        seed_message = await self._send_managed_message(host_channel,
             f"⚔️ **Round {round_number}, Match {bracket_position}** — "
             f"{p1.mention if p1 else f'<@{player1_user_id}>'} vs {p2.mention if p2 else f'<@{player2_user_id}>'}"
         )
@@ -2323,6 +2365,25 @@ class DuelTournamentCog(commands.Cog):
         await self._post_match_question(match)
         return match
 
+    async def _disable_previous_match_prompt(self, match: TournamentMatchState) -> None:
+        thread = await self._ensure_match_thread(match, create_if_missing=True)
+        if not isinstance(thread, discord.Thread) or match.status_message_id is None:
+            return
+        try:
+            previous = await thread.fetch_message(match.status_message_id)
+        except Exception:
+            return
+        guild = self.bot.get_guild(match.guild_id)
+        if guild is None:
+            return
+        disabled_view = self._build_match_view(match, disabled=True)
+        disabled_embed = self._build_match_embed(match, guild)
+        disabled_embed.set_footer(text="Question closed. Wait for the next prompt.")
+        try:
+            await previous.edit(embed=disabled_embed, view=disabled_view)
+        except Exception:
+            pass
+
     async def _post_match_question(self, match: TournamentMatchState) -> None:
         thread = await self._ensure_match_thread(match, create_if_missing=True)
         guild = self.bot.get_guild(match.guild_id)
@@ -2332,7 +2393,13 @@ class DuelTournamentCog(commands.Cog):
         match.round_ends_at = match.round_started_at + 60
         match.guesses.clear()
 
-        await self._edit_match_message(match, disabled=False)
+        await self._disable_previous_match_prompt(match)
+        prompt_message = await self._send_managed_message(
+            thread,
+            embed=self._build_match_embed(match, guild),
+            view=self._build_match_view(match, disabled=False),
+        )
+        match.status_message_id = prompt_message.id
         await self._save_match_runtime(match)
 
         old = self._match_tasks.get(match.match_id)
@@ -2462,7 +2529,7 @@ class DuelTournamentCog(commands.Cog):
         else:
             lines.append(f"Point goes to <@{winner_user_id}> (off by {winner_diff} year(s)).")
 
-        await thread.send("\n".join(lines))
+        await self._send_managed_message(thread, "\n".join(lines))
 
         score1 = match.scores.get(match.player1_user_id, 0)
         score2 = match.scores.get(match.player2_user_id, 0)
@@ -2515,7 +2582,8 @@ class DuelTournamentCog(commands.Cog):
         for user_id in flagged_user_ids:
             await self._record_no_show(tournament.guild_id, user_id, match_no_shows=1)
 
-        await host_channel.send(
+        await self._send_managed_message(
+            host_channel,
             f"🏁 **Round {match.round_number}, Match {match.bracket_position} finished** — "
             f"winner: {winner_mention} (`{score1}-{score2}`)"
             + (f" • Thread: {thread.mention}" if isinstance(thread, discord.Thread) else "")
@@ -2532,22 +2600,28 @@ class DuelTournamentCog(commands.Cog):
         await self._refresh_bracket_message(host_channel, tournament)
         await self._save_tournament_runtime(tournament)
         if not tournament.active_match_ids:
-            await self._advance_or_finish(host_channel, tournament)
+            if tournament.pending_matchups:
+                await self._launch_next_pending_match(host_channel, tournament)
+            else:
+                await self._advance_or_finish(host_channel, tournament)
 
     async def _advance_or_finish(self, host_channel: discord.TextChannel, tournament: TournamentState) -> None:
-        players = list(tournament.next_round_players)
+        players = self._dedupe_players(list(tournament.next_round_players))
+        tournament.next_round_players = players
+        tournament.pending_matchups = []
         if len(players) <= 1:
             tournament.status = "finished"
             tournament.winner_user_id = players[0] if players else None
             await self._set_tournament_status(tournament.tournament_id, "finished", winner_user_id=tournament.winner_user_id)
             if tournament.winner_user_id is not None:
                 await self._season_add_points(tournament.guild_id, tournament.winner_user_id, points=8, tournament_wins=1)
-                await host_channel.send(
+                await self._send_managed_message(
+                    host_channel,
                     f"🏆 **{tournament.title} champion:** <@{tournament.winner_user_id}>"
                 )
                 await self._apply_champion_role(host_channel.guild, tournament.winner_user_id)
             else:
-                await host_channel.send(f"{tournament.title} ended without a winner.")
+                await self._send_managed_message(host_channel, f"{tournament.title} ended without a winner.")
             await self._refresh_bracket_message(host_channel, tournament)
             await self._delete_tournament_runtime(tournament)
             return
