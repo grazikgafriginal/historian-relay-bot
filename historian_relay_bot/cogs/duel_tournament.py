@@ -762,6 +762,29 @@ class DuelTournamentCog(commands.Cog):
         role = guild.get_role(config.ping_role_id)
         return f'{role.mention} ' if role is not None else ''
 
+    def _dedupe_players(self, players: list[int]) -> list[int]:
+        seen: set[int] = set()
+        unique_players: list[int] = []
+        for user_id in players:
+            if user_id in seen:
+                continue
+            seen.add(user_id)
+            unique_players.append(user_id)
+        return unique_players
+
+    async def _send_managed_message(
+        self,
+        channel: discord.abc.Messageable,
+        content: str | None = None,
+        *,
+        embed: discord.Embed | None = None,
+        view: discord.ui.View | None = None,
+        delay_seconds: int = MATCH_MESSAGE_TTL_SECONDS,
+    ) -> discord.Message:
+        message = await channel.send(content=content, embed=embed, view=view)
+        asyncio.create_task(self._delete_message_later(message, delay_seconds))
+        return message
+
     async def _delete_message_later(self, message: discord.Message | None, delay_seconds: int = MATCH_MESSAGE_TTL_SECONDS) -> None:
         if message is None:
             return
@@ -1839,18 +1862,33 @@ class DuelTournamentCog(commands.Cog):
             color = discord.Color.orange()
             field_name = f"Players ({len(state.entrants)}/{state.bracket_size})"
         else:
-            description = (
-                "Friday mini cup signups are open. Join now and the bot will seed a single-elimination bracket.\n\n"
-                f"**Signup cap:** {state.bracket_size}\n"
-                f"**Match format:** best of {state.best_of}\n"
-                + (f"**Signup window:** {state.signup_window_minutes} minute(s)\n" if state.signup_window_minutes else "")
-                + (f"**Auto-ready-check:** <t:{state.signup_deadline_at}:R>\n" if state.signup_deadline_at else "")
-                + "**Start rule:** the tournament can start with 2 or more confirmed players. Byes are assigned automatically when needed.\n"
-                + "**Tiebreaker:** if both guesses are equally close, the earlier guess wins the point."
-            )
+            if state.status == "active":
+                description = (
+                    "Signup is closed and the tournament is being created now.\n\n"
+                    f"**Entrants locked:** {len(state.entrants)}\n"
+                    f"**Match format:** best of {state.best_of}\n"
+                    + "**Bracket rule:** byes are assigned automatically when needed.\n"
+                    + "**Next step:** the first match thread should appear shortly."
+                )
+                footer = "Tournament is starting."
+                color = discord.Color.green()
+            elif state.status == "cancelled":
+                description = "This tournament is no longer active."
+                footer = "Tournament cancelled."
+                color = discord.Color.dark_grey()
+            else:
+                description = (
+                    "Friday mini cup signups are open. Join now and the bot will seed a single-elimination bracket.\n\n"
+                    f"**Signup cap:** {state.bracket_size}\n"
+                    f"**Match format:** best of {state.best_of}\n"
+                    + (f"**Signup window:** {state.signup_window_minutes} minute(s)\n" if state.signup_window_minutes else "")
+                    + (f"**Auto-ready-check:** <t:{state.signup_deadline_at}:R>\n" if state.signup_deadline_at else "")
+                    + "**Start rule:** the tournament can start with 2 or more confirmed players. Byes are assigned automatically when needed.\n"
+                    + "**Tiebreaker:** if both guesses are equally close, the earlier guess wins the point."
+                )
+                footer = "Use the buttons below or !dueltourney join / !dueltourney leave."
+                color = discord.Color.gold()
             title = state.title
-            footer = "Use the buttons below or !dueltourney join / !dueltourney leave."
-            color = discord.Color.gold()
             field_name = f"Entrants ({len(state.entrants)}/{state.bracket_size})"
 
         embed = discord.Embed(title=title, description=description, color=color)
