@@ -207,7 +207,7 @@ class TournamentMatchView(discord.ui.View):
         self.cog = cog
         self.match = match
 
-    @discord.ui.button(label="Submit your answer", style=discord.ButtonStyle.primary, emoji="🕵️")
+    @discord.ui.button(label="Click me to submit", style=discord.ButtonStyle.primary, emoji="🕵️")
     async def submit_hidden_guess(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await self.cog._open_guess_modal(interaction, self.match)
 
