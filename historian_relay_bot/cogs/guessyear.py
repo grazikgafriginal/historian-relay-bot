@@ -589,7 +589,8 @@ TUTORIAL_STEPS = [
             "• `!hint` — Get a clue\n"
             "• `!guessyear me` — Your stats\n"
             "• `!guessyear help` — Full command list\n\n"
-            "Head back to the channel and type **`!guessyear`** to play your first round. Good luck!"
+            "Head back to the channel and type **`!guessyear`** to play your first round. Good luck!\n\n"
+            "📝 **Got feedback?** Let us know what you think of the new features:\nhttps://forms.gle/mptSo1F3auRngRtQ6"
         ),
         "color": 0x2ECC71,
     },
@@ -2537,6 +2538,11 @@ class GuessYearCog(commands.Cog):
                 "`!tutorial` — Interactive walkthrough in your DMs\n"
                 "`!guessyear help all` — Full command reference"
             ),
+            inline=False,
+        )
+        embed.add_field(
+            name="📝 Feedback",
+            value="[Tell us what you think!](https://forms.gle/mptSo1F3auRngRtQ6)",
             inline=False,
         )
         embed.set_footer(text="That's all you need to start. Have fun!")
