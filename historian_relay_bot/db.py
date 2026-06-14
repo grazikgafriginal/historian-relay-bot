@@ -268,6 +268,7 @@ class Database:
                 "total_distance": "INTEGER NOT NULL DEFAULT 0",
                 "duel_wins": "INTEGER NOT NULL DEFAULT 0",
                 "duel_losses": "INTEGER NOT NULL DEFAULT 0",
+                "xp": "INTEGER NOT NULL DEFAULT 0",
             }
             for col_name, col_def in new_cols.items():
                 if col_name not in stats_cols:
@@ -722,8 +723,8 @@ class Database:
             await self.conn.execute(
                 """
                 INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, exact_hits, current_streak,
-                    best_streak, total_distance, duel_wins, duel_losses, last_played_at)
-                VALUES (?, ?, 0, 1, 0, 0, 0, 0, 0, 0, ?)
+                    best_streak, total_distance, duel_wins, duel_losses, xp, last_played_at)
+                VALUES (?, ?, 0, 1, 0, 0, 0, 0, 0, 0, 0, ?)
                 ON CONFLICT(guild_id, user_id) DO UPDATE SET
                   plays = plays + 1,
                   last_played_at = excluded.last_played_at
@@ -737,8 +738,8 @@ class Database:
         await self.conn.execute(
             """
             INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, exact_hits, current_streak,
-                best_streak, total_distance, duel_wins, duel_losses, last_played_at)
-            VALUES (?, ?, 1, 0, 0, 1, 1, 0, 0, 0, ?)
+                best_streak, total_distance, duel_wins, duel_losses, xp, last_played_at)
+            VALUES (?, ?, 1, 0, 0, 1, 1, 0, 0, 0, 0, ?)
             ON CONFLICT(guild_id, user_id) DO UPDATE SET
               wins = wins + 1,
               last_played_at = excluded.last_played_at
@@ -754,7 +755,7 @@ class Database:
         """
         q = """
         SELECT user_id, wins, plays, exact_hits, current_streak, best_streak,
-               total_distance, duel_wins, duel_losses, last_played_at
+               total_distance, duel_wins, duel_losses, xp, last_played_at
         FROM guessyear_stats
         WHERE guild_id=?
         ORDER BY wins DESC, plays DESC, last_played_at DESC
@@ -782,6 +783,7 @@ class Database:
             total_distance,
             duel_wins,
             duel_losses,
+            xp,
             last_played_at,
             RANK() OVER (ORDER BY wins DESC, plays DESC, last_played_at DESC) AS rank,
             COUNT(*) OVER () AS total
@@ -789,7 +791,7 @@ class Database:
           WHERE guild_id=?
         )
         SELECT user_id, wins, plays, exact_hits, current_streak, best_streak,
-               total_distance, duel_wins, duel_losses, last_played_at, rank, total
+               total_distance, duel_wins, duel_losses, xp, last_played_at, rank, total
         FROM ranked
         WHERE user_id=?
         """
@@ -897,8 +899,8 @@ class Database:
             await self.conn.execute(
                 """
                 INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, exact_hits, current_streak,
-                    best_streak, total_distance, duel_wins, duel_losses, last_played_at)
-                VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, ?, ?)
+                    best_streak, total_distance, duel_wins, duel_losses, xp, last_played_at)
+                VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, ?, 0, ?)
                 ON CONFLICT(guild_id, user_id) DO UPDATE SET
                   duel_wins = duel_wins + ?,
                   duel_losses = duel_losses + ?,
@@ -908,5 +910,23 @@ class Database:
             )
         await self.conn.commit()
 
-
-
+    async def guessyear_stats_add_xp(self, guild_id: int, user_id: int, amount: int) -> int:
+        now = int(time.time())
+        await self.conn.execute(
+            """
+            INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, exact_hits, current_streak,
+                best_streak, total_distance, duel_wins, duel_losses, xp, last_played_at)
+            VALUES (?, ?, 0, 0, 0, 0, 0, 0, 0, 0, ?, ?)
+            ON CONFLICT(guild_id, user_id) DO UPDATE SET
+              xp = xp + ?,
+              last_played_at = excluded.last_played_at
+            """,
+            (str(guild_id), str(user_id), int(amount), now, int(amount)),
+        )
+        await self.conn.commit()
+        cur = await self.conn.execute(
+            "SELECT xp FROM guessyear_stats WHERE guild_id=? AND user_id=?",
+            (str(guild_id), str(user_id)),
+        )
+        row = await cur.fetchone()
+        return int(row[0]) if row else 0

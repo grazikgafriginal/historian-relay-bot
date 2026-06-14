@@ -110,6 +110,37 @@ class LearnSessionState:
     used_event_ids: List[str] = field(default_factory=list)
 
 
+XP_TITLES: List[Tuple[int, str]] = [
+    (0, "Novice Historian"),
+    (100, "Apprentice Historian"),
+    (500, "History Scholar"),
+    (2000, "History Professor"),
+    (5000, "Master Historian"),
+    (10000, "Time Lord"),
+]
+
+XP_PLAY = 10
+XP_WIN = 25
+XP_EXACT = 50
+XP_BONUS_CORRECT = 15
+XP_DUEL_WIN = 30
+
+
+def get_xp_title(xp: int) -> str:
+    title = XP_TITLES[0][1]
+    for threshold, name in XP_TITLES:
+        if xp >= threshold:
+            title = name
+    return title
+
+
+def get_next_title_info(xp: int) -> Optional[Tuple[str, int]]:
+    for threshold, name in XP_TITLES:
+        if xp < threshold:
+            return name, threshold - xp
+    return None
+
+
 CATEGORY_DEFINITIONS: List[Dict[str, Any]] = [
     {"key": "ancient", "label": "Ancient", "emoji": "🏺", "description": "Rome, Greece, early empires", "tags": {"Ancient", "Rome"}},
     {"key": "medieval", "label": "Medieval", "emoji": "⚔️", "description": "Middle Ages and kingdoms", "tags": {"Medieval"}},
@@ -427,6 +458,8 @@ class GuessYearCog(commands.Cog):
 
         self._active: Dict[Tuple[int, int], RoundState] = {}
         self._end_tasks: Dict[Tuple[int, int], asyncio.Task] = {}
+        self._hint_tasks: Dict[Tuple[int, int], asyncio.Task] = {}
+        self._rapid_active: Dict[Tuple[int, int], Dict[str, Any]] = {}
         self._guess_cooldown: Dict[Tuple[int, int, int], int] = {}  # (guild, channel, user) -> last_ts
 
         self._events_by_id: Dict[str, Dict[str, Any]] = {}
@@ -618,6 +651,13 @@ class GuessYearCog(commands.Cog):
 
         self._end_tasks[key] = asyncio.create_task(self._end_round_when_ready(state))
 
+        # Schedule auto-hints
+        old_hint = self._hint_tasks.get(key)
+        if old_hint and not old_hint.done():
+            old_hint.cancel()
+        if self.bot.cfg.GUESSYEAR_HINTS_ENABLED and state.hints:
+            self._hint_tasks[key] = asyncio.create_task(self._auto_hint_loop(state))
+
     async def _end_round_when_ready(self, state: RoundState) -> None:
         delay = max(0, state.ends_at - int(time.time()))
         try:
@@ -631,6 +671,52 @@ class GuessYearCog(commands.Cog):
             return
 
         await self._end_round(state.guild_id, state.channel_id, forced=False)
+
+    async def _auto_hint_loop(self, state: RoundState) -> None:
+        max_hints = min(int(self.bot.cfg.GUESSYEAR_MAX_HINTS), len(state.hints))
+        if max_hints <= 0:
+            return
+
+        total_duration = state.ends_at - state.started_at
+        if total_duration <= 0:
+            return
+
+        for i in range(max_hints):
+            fraction = (i + 1) / (max_hints + 1)
+            target_time = state.started_at + int(total_duration * fraction)
+            delay = max(0, target_time - int(time.time()))
+            try:
+                await asyncio.sleep(delay)
+            except asyncio.CancelledError:
+                return
+
+            key = (state.guild_id, state.channel_id)
+            current = self._active.get(key)
+            if not current or current.round_id != state.round_id:
+                return
+
+            if state.hints_used > i:
+                continue
+
+            try:
+                new_used = await self.bot.db.guessyear_increment_hints_used(state.round_id)
+            except Exception:
+                continue
+            state.hints_used = int(new_used)
+
+            channel = self.bot.get_channel(state.channel_id)
+            if channel is None:
+                try:
+                    channel = await self.bot.fetch_channel(state.channel_id)
+                except Exception:
+                    continue
+
+            if isinstance(channel, (discord.TextChannel, discord.Thread)):
+                remaining = self._remaining(state.ends_at)
+                try:
+                    await channel.send(f"💡 Auto-hint {i + 1}/{max_hints}: **{state.hints[i]}** — ⏱️ {remaining}s left")
+                except Exception:
+                    pass
 
     async def _ensure_state_loaded(self, guild_id: int, channel_id: int) -> Optional[RoundState]:
         key = (guild_id, channel_id)
@@ -1626,14 +1712,16 @@ class GuessYearCog(commands.Cog):
 
             self._duel_active.pop(key, None)
 
-            # Record duel W/L stats
+            # Record duel W/L stats + XP
             challenger_score = int(state.scores.get(state.challenger_user_id, 0))
             opponent_score = int(state.scores.get(state.opponent_user_id, 0))
             try:
                 if challenger_score > opponent_score:
                     await self.bot.db.guessyear_stats_record_duel_result(guild_id, state.challenger_user_id, state.opponent_user_id)
+                    await self.bot.db.guessyear_stats_add_xp(guild_id, state.challenger_user_id, XP_DUEL_WIN)
                 elif opponent_score > challenger_score:
                     await self.bot.db.guessyear_stats_record_duel_result(guild_id, state.opponent_user_id, state.challenger_user_id)
+                    await self.bot.db.guessyear_stats_add_xp(guild_id, state.opponent_user_id, XP_DUEL_WIN)
             except Exception:
                 pass
 
@@ -1723,14 +1811,17 @@ class GuessYearCog(commands.Cog):
         all_player_ids = [int(g["user_id"]) for g in guesses]
         try:
             await self.bot.db.guessyear_stats_record_play(guild_id, all_player_ids)
+            # XP: everyone who played gets participation XP
+            for uid in all_player_ids:
+                await self.bot.db.guessyear_stats_add_xp(guild_id, uid, XP_PLAY)
             if winner_user_id is not None:
                 await self.bot.db.guessyear_stats_record_win(guild_id, int(winner_user_id))
+                await self.bot.db.guessyear_stats_add_xp(guild_id, int(winner_user_id), XP_WIN)
                 if winner_diff == 0:
                     await self.bot.db.guessyear_stats_record_exact_hit(guild_id, int(winner_user_id))
-            # Track distance for each guesser
+                    await self.bot.db.guessyear_stats_add_xp(guild_id, int(winner_user_id), XP_EXACT)
             for diff_val, _ts, uid, _gy in scored:
                 await self.bot.db.guessyear_stats_record_distance(guild_id, uid, diff_val)
-            # Update streaks: winner gets +1, everyone else resets
             for uid in all_player_ids:
                 await self.bot.db.guessyear_stats_update_streak(guild_id, uid, uid == winner_user_id)
         except Exception:
@@ -1820,8 +1911,8 @@ class GuessYearCog(commands.Cog):
                     f"Start it with {modes_text}."
                 )
 
-            # Reaction-based next round
-            if not forced:
+            # Reaction-based next round (skip during rapid-fire)
+            if not forced and key not in self._rapid_active:
                 try:
                     await result_msg.add_reaction("🕰️")
                     asyncio.create_task(self._watch_next_round_reaction(result_msg, guild_id, channel_id))
@@ -1833,6 +1924,22 @@ class GuessYearCog(commands.Cog):
         task = self._end_tasks.pop(key, None)
         if task and not task.done():
             task.cancel()
+        hint_task = self._hint_tasks.pop(key, None)
+        if hint_task and not hint_task.done():
+            hint_task.cancel()
+
+        # Rapid-fire: accumulate scores and chain next round or announce winner
+        rapid = self._rapid_active.get(key)
+        if rapid and not forced:
+            if winner_user_id is not None:
+                rapid["scores"][winner_user_id] = rapid["scores"].get(winner_user_id, 0) + 1
+            if rapid["current"] < rapid["total"]:
+                await asyncio.sleep(3)
+                await self._start_rapid_round(guild_id, channel_id)
+            else:
+                await self._end_rapid_session(guild_id, channel_id)
+        elif rapid and forced:
+            await self._end_rapid_session(guild_id, channel_id)
 
     async def _watch_next_round_reaction(self, message: discord.Message, guild_id: int, channel_id: int) -> None:
         try:
@@ -1898,6 +2005,51 @@ class GuessYearCog(commands.Cog):
                                 embed.add_field(name="How to play", value="Type a year (e.g. `1066`). Use `!hint` for clues.", inline=False)
                                 await fake_ctx_channel.send(embed=embed)
                 break
+
+    async def _end_rapid_session(self, guild_id: int, channel_id: int) -> None:
+        key = (guild_id, channel_id)
+        rapid = self._rapid_active.pop(key, None)
+        if not rapid:
+            return
+
+        channel = self.bot.get_channel(channel_id)
+        if channel is None:
+            try:
+                channel = await self.bot.fetch_channel(channel_id)
+            except Exception:
+                return
+        if not isinstance(channel, (discord.TextChannel, discord.Thread)):
+            return
+
+        scores = rapid.get("scores", {})
+        total = rapid.get("total", 0)
+        played = rapid.get("current", 0)
+
+        if not scores:
+            embed = discord.Embed(
+                title="⚡ Rapid-Fire Session Over",
+                description=f"Played **{played}/{total}** rounds. No wins recorded.",
+                color=discord.Color.dark_grey(),
+            )
+            await channel.send(embed=embed)
+            return
+
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        winner_uid, winner_wins = sorted_scores[0]
+
+        lines = []
+        for i, (uid, wins) in enumerate(sorted_scores[:10], start=1):
+            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"#{i}")
+            lines.append(f"{medal} <@{uid}> — **{wins}** win{'s' if wins != 1 else ''}")
+
+        embed = discord.Embed(
+            title="⚡ Rapid-Fire Session Results",
+            description=f"**{played}** rounds completed!",
+            color=discord.Color.gold(),
+        )
+        embed.add_field(name="🏆 Session Winner", value=f"<@{winner_uid}> with **{winner_wins}** wins!", inline=False)
+        embed.add_field(name="Scoreboard", value="\n".join(lines), inline=False)
+        await channel.send(embed=embed)
 
     # ---------- commands ----------
 
@@ -2039,6 +2191,11 @@ class GuessYearCog(commands.Cog):
             inline=False,
         )
         embed.add_field(
+            name="⚡ Rapid-Fire",
+            value="`!guessyear rapid [n]` — Play n back-to-back rounds (2–20, default 5)",
+            inline=False,
+        )
+        embed.add_field(
             name="🎁 Bonus",
             value="`!bonus month` or `!bonus person` — Start a bonus after an exact-year win",
             inline=False,
@@ -2047,13 +2204,13 @@ class GuessYearCog(commands.Cog):
             name="📊 Stats & Categories",
             value=(
                 "`!guessyear top [n]` — Leaderboard\n"
-                "`!guessyear me` — Your stats\n"
+                "`!guessyear me` — Your stats & XP title\n"
                 "`!categories` — Set categories for this channel\n"
                 "`!categories reset` — Reset to all categories"
             ),
             inline=False,
         )
-        embed.set_footer(text="Rounds last 30s by default. Get hints to narrow it down!")
+        embed.set_footer(text="Earn XP for playing, winning, and exact hits. Climb from Novice to Time Lord!")
         await ctx.send(embed=embed)
 
     @guessyear.command(name="status")
@@ -2087,6 +2244,104 @@ class GuessYearCog(commands.Cog):
 
         await ctx.send("Ending the current round…", delete_after=5)
         await self._end_round(ctx.guild.id, ctx.channel.id, forced=True)
+
+    @guessyear.command(name="rapid")
+    async def guessyear_rapid(self, ctx: commands.Context, count: int = 5):
+        """Start a rapid-fire session of back-to-back rounds."""
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+        if not self.bot.cfg.GUESSYEAR_ENABLED:
+            return await ctx.send("Guess the Year is disabled on this server.", delete_after=10)
+        if not self._is_allowed_channel(ctx.channel.id):
+            return await ctx.send("Guess the Year is not enabled in this channel.", delete_after=10)
+
+        count = max(2, min(int(count), 10))
+        key = (ctx.guild.id, ctx.channel.id)
+
+        if key in self._active or key in self._duel_active:
+            return await ctx.send("A round or duel is already active here.", delete_after=10)
+        if key in self._rapid_active:
+            return await ctx.send("A rapid-fire session is already running here.", delete_after=10)
+
+        rapid_timer = max(15, int(self.bot.cfg.GUESSYEAR_ROUND_SECONDS * 0.67))
+        self._rapid_active[key] = {
+            "total": count,
+            "current": 0,
+            "scores": {},
+            "started_by": ctx.author.id,
+            "timer": rapid_timer,
+        }
+
+        embed = discord.Embed(
+            title="⚡ Rapid-Fire Mode",
+            description=f"**{count}** back-to-back rounds with **{rapid_timer}s** timers. Aggregate scores announced at the end!",
+            color=discord.Color.orange(),
+        )
+        embed.add_field(name="Started by", value=ctx.author.mention, inline=True)
+        embed.add_field(name="Categories", value=self._format_category_list(self._categories_for_channel(ctx.guild.id, ctx.channel.id)), inline=True)
+        await ctx.send(embed=embed)
+        await self._start_rapid_round(ctx.guild.id, ctx.channel.id)
+
+    async def _start_rapid_round(self, guild_id: int, channel_id: int) -> None:
+        key = (guild_id, channel_id)
+        rapid = self._rapid_active.get(key)
+        if not rapid:
+            return
+
+        rapid["current"] += 1
+        current_num = rapid["current"]
+        total = rapid["total"]
+
+        evt = self._pick_event(guild_id, channel_id)
+        if not evt:
+            self._rapid_active.pop(key, None)
+            channel = self.bot.get_channel(channel_id)
+            if isinstance(channel, (discord.TextChannel, discord.Thread)):
+                await channel.send("No events available for rapid-fire. Session ended.", delete_after=10)
+            return
+
+        now = int(time.time())
+        ends_at = now + int(rapid["timer"])
+
+        try:
+            round_id = await self.bot.db.guessyear_create_round(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                started_by_user_id=rapid["started_by"],
+                event_id=str(evt["id"]),
+                correct_year=int(evt["year"]),
+                started_at=now,
+                ends_at=ends_at,
+            )
+        except Exception:
+            self._rapid_active.pop(key, None)
+            return
+
+        state = RoundState(
+            round_id=int(round_id),
+            guild_id=guild_id,
+            channel_id=channel_id,
+            event_id=str(evt["id"]),
+            correct_year=int(evt["year"]),
+            prompt=str(evt["prompt"]),
+            hints=list(evt.get("hints", [])),
+            started_at=now,
+            ends_at=ends_at,
+            hints_used=0,
+        )
+        self._active[key] = state
+        self._schedule_end(state)
+
+        channel = self.bot.get_channel(channel_id)
+        if isinstance(channel, (discord.TextChannel, discord.Thread)):
+            embed = discord.Embed(
+                title=f"⚡ Rapid-Fire #{current_num}/{total}",
+                description=state.prompt,
+                color=discord.Color.orange(),
+            )
+            embed.add_field(name="Time", value=f"**{rapid['timer']}s**", inline=True)
+            embed.add_field(name="How to play", value="Type a year (e.g. `1066`).", inline=False)
+            await channel.send(embed=embed)
 
     @guessyear.command(name="play")
     async def guessyear_play(self, ctx: commands.Context, event_id: str):
@@ -2391,6 +2646,7 @@ class GuessYearCog(commands.Cog):
         total_distance = int(row.get("total_distance") or 0)
         duel_wins = int(row.get("duel_wins") or 0)
         duel_losses = int(row.get("duel_losses") or 0)
+        xp = int(row.get("xp") or 0)
         rate = (wins / plays * 100.0) if plays > 0 else 0.0
         avg_distance = (total_distance / plays) if plays > 0 else 0.0
         rank = int(row["rank"]) if row.get("rank") is not None else None
@@ -2399,12 +2655,18 @@ class GuessYearCog(commands.Cog):
 
         when = f"<t:{last_played}:R>" if last_played else "never"
         rank_str = f"#{rank} of {total}" if rank and total else "(unranked)"
+        title = get_xp_title(xp)
+        next_info = get_next_title_info(xp)
+        progress = f"**{title}** ({xp} XP)"
+        if next_info:
+            progress += f"\nNext: **{next_info[0]}** in {next_info[1]} XP"
 
         embed = discord.Embed(
-            title=f"📊 GuessYear Stats",
+            title=f"📊 {title}",
             description=f"Stats for {ctx.author.mention}",
             color=discord.Color.blurple(),
         )
+        embed.add_field(name="🏅 Title & XP", value=progress, inline=False)
         embed.add_field(name="Rank", value=f"**{rank_str}**", inline=True)
         embed.add_field(name="Wins", value=f"**{wins}**", inline=True)
         embed.add_field(name="Plays", value=f"**{plays}**", inline=True)
@@ -2644,9 +2906,13 @@ class GuessYearCog(commands.Cog):
 
             if self._bonus_matches(requested, active.answers):
                 self._bonus_active.pop(key, None)
+                try:
+                    await self.bot.db.guessyear_stats_add_xp(ctx.guild.id, ctx.author.id, XP_BONUS_CORRECT)
+                except Exception:
+                    pass
                 embed = discord.Embed(
                     title="🎉 Bonus Correct!",
-                    description=f"{ctx.author.mention} got the bonus question right.",
+                    description=f"{ctx.author.mention} got the bonus question right. (+{XP_BONUS_CORRECT} XP)",
                     color=discord.Color.green(),
                 )
                 embed.add_field(name="Accepted answer", value=f"**{requested}**", inline=False)

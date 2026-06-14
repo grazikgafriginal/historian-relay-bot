@@ -99,6 +99,7 @@ CREATE TABLE IF NOT EXISTS guessyear_stats (
   total_distance INTEGER NOT NULL DEFAULT 0,
   duel_wins INTEGER NOT NULL DEFAULT 0,
   duel_losses INTEGER NOT NULL DEFAULT 0,
+  xp INTEGER NOT NULL DEFAULT 0,
   last_played_at INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (guild_id, user_id)
 );
