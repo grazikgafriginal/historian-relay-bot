@@ -139,6 +139,9 @@ class BotConfig:
     GUESSYEAR_GUESS_POLICY: str = "first"  # "first" or "latest"
     GUESSYEAR_DAILY_CHANNEL_ID: Optional[int] = None
     GUESSYEAR_DAILY_HOUR_UTC: int = 12
+    GUESSYEAR_RECAP_CHANNEL_ID: Optional[int] = None
+    GUESSYEAR_RECAP_DAY_UTC: int = 0  # 0=Monday
+    GUESSYEAR_RECAP_HOUR_UTC: int = 18
 
 
 def load_config() -> BotConfig:
@@ -204,4 +207,7 @@ def load_config() -> BotConfig:
         GUESSYEAR_GUESS_POLICY=str(env_or_json("GUESSYEAR_GUESS_POLICY") or data.get("GUESSYEAR_GUESS_POLICY", "first")),
         GUESSYEAR_DAILY_CHANNEL_ID=_get_optional_int("GUESSYEAR_DAILY_CHANNEL_ID") or (int(data["GUESSYEAR_DAILY_CHANNEL_ID"]) if data.get("GUESSYEAR_DAILY_CHANNEL_ID") else None),
         GUESSYEAR_DAILY_HOUR_UTC=_get_int("GUESSYEAR_DAILY_HOUR_UTC", int(data.get("GUESSYEAR_DAILY_HOUR_UTC", 12))),
+        GUESSYEAR_RECAP_CHANNEL_ID=_get_optional_int("GUESSYEAR_RECAP_CHANNEL_ID") or (int(data["GUESSYEAR_RECAP_CHANNEL_ID"]) if data.get("GUESSYEAR_RECAP_CHANNEL_ID") else None),
+        GUESSYEAR_RECAP_DAY_UTC=_get_int("GUESSYEAR_RECAP_DAY_UTC", int(data.get("GUESSYEAR_RECAP_DAY_UTC", 0))),
+        GUESSYEAR_RECAP_HOUR_UTC=_get_int("GUESSYEAR_RECAP_HOUR_UTC", int(data.get("GUESSYEAR_RECAP_HOUR_UTC", 18))),
     )

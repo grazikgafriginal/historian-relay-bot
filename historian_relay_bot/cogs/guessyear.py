@@ -409,6 +409,64 @@ class DuelRoundView(discord.ui.View):
         await interaction.response.send_modal(DuelGuessModal(self.cog, active))
 
 
+class DuelRematchView(discord.ui.View):
+    def __init__(self, cog: "GuessYearCog", guild_id: int, channel_id: int,
+                 player_a: int, player_b: int, total_questions: int):
+        super().__init__(timeout=60)
+        self.cog = cog
+        self.guild_id = guild_id
+        self.channel_id = channel_id
+        self.player_a = player_a
+        self.player_b = player_b
+        self.total_questions = total_questions
+        self._accepted_by: Optional[int] = None
+
+    async def on_timeout(self) -> None:
+        for child in self.children:
+            child.disabled = True
+        try:
+            await self.message.edit(view=self)
+        except Exception:
+            pass
+
+    @discord.ui.button(label="Rematch!", style=discord.ButtonStyle.primary, emoji="🔄")
+    async def rematch(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if interaction.user.id not in (self.player_a, self.player_b):
+            return await interaction.response.send_message("Only the duel participants can request a rematch.", ephemeral=True)
+
+        initiator = interaction.user.id
+        opponent = self.player_b if initiator == self.player_a else self.player_a
+
+        key = (self.guild_id, self.channel_id)
+        busy = self.cog._duel_busy_message(self.guild_id, self.channel_id)
+        if busy:
+            return await interaction.response.send_message(busy, ephemeral=True)
+
+        now = int(time.time())
+        challenge = DuelChallengeState(
+            guild_id=self.guild_id,
+            channel_id=self.channel_id,
+            challenger_user_id=initiator,
+            opponent_user_id=opponent,
+            total_questions=self.total_questions,
+            created_at=now,
+            expires_at=now + 60,
+        )
+        self.cog._duel_challenges[key] = challenge
+        challenge_view = DuelChallengeView(self.cog, challenge)
+        self.cog._duel_challenge_views[key] = challenge_view
+
+        guild = interaction.guild
+        embed = await self.cog._build_duel_challenge_embed(guild, challenge)
+
+        for child in self.children:
+            child.disabled = True
+        await interaction.response.edit_message(view=self)
+
+        msg = await interaction.channel.send(content=f"<@{opponent}>", embed=embed, view=challenge_view)
+        challenge_view.message = msg
+
+
 class ThreadClosePromptView(discord.ui.View):
     def __init__(self, cog: "GuessYearCog", state: DuelState):
         super().__init__(timeout=300)
@@ -680,21 +738,24 @@ class GuessYearCog(commands.Cog):
         self._learn_views: Dict[Tuple[int, int], LearnSessionView] = {}
 
         self._daily_date_key: Optional[str] = None
+        self._recap_week_key: Optional[str] = None
 
         self._restore_started = False
 
         self._load_dataset()
 
     async def cog_load(self) -> None:
-        # Restore active rounds once after the bot is ready.
         if not self._restore_started:
             self._restore_started = True
             asyncio.create_task(self._restore_after_ready())
         if self.bot.cfg.GUESSYEAR_DAILY_CHANNEL_ID and not self._daily_challenge_loop.is_running():
             self._daily_challenge_loop.start()
+        if self.bot.cfg.GUESSYEAR_RECAP_CHANNEL_ID and not self._weekly_recap_loop.is_running():
+            self._weekly_recap_loop.start()
 
     async def cog_unload(self) -> None:
         self._daily_challenge_loop.cancel()
+        self._weekly_recap_loop.cancel()
 
     # ---------- dataset / restore ----------
 
@@ -1913,7 +1974,16 @@ class GuessYearCog(commands.Cog):
                     await channel.send(
                         f"🎁 <@{result.winner_user_id}> unlocked a bonus round for the final duel question. Start it with {modes_text}."
                     )
-                    
+
+                if not forced:
+                    rematch_view = DuelRematchView(
+                        self, guild_id, state.host_channel_id,
+                        state.challenger_user_id, state.opponent_user_id,
+                        state.total_questions,
+                    )
+                    rematch_msg = await channel.send("Want a rematch?", view=rematch_view)
+                    rematch_view.message = rematch_msg
+
             if isinstance(channel, discord.Thread) and state.duel_thread_created:
                 await self._prompt_thread_close(channel, state)
 
@@ -2340,6 +2410,126 @@ class GuessYearCog(commands.Cog):
                 await old_msg.unpin()
             except Exception:
                 pass
+
+    # ---------- weekly recap ----------
+
+    @tasks.loop(minutes=15)
+    async def _weekly_recap_loop(self) -> None:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        if now.weekday() != self.bot.cfg.GUESSYEAR_RECAP_DAY_UTC:
+            return
+        if now.hour < self.bot.cfg.GUESSYEAR_RECAP_HOUR_UTC:
+            return
+
+        week_key = now.strftime("%Y-W%W")
+        if self._recap_week_key == week_key:
+            return
+
+        channel_id = self.bot.cfg.GUESSYEAR_RECAP_CHANNEL_ID
+        if not channel_id:
+            return
+
+        channel = self.bot.get_channel(channel_id)
+        if not isinstance(channel, (discord.TextChannel, discord.Thread)):
+            return
+
+        guild = channel.guild
+        self._recap_week_key = week_key
+
+        since = int((now - datetime.timedelta(days=7)).timestamp())
+        try:
+            stats = await self.bot.db.guessyear_weekly_server_stats(guild.id, since)
+        except Exception:
+            log.exception("Failed to fetch weekly recap stats")
+            return
+
+        total_rounds = stats["total_rounds"]
+        active_players = stats["active_players"]
+
+        if not active_players:
+            return
+
+        total_players = len(active_players)
+        total_wins = sum(int(p.get("wins", 0)) for p in active_players)
+        total_exact = sum(int(p.get("exact_hits", 0)) for p in active_players)
+
+        top_3 = active_players[:3]
+        lb_lines = []
+        for i, p in enumerate(top_3, start=1):
+            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"#{i}")
+            lb_lines.append(f"{medal} <@{p['user_id']}> — **{p['wins']}** wins, **{p['plays']}** rounds")
+
+        best_streak_player = max(active_players, key=lambda p: int(p.get("best_streak", 0)))
+        best_streak = int(best_streak_player.get("best_streak", 0))
+
+        embed = discord.Embed(
+            title=f"📊 Weekly Recap — {week_key}",
+            description=f"Here's how the server did this week!",
+            color=discord.Color.gold(),
+        )
+        embed.add_field(name="Rounds played", value=f"**{total_rounds}**", inline=True)
+        embed.add_field(name="Active players", value=f"**{total_players}**", inline=True)
+        embed.add_field(name="Exact hits", value=f"**{total_exact}** 🎯", inline=True)
+        if lb_lines:
+            embed.add_field(name="🏆 Top Players", value="\n".join(lb_lines), inline=False)
+        if best_streak >= 2:
+            embed.add_field(
+                name="🔥 Best Streak",
+                value=f"<@{best_streak_player['user_id']}> with a **{best_streak}**-round streak!",
+                inline=False,
+            )
+        embed.add_field(
+            name="📝 Feedback",
+            value="[Tell us what you think!](https://forms.gle/mptSo1F3auRngRtQ6)",
+            inline=False,
+        )
+        await channel.send(embed=embed)
+
+        # Send personal DM recaps to active players
+        for p in active_players:
+            uid = int(p["user_id"])
+            member = guild.get_member(uid)
+            if not member or member.bot:
+                continue
+            try:
+                user_stats = await self.bot.db.guessyear_stats_get_user(guild.id, uid)
+                if not user_stats:
+                    continue
+
+                xp = int(user_stats.get("xp") or 0)
+                title = get_xp_title(xp)
+                next_info = get_next_title_info(xp)
+                wins = int(p.get("wins", 0))
+                plays = int(p.get("plays", 0))
+                exact = int(p.get("exact_hits", 0))
+                rate = (wins / plays * 100) if plays > 0 else 0
+
+                dm_embed = discord.Embed(
+                    title=f"📬 Your Weekly Recap — {guild.name}",
+                    description=f"Hey {member.display_name}, here's how you did this week!",
+                    color=discord.Color.blurple(),
+                )
+                dm_embed.add_field(name="🏅 Title", value=f"**{title}** ({xp} XP)", inline=True)
+                if next_info:
+                    dm_embed.add_field(name="Next title", value=f"**{next_info[0]}** in {next_info[1]} XP", inline=True)
+                dm_embed.add_field(name="Rounds this week", value=f"**{plays}**", inline=True)
+                dm_embed.add_field(name="Wins this week", value=f"**{wins}** ({rate:.0f}%)", inline=True)
+                if exact:
+                    dm_embed.add_field(name="🎯 Exact hits", value=f"**{exact}**", inline=True)
+
+                total_wins_all = int(user_stats.get("wins", 0))
+                total_plays_all = int(user_stats.get("plays", 0))
+                dm_embed.add_field(name="All-time record", value=f"**{total_wins_all}W** / **{total_plays_all}** rounds", inline=False)
+                dm_embed.set_footer(text=f"Keep it up! Play more at #{channel.name}")
+                await member.send(embed=dm_embed)
+            except discord.Forbidden:
+                pass
+            except Exception:
+                log.debug("Failed to send weekly DM recap to %s", uid)
+
+    @_weekly_recap_loop.before_loop
+    async def _before_recap_loop(self) -> None:
+        await self.bot.wait_until_ready()
 
     # ---------- commands ----------
 

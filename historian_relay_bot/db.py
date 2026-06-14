@@ -1080,3 +1080,41 @@ class Database:
         )
         rows = await cur.fetchall()
         return [{"user_id": str(r[0]), "guess_year": int(r[1]), "guessed_at": int(r[2])} for r in rows]
+
+    async def guessyear_weekly_server_stats(self, guild_id: int, since: int) -> dict[str, Any]:
+        cur = await self.conn.execute(
+            "SELECT COUNT(*) FROM guessyear_rounds WHERE guild_id=? AND started_at>=? AND status='ended'",
+            (str(guild_id), since),
+        )
+        total_rounds = int((await cur.fetchone())[0])
+
+        cur = await self.conn.execute(
+            """
+            SELECT g.user_id, COUNT(*) as cnt
+            FROM guessyear_guesses g
+            JOIN guessyear_rounds r ON g.round_id = r.round_id
+            WHERE r.guild_id=? AND r.started_at>=?
+            GROUP BY g.user_id
+            ORDER BY cnt DESC
+            """,
+            (str(guild_id), since),
+        )
+        participation = [{"user_id": str(r[0]), "guesses": int(r[1])} for r in await cur.fetchall()]
+
+        cur = await self.conn.execute(
+            """
+            SELECT user_id, wins, plays, exact_hits, best_streak, xp
+            FROM guessyear_stats
+            WHERE guild_id=? AND last_played_at>=?
+            ORDER BY wins DESC, plays DESC
+            """,
+            (str(guild_id), since),
+        )
+        cols = [c[0] for c in cur.description]
+        active_players = [dict(zip(cols, r)) for r in await cur.fetchall()]
+
+        return {
+            "total_rounds": total_rounds,
+            "active_players": active_players,
+            "participation": participation,
+        }
