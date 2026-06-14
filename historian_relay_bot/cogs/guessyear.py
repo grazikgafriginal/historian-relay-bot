@@ -506,6 +506,151 @@ class LearnSessionView(discord.ui.View):
         await self.cog._end_learn_session_interaction(interaction, self.state)
 
 
+TUTORIAL_STEPS = [
+    {
+        "title": "Welcome to GuessYear!",
+        "description": (
+            "GuessYear is a history trivia game where you guess the year of famous events.\n\n"
+            "This tutorial will walk you through everything you need to know. Use the buttons below to navigate."
+        ),
+        "color": 0x5865F2,
+    },
+    {
+        "title": "Step 1: Starting a Round",
+        "description": (
+            "Type **`!guessyear`** in a channel to start a round.\n\n"
+            "You'll see an event description like:\n"
+            "> *A major conquest begins when a Norman duke lands in England…*\n\n"
+            "Your job: figure out what year it happened!"
+        ),
+        "color": 0x3498DB,
+    },
+    {
+        "title": "Step 2: Making a Guess",
+        "description": (
+            "Just **type a year** in the channel — that's it!\n\n"
+            "For example, type `1066` or `1776`. You can also use `!guess 1066`.\n\n"
+            "For BCE dates, use negative numbers: `-480` for 480 BCE.\n\n"
+            "The player closest to the correct year wins the round!"
+        ),
+        "color": 0x2ECC71,
+    },
+    {
+        "title": "Step 3: Using Hints",
+        "description": (
+            "Stuck? Type **`!hint`** to reveal a clue.\n\n"
+            "Hints mention nearby historical events and how far apart they are in time. "
+            "Each round has up to 3 hints. If auto-hints are on, they'll appear automatically as time passes."
+        ),
+        "color": 0xF1C40F,
+    },
+    {
+        "title": "Step 4: XP & Titles",
+        "description": (
+            "You earn **XP** for playing:\n"
+            "• **10 XP** just for guessing\n"
+            "• **25 XP** for winning a round\n"
+            "• **50 XP** for an exact year match\n"
+            "• Harder events give bonus XP!\n\n"
+            "As you earn XP, you climb the ranks:\n"
+            "Novice → Apprentice → Scholar → Professor → Master → **Time Lord**\n\n"
+            "Check your progress with **`!guessyear me`**."
+        ),
+        "color": 0x9B59B6,
+    },
+    {
+        "title": "Step 5: Duels",
+        "description": (
+            "Challenge a friend with **`!duel @user`**!\n\n"
+            "Duels are hidden-guess format — you both guess secretly, then answers are revealed. "
+            "Play multiple questions and see who knows more history.\n\n"
+            "Use `!duel @user 5` for a 5-question match."
+        ),
+        "color": 0xE67E22,
+    },
+    {
+        "title": "Step 6: Bonus Rounds & More",
+        "description": (
+            "**Bonus rounds** — Get an exact year match and unlock a bonus question! "
+            "Try `!bonus month` or `!bonus person`.\n\n"
+            "**Rapid-fire** — `!guessyear rapid 5` for 5 fast rounds back to back.\n\n"
+            "**Daily challenge** — `!daily <year>` to guess today's event. One try per day!\n\n"
+            "**Categories** — `!categories` to filter events by topic (Ancient, War, Science, etc.).\n\n"
+            "**Practice** — `!learn` starts a private practice session."
+        ),
+        "color": 0xE91E63,
+    },
+    {
+        "title": "You're Ready!",
+        "description": (
+            "That's everything you need to get started!\n\n"
+            "**Quick reference:**\n"
+            "• `!guessyear` — Start a round\n"
+            "• `!hint` — Get a clue\n"
+            "• `!guessyear me` — Your stats\n"
+            "• `!guessyear help` — Full command list\n\n"
+            "Head back to the channel and type **`!guessyear`** to play your first round. Good luck!"
+        ),
+        "color": 0x2ECC71,
+    },
+]
+
+
+class TutorialView(discord.ui.View):
+    def __init__(self, user_id: int):
+        super().__init__(timeout=300)
+        self.user_id = user_id
+        self.page = 0
+        self._update_buttons()
+
+    def _build_embed(self) -> discord.Embed:
+        step = TUTORIAL_STEPS[self.page]
+        embed = discord.Embed(
+            title=step["title"],
+            description=step["description"],
+            color=step["color"],
+        )
+        embed.set_footer(text=f"Page {self.page + 1}/{len(TUTORIAL_STEPS)}")
+        return embed
+
+    def _update_buttons(self) -> None:
+        self.back_btn.disabled = self.page == 0
+        self.next_btn.disabled = self.page == len(TUTORIAL_STEPS) - 1
+        if self.page == len(TUTORIAL_STEPS) - 1:
+            self.next_btn.label = "Done"
+            self.next_btn.style = discord.ButtonStyle.success
+        else:
+            self.next_btn.label = "Next"
+            self.next_btn.style = discord.ButtonStyle.primary
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return interaction.user.id == self.user_id
+
+    @discord.ui.button(label="Back", style=discord.ButtonStyle.secondary, emoji="◀️")
+    async def back_btn(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        self.page = max(0, self.page - 1)
+        self._update_buttons()
+        await interaction.response.edit_message(embed=self._build_embed(), view=self)
+
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.primary, emoji="▶️")
+    async def next_btn(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.page == len(TUTORIAL_STEPS) - 1:
+            self.stop()
+            await interaction.response.edit_message(embed=self._build_embed(), view=None)
+            return
+        self.page = min(len(TUTORIAL_STEPS) - 1, self.page + 1)
+        self._update_buttons()
+        await interaction.response.edit_message(embed=self._build_embed(), view=self)
+
+    @discord.ui.button(label="Skip", style=discord.ButtonStyle.danger, emoji="⏭️")
+    async def skip_btn(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        self.stop()
+        final = TUTORIAL_STEPS[-1]
+        embed = discord.Embed(title=final["title"], description=final["description"], color=final["color"])
+        embed.set_footer(text=f"Page {len(TUTORIAL_STEPS)}/{len(TUTORIAL_STEPS)}")
+        await interaction.response.edit_message(embed=embed, view=None)
+
+
 class GuessYearCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -2362,69 +2507,96 @@ class GuessYearCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @guessyear.command(name="help")
-    async def guessyear_help(self, ctx: commands.Context):
-        """Show all GuessYear commands."""
+    async def guessyear_help(self, ctx: commands.Context, *, section: Optional[str] = None):
+        """Show GuessYear commands. Use `!guessyear help all` for full reference."""
+        if section and section.strip().lower() == "all":
+            embed = discord.Embed(
+                title="🕰️ GuessYear — Full Command Reference",
+                description="Every command available in GuessYear.",
+                color=discord.Color.blurple(),
+            )
+            embed.add_field(
+                name="🎮 Playing",
+                value=(
+                    "`!guessyear` — Start a new round\n"
+                    "`!hint` — Reveal a hint during a round\n"
+                    "`!guess <year>` — Submit a guess (or just type a year)\n"
+                    "`!guessyear status` — Check the current round\n"
+                    "`!guessyear stop` — End the round (mods)"
+                ),
+                inline=False,
+            )
+            embed.add_field(
+                name="⚔️ Duels",
+                value=(
+                    "`!duel @user [n]` — Challenge someone (1–10 questions)\n"
+                    "`!duelstatus` — Check duel status\n"
+                    "`!duelcancel` — Cancel a duel"
+                ),
+                inline=False,
+            )
+            embed.add_field(
+                name="📚 Learning",
+                value=(
+                    "`!learn` — Start a private practice session\n"
+                    "`!learnhint` / `!learnnext` / `!learnstop`"
+                ),
+                inline=False,
+            )
+            embed.add_field(
+                name="⚡ Rapid-Fire",
+                value="`!guessyear rapid [n]` — Play n back-to-back rounds (2–20, default 5)",
+                inline=False,
+            )
+            embed.add_field(
+                name="📅 Daily Challenge",
+                value=(
+                    "`!daily <year>` — Submit a guess for today's challenge\n"
+                    "`!daily` — View today's standings"
+                ),
+                inline=False,
+            )
+            embed.add_field(
+                name="🎁 Bonus",
+                value="`!bonus month` or `!bonus person` — Start a bonus after an exact-year win",
+                inline=False,
+            )
+            embed.add_field(
+                name="📊 Stats & Categories",
+                value=(
+                    "`!guessyear top [n]` — Leaderboard\n"
+                    "`!guessyear me` — Your stats & XP title\n"
+                    "`!categories` — Set categories for this channel\n"
+                    "`!categories reset` — Reset to all categories"
+                ),
+                inline=False,
+            )
+            embed.set_footer(text="Earn XP for playing, winning, and exact hits. Climb from Novice to Time Lord!")
+            return await ctx.send(embed=embed)
+
         embed = discord.Embed(
-            title="🕰️ GuessYear — Command Reference",
-            description="A history trivia game. Guess the year of famous events!",
+            title="🕰️ GuessYear — Quick Start",
+            description="Guess the year of famous historical events!",
             color=discord.Color.blurple(),
         )
         embed.add_field(
-            name="🎮 Playing",
+            name="Get playing in 3 commands",
             value=(
-                "`!guessyear` — Start a new round\n"
-                "`!hint` — Reveal a hint during a round\n"
-                "`!guess <year>` — Submit a guess (or just type a year)\n"
-                "`!guessyear status` — Check the current round"
+                "1. **`!guessyear`** — Start a round\n"
+                "2. **Type a year** (e.g. `1066`) — Make your guess\n"
+                "3. **`!hint`** — Need a clue? Ask for one"
             ),
             inline=False,
         )
         embed.add_field(
-            name="⚔️ Duels",
+            name="Want to learn more?",
             value=(
-                "`!duel @user [n]` — Challenge someone (1–10 questions)\n"
-                "`!duelstatus` — Check duel status\n"
-                "`!duelcancel` — Cancel a duel"
+                "`!tutorial` — Interactive walkthrough in your DMs\n"
+                "`!guessyear help all` — Full command reference"
             ),
             inline=False,
         )
-        embed.add_field(
-            name="📚 Learning",
-            value=(
-                "`!learn` — Start a private practice session\n"
-                "`!learnhint` / `!learnnext` / `!learnstop`"
-            ),
-            inline=False,
-        )
-        embed.add_field(
-            name="⚡ Rapid-Fire",
-            value="`!guessyear rapid [n]` — Play n back-to-back rounds (2–20, default 5)",
-            inline=False,
-        )
-        embed.add_field(
-            name="📅 Daily Challenge",
-            value=(
-                "`!daily <year>` — Submit a guess for today's challenge\n"
-                "`!daily` — View today's standings"
-            ),
-            inline=False,
-        )
-        embed.add_field(
-            name="🎁 Bonus",
-            value="`!bonus month` or `!bonus person` — Start a bonus after an exact-year win",
-            inline=False,
-        )
-        embed.add_field(
-            name="📊 Stats & Categories",
-            value=(
-                "`!guessyear top [n]` — Leaderboard\n"
-                "`!guessyear me` — Your stats & XP title\n"
-                "`!categories` — Set categories for this channel\n"
-                "`!categories reset` — Reset to all categories"
-            ),
-            inline=False,
-        )
-        embed.set_footer(text="Earn XP for playing, winning, and exact hits. Climb from Novice to Time Lord!")
+        embed.set_footer(text="That's all you need to start. Have fun!")
         await ctx.send(embed=embed)
 
     @guessyear.command(name="status")
@@ -3094,6 +3266,17 @@ class GuessYearCog(commands.Cog):
         state.hints_used = int(new_used)
         hint_text = state.hints[next_index]
         await ctx.send(f"💡 Hint {next_index+1}/{max_hints}: **{hint_text}**")
+
+    @commands.command(name="tutorial")
+    async def tutorial_cmd(self, ctx: commands.Context):
+        """Send an interactive tutorial to your DMs."""
+        try:
+            view = TutorialView(ctx.author.id)
+            await ctx.author.send(embed=view._build_embed(), view=view)
+            if ctx.guild:
+                await ctx.send(f"📬 Tutorial sent to your DMs, {ctx.author.mention}!", delete_after=10)
+        except discord.Forbidden:
+            await ctx.send("I can't DM you! Please enable DMs from server members and try again.", delete_after=15)
 
     @commands.command(name="guess")
     async def guess_cmd(self, ctx: commands.Context, year: str):
