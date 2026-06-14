@@ -137,6 +137,8 @@ class BotConfig:
     GUESSYEAR_HINTS_ENABLED: bool = True
     GUESSYEAR_MAX_HINTS: int = 3
     GUESSYEAR_GUESS_POLICY: str = "first"  # "first" or "latest"
+    GUESSYEAR_DAILY_CHANNEL_ID: Optional[int] = None
+    GUESSYEAR_DAILY_HOUR_UTC: int = 12
 
 
 def load_config() -> BotConfig:
@@ -200,4 +202,6 @@ def load_config() -> BotConfig:
         GUESSYEAR_HINTS_ENABLED=_get_bool("GUESSYEAR_HINTS_ENABLED", bool(data.get("GUESSYEAR_HINTS_ENABLED", True))),
         GUESSYEAR_MAX_HINTS=int(env_or_json("GUESSYEAR_MAX_HINTS") or data.get("GUESSYEAR_MAX_HINTS", 3)),
         GUESSYEAR_GUESS_POLICY=str(env_or_json("GUESSYEAR_GUESS_POLICY") or data.get("GUESSYEAR_GUESS_POLICY", "first")),
+        GUESSYEAR_DAILY_CHANNEL_ID=_get_optional_int("GUESSYEAR_DAILY_CHANNEL_ID") or (int(data["GUESSYEAR_DAILY_CHANNEL_ID"]) if data.get("GUESSYEAR_DAILY_CHANNEL_ID") else None),
+        GUESSYEAR_DAILY_HOUR_UTC=_get_int("GUESSYEAR_DAILY_HOUR_UTC", int(data.get("GUESSYEAR_DAILY_HOUR_UTC", 12))),
     )

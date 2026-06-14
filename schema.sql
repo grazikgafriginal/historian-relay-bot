@@ -127,3 +127,21 @@ CREATE TABLE IF NOT EXISTS guessyear_achievements (
   earned_at INTEGER NOT NULL,
   PRIMARY KEY (guild_id, user_id, achievement_key)
 );
+
+CREATE TABLE IF NOT EXISTS guessyear_daily (
+  guild_id TEXT NOT NULL,
+  date_key TEXT NOT NULL,
+  event_id TEXT NOT NULL,
+  correct_year INTEGER NOT NULL,
+  message_id TEXT,
+  PRIMARY KEY (guild_id, date_key)
+);
+
+CREATE TABLE IF NOT EXISTS guessyear_daily_guesses (
+  guild_id TEXT NOT NULL,
+  date_key TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  guess_year INTEGER NOT NULL,
+  guessed_at INTEGER NOT NULL,
+  PRIMARY KEY (guild_id, date_key, user_id)
+);

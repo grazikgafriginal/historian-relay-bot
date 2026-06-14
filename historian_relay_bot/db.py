@@ -313,6 +313,32 @@ class Database:
             """
         )
 
+        # Create daily challenge tables if missing.
+        await self._conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS guessyear_daily (
+              guild_id TEXT NOT NULL,
+              date_key TEXT NOT NULL,
+              event_id TEXT NOT NULL,
+              correct_year INTEGER NOT NULL,
+              message_id TEXT,
+              PRIMARY KEY (guild_id, date_key)
+            )
+            """
+        )
+        await self._conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS guessyear_daily_guesses (
+              guild_id TEXT NOT NULL,
+              date_key TEXT NOT NULL,
+              user_id TEXT NOT NULL,
+              guess_year INTEGER NOT NULL,
+              guessed_at INTEGER NOT NULL,
+              PRIMARY KEY (guild_id, date_key, user_id)
+            )
+            """
+        )
+
         await self._conn.commit()
 
     async def _rebuild_guessyear_rounds_table(self) -> None:
@@ -1005,3 +1031,52 @@ class Database:
             return True
         except Exception:
             return False
+
+    async def guessyear_daily_get(self, guild_id: int, date_key: str) -> Optional[dict[str, Any]]:
+        cur = await self.conn.execute(
+            "SELECT event_id, correct_year, message_id FROM guessyear_daily WHERE guild_id=? AND date_key=?",
+            (str(guild_id), date_key),
+        )
+        row = await cur.fetchone()
+        if not row:
+            return None
+        return {"event_id": str(row[0]), "correct_year": int(row[1]), "message_id": row[2]}
+
+    async def guessyear_daily_create(self, guild_id: int, date_key: str, event_id: str, correct_year: int, message_id: Optional[str] = None) -> None:
+        await self.conn.execute(
+            "INSERT OR IGNORE INTO guessyear_daily (guild_id, date_key, event_id, correct_year, message_id) VALUES (?, ?, ?, ?, ?)",
+            (str(guild_id), date_key, event_id, correct_year, message_id),
+        )
+        await self.conn.commit()
+
+    async def guessyear_daily_set_message(self, guild_id: int, date_key: str, message_id: str) -> None:
+        await self.conn.execute(
+            "UPDATE guessyear_daily SET message_id=? WHERE guild_id=? AND date_key=?",
+            (message_id, str(guild_id), date_key),
+        )
+        await self.conn.commit()
+
+    async def guessyear_daily_guess(self, guild_id: int, date_key: str, user_id: int, guess_year: int) -> bool:
+        now = int(time.time())
+        try:
+            await self.conn.execute(
+                "INSERT INTO guessyear_daily_guesses (guild_id, date_key, user_id, guess_year, guessed_at) VALUES (?, ?, ?, ?, ?)",
+                (str(guild_id), date_key, str(user_id), guess_year, now),
+            )
+            await self.conn.commit()
+            return True
+        except Exception:
+            return False
+
+    async def guessyear_daily_leaderboard(self, guild_id: int, date_key: str) -> list[dict[str, Any]]:
+        cur = await self.conn.execute(
+            """
+            SELECT user_id, guess_year, guessed_at
+            FROM guessyear_daily_guesses
+            WHERE guild_id=? AND date_key=?
+            ORDER BY guessed_at ASC
+            """,
+            (str(guild_id), date_key),
+        )
+        rows = await cur.fetchall()
+        return [{"user_id": str(r[0]), "guess_year": int(r[1]), "guessed_at": int(r[2])} for r in rows]

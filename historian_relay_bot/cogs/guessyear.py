@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 log = logging.getLogger(__name__)
 
@@ -534,6 +534,8 @@ class GuessYearCog(commands.Cog):
         self._learn_owner_threads: Dict[Tuple[int, int], int] = {}
         self._learn_views: Dict[Tuple[int, int], LearnSessionView] = {}
 
+        self._daily_date_key: Optional[str] = None
+
         self._restore_started = False
 
         self._load_dataset()
@@ -543,6 +545,11 @@ class GuessYearCog(commands.Cog):
         if not self._restore_started:
             self._restore_started = True
             asyncio.create_task(self._restore_after_ready())
+        if self.bot.cfg.GUESSYEAR_DAILY_CHANNEL_ID and not self._daily_challenge_loop.is_running():
+            self._daily_challenge_loop.start()
+
+    async def cog_unload(self) -> None:
+        self._daily_challenge_loop.cancel()
 
     # ---------- dataset / restore ----------
 
@@ -2145,6 +2152,106 @@ class GuessYearCog(commands.Cog):
         embed.add_field(name="Scoreboard", value="\n".join(lines), inline=False)
         await channel.send(embed=embed)
 
+    # ---------- daily challenge ----------
+
+    @tasks.loop(minutes=5)
+    async def _daily_challenge_loop(self) -> None:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        date_key = now.strftime("%Y-%m-%d")
+        if self._daily_date_key == date_key:
+            return
+        if now.hour < self.bot.cfg.GUESSYEAR_DAILY_HOUR_UTC:
+            return
+
+        channel_id = self.bot.cfg.GUESSYEAR_DAILY_CHANNEL_ID
+        if not channel_id:
+            return
+
+        channel = self.bot.get_channel(channel_id)
+        if not isinstance(channel, (discord.TextChannel, discord.Thread)):
+            return
+
+        guild = channel.guild
+
+        existing = await self.bot.db.guessyear_daily_get(guild.id, date_key)
+        if existing:
+            self._daily_date_key = date_key
+            return
+
+        evt = self._pick_event(guild.id, channel_id)
+        if not evt:
+            return
+
+        correct_year = int(evt["year"])
+        diff = event_difficulty(evt)
+        await self.bot.db.guessyear_daily_create(guild.id, date_key, str(evt["id"]), correct_year)
+        self._daily_date_key = date_key
+
+        embed = discord.Embed(
+            title=f"📅 Daily History Challenge — {date_key}",
+            description=evt["prompt"],
+            color=discord.Color.green(),
+        )
+        embed.add_field(name="Difficulty", value=DIFFICULTY_STARS.get(diff, "⭐"), inline=True)
+        era_hint = century_range_hint(correct_year)
+        if era_hint:
+            embed.add_field(name="🏛️ Ancient Event", value=era_hint, inline=False)
+        embed.add_field(name="How to play", value="Use `!daily <year>` to submit your guess. One guess per person per day!", inline=False)
+        embed.set_footer(text="Results will be revealed with tomorrow's challenge.")
+
+        msg = await channel.send(embed=embed)
+        await self.bot.db.guessyear_daily_set_message(guild.id, date_key, str(msg.id))
+        try:
+            await msg.pin()
+        except Exception:
+            pass
+
+        yesterday = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        await self._reveal_daily_results(guild, channel, yesterday)
+
+    @_daily_challenge_loop.before_loop
+    async def _before_daily_loop(self) -> None:
+        await self.bot.wait_until_ready()
+
+    async def _reveal_daily_results(self, guild: discord.Guild, channel: discord.TextChannel, date_key: str) -> None:
+        daily = await self.bot.db.guessyear_daily_get(guild.id, date_key)
+        if not daily:
+            return
+        correct = daily["correct_year"]
+        guesses = await self.bot.db.guessyear_daily_leaderboard(guild.id, date_key)
+        if not guesses:
+            return
+
+        evt = self._events_by_id.get(daily["event_id"])
+        scored = sorted(guesses, key=lambda g: (abs(int(g["guess_year"]) - correct), int(g["guessed_at"])))
+
+        lines = []
+        for i, g in enumerate(scored[:10], start=1):
+            d = abs(int(g["guess_year"]) - correct)
+            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"#{i}")
+            exact = " 🎯" if d == 0 else ""
+            lines.append(f"{medal} <@{g['user_id']}> — **{g['guess_year']}** (off by **{d}**){exact}")
+
+        embed = discord.Embed(
+            title=f"📅 Daily Challenge Results — {date_key}",
+            description=f"The answer was **{correct}**!",
+            color=discord.Color.gold(),
+        )
+        if evt:
+            explanation = self._get_learn_explanation(evt)
+            if explanation:
+                embed.add_field(name="📚 Did you know?", value=explanation[:1024], inline=False)
+        embed.add_field(name="Leaderboard", value="\n".join(lines) if lines else "No guesses", inline=False)
+        embed.set_footer(text=f"{len(guesses)} total guesses")
+        await channel.send(embed=embed)
+
+        if daily.get("message_id"):
+            try:
+                old_msg = await channel.fetch_message(int(daily["message_id"]))
+                await old_msg.unpin()
+            except Exception:
+                pass
+
     # ---------- commands ----------
 
     @commands.group(name="guessyear", invoke_without_command=True)
@@ -2292,6 +2399,14 @@ class GuessYearCog(commands.Cog):
         embed.add_field(
             name="⚡ Rapid-Fire",
             value="`!guessyear rapid [n]` — Play n back-to-back rounds (2–20, default 5)",
+            inline=False,
+        )
+        embed.add_field(
+            name="📅 Daily Challenge",
+            value=(
+                "`!daily <year>` — Submit a guess for today's challenge\n"
+                "`!daily` — View today's standings"
+            ),
             inline=False,
         )
         embed.add_field(
@@ -2984,6 +3099,40 @@ class GuessYearCog(commands.Cog):
     async def guess_cmd(self, ctx: commands.Context, year: str):
         # Explicit command form: !guess 1789
         await self._handle_guess(ctx.message, override_text=year)
+
+    @commands.command(name="daily")
+    async def daily_cmd(self, ctx: commands.Context, year: Optional[str] = None):
+        """Submit a guess for today's daily challenge, or view today's standings."""
+        if not ctx.guild:
+            return
+        date_key = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+        daily = await self.bot.db.guessyear_daily_get(ctx.guild.id, date_key)
+        if not daily:
+            return await ctx.send("No daily challenge active today. Check back later!", delete_after=10)
+
+        if year is None:
+            guesses = await self.bot.db.guessyear_daily_leaderboard(ctx.guild.id, date_key)
+            if not guesses:
+                return await ctx.send(f"Today's daily challenge has **0** guesses so far. Use `!daily <year>` to guess!", delete_after=15)
+            lines = []
+            for i, g in enumerate(sorted(guesses, key=lambda g: int(g["guessed_at"])), start=1):
+                lines.append(f"{i}. <@{g['user_id']}> — ||**{g['guess_year']}**||")
+            embed = discord.Embed(
+                title=f"📅 Daily Challenge — {date_key}",
+                description=f"**{len(guesses)}** guess{'es' if len(guesses) != 1 else ''} so far (answers hidden until tomorrow).",
+                color=discord.Color.green(),
+            )
+            embed.add_field(name="Participants", value="\n".join(lines[:15]), inline=False)
+            return await ctx.send(embed=embed)
+
+        m = YEAR_RE.match(year)
+        if not m:
+            return await ctx.send("Please provide a valid year, e.g. `!daily 1776`.", delete_after=10)
+        guess_year = int(m.group(1))
+        ok = await self.bot.db.guessyear_daily_guess(ctx.guild.id, date_key, ctx.author.id, guess_year)
+        if not ok:
+            return await ctx.send("You've already submitted a guess for today's challenge!", delete_after=10)
+        await ctx.send(f"✅ Your guess of **{guess_year}** has been recorded for today's daily challenge. Results revealed tomorrow!")
 
     @commands.command(name="bonus")
     async def bonus(self, ctx: commands.Context, *, arg: Optional[str] = None):
