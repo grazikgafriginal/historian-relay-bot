@@ -657,7 +657,6 @@ class GuessYearCog(commands.Cog):
 
         self._active: Dict[Tuple[int, int], RoundState] = {}
         self._end_tasks: Dict[Tuple[int, int], asyncio.Task] = {}
-        self._hint_tasks: Dict[Tuple[int, int], asyncio.Task] = {}
         self._rapid_active: Dict[Tuple[int, int], Dict[str, Any]] = {}
         self._guess_cooldown: Dict[Tuple[int, int, int], int] = {}  # (guild, channel, user) -> last_ts
 
@@ -857,13 +856,6 @@ class GuessYearCog(commands.Cog):
 
         self._end_tasks[key] = asyncio.create_task(self._end_round_when_ready(state))
 
-        # Schedule auto-hints
-        old_hint = self._hint_tasks.get(key)
-        if old_hint and not old_hint.done():
-            old_hint.cancel()
-        if self.bot.cfg.GUESSYEAR_HINTS_ENABLED and state.hints:
-            self._hint_tasks[key] = asyncio.create_task(self._auto_hint_loop(state))
-
     async def _end_round_when_ready(self, state: RoundState) -> None:
         delay = max(0, state.ends_at - int(time.time()))
         try:
@@ -877,52 +869,6 @@ class GuessYearCog(commands.Cog):
             return
 
         await self._end_round(state.guild_id, state.channel_id, forced=False)
-
-    async def _auto_hint_loop(self, state: RoundState) -> None:
-        max_hints = min(int(self.bot.cfg.GUESSYEAR_MAX_HINTS), len(state.hints))
-        if max_hints <= 0:
-            return
-
-        total_duration = state.ends_at - state.started_at
-        if total_duration <= 0:
-            return
-
-        for i in range(max_hints):
-            fraction = (i + 1) / (max_hints + 1)
-            target_time = state.started_at + int(total_duration * fraction)
-            delay = max(0, target_time - int(time.time()))
-            try:
-                await asyncio.sleep(delay)
-            except asyncio.CancelledError:
-                return
-
-            key = (state.guild_id, state.channel_id)
-            current = self._active.get(key)
-            if not current or current.round_id != state.round_id:
-                return
-
-            if state.hints_used > i:
-                continue
-
-            try:
-                new_used = await self.bot.db.guessyear_increment_hints_used(state.round_id)
-            except Exception:
-                continue
-            state.hints_used = int(new_used)
-
-            channel = self.bot.get_channel(state.channel_id)
-            if channel is None:
-                try:
-                    channel = await self.bot.fetch_channel(state.channel_id)
-                except Exception:
-                    continue
-
-            if isinstance(channel, (discord.TextChannel, discord.Thread)):
-                remaining = self._remaining(state.ends_at)
-                try:
-                    await channel.send(f"💡 Auto-hint {i + 1}/{max_hints}: **{state.hints[i]}** — ⏱️ {remaining}s left")
-                except Exception:
-                    pass
 
     async def _ensure_state_loaded(self, guild_id: int, channel_id: int) -> Optional[RoundState]:
         key = (guild_id, channel_id)
@@ -2165,9 +2111,6 @@ class GuessYearCog(commands.Cog):
         task = self._end_tasks.pop(key, None)
         if task and not task.done():
             task.cancel()
-        hint_task = self._hint_tasks.pop(key, None)
-        if hint_task and not hint_task.done():
-            hint_task.cancel()
 
         # Rapid-fire: accumulate scores and chain next round or announce winner
         rapid = self._rapid_active.get(key)
@@ -3265,7 +3208,8 @@ class GuessYearCog(commands.Cog):
 
         state.hints_used = int(new_used)
         hint_text = state.hints[next_index]
-        await ctx.send(f"💡 Hint {next_index+1}/{max_hints}: **{hint_text}**")
+        remaining = self._remaining(state.ends_at)
+        await ctx.send(f"💡 Hint {next_index+1}/{max_hints}: **{hint_text}** — ⏱️ {remaining}s left")
 
     @commands.command(name="tutorial")
     async def tutorial_cmd(self, ctx: commands.Context):
@@ -3274,7 +3218,7 @@ class GuessYearCog(commands.Cog):
             view = TutorialView(ctx.author.id)
             await ctx.author.send(embed=view._build_embed(), view=view)
             if ctx.guild:
-                await ctx.send(f"📬 Tutorial sent to your DMs, {ctx.author.mention}!", delete_after=10)
+                await ctx.send(f"📬 Tutorial sent to your DMs, {ctx.author.mention}!")
         except discord.Forbidden:
             await ctx.send("I can't DM you! Please enable DMs from server members and try again.", delete_after=15)
 
@@ -3525,14 +3469,13 @@ class GuessYearCog(commands.Cog):
             try:
                 await message.channel.send(
                     f"Your first guess (**{existing}**) is locked in.",
-                    delete_after=5,
                 )
             except Exception:
                 pass
             return
 
         try:
-            await message.channel.send(f"✅ {message.author.mention} locked in a guess.", delete_after=5)
+            await message.channel.send(f"✅ {message.author.mention} locked in a guess.")
         except Exception:
             pass
 
