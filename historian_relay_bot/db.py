@@ -286,6 +286,33 @@ class Database:
             """
         )
 
+        # Create duel matchups table if missing.
+        await self._conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS guessyear_duel_matchups (
+              guild_id TEXT NOT NULL,
+              user_a TEXT NOT NULL,
+              user_b TEXT NOT NULL,
+              wins_a INTEGER NOT NULL DEFAULT 0,
+              wins_b INTEGER NOT NULL DEFAULT 0,
+              PRIMARY KEY (guild_id, user_a, user_b)
+            )
+            """
+        )
+
+        # Create achievements table if missing.
+        await self._conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS guessyear_achievements (
+              guild_id TEXT NOT NULL,
+              user_id TEXT NOT NULL,
+              achievement_key TEXT NOT NULL,
+              earned_at INTEGER NOT NULL,
+              PRIMARY KEY (guild_id, user_id, achievement_key)
+            )
+            """
+        )
+
         await self._conn.commit()
 
     async def _rebuild_guessyear_rounds_table(self) -> None:
@@ -930,3 +957,51 @@ class Database:
         )
         row = await cur.fetchone()
         return int(row[0]) if row else 0
+
+    async def guessyear_record_duel_matchup(self, guild_id: int, winner_id: int, loser_id: int) -> None:
+        a, b = sorted([str(winner_id), str(loser_id)])
+        win_col = "wins_a" if a == str(winner_id) else "wins_b"
+        await self.conn.execute(
+            f"""
+            INSERT INTO guessyear_duel_matchups (guild_id, user_a, user_b, wins_a, wins_b)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(guild_id, user_a, user_b) DO UPDATE SET
+              {win_col} = {win_col} + 1
+            """,
+            (str(guild_id), a, b, 1 if win_col == "wins_a" else 0, 1 if win_col == "wins_b" else 0),
+        )
+        await self.conn.commit()
+
+    async def guessyear_get_duel_matchup(self, guild_id: int, user1: int, user2: int) -> tuple[int, int]:
+        a, b = sorted([str(user1), str(user2)])
+        cur = await self.conn.execute(
+            "SELECT wins_a, wins_b FROM guessyear_duel_matchups WHERE guild_id=? AND user_a=? AND user_b=?",
+            (str(guild_id), a, b),
+        )
+        row = await cur.fetchone()
+        if not row:
+            return (0, 0)
+        wa, wb = int(row[0]), int(row[1])
+        if a == str(user1):
+            return (wa, wb)
+        return (wb, wa)
+
+    async def guessyear_get_achievements(self, guild_id: int, user_id: int) -> set:
+        cur = await self.conn.execute(
+            "SELECT achievement_key FROM guessyear_achievements WHERE guild_id=? AND user_id=?",
+            (str(guild_id), str(user_id)),
+        )
+        rows = await cur.fetchall()
+        return {str(r[0]) for r in rows}
+
+    async def guessyear_grant_achievement(self, guild_id: int, user_id: int, key: str) -> bool:
+        now = int(time.time())
+        try:
+            await self.conn.execute(
+                "INSERT INTO guessyear_achievements (guild_id, user_id, achievement_key, earned_at) VALUES (?, ?, ?, ?)",
+                (str(guild_id), str(user_id), key, now),
+            )
+            await self.conn.commit()
+            return True
+        except Exception:
+            return False

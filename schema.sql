@@ -110,3 +110,20 @@ CREATE TABLE IF NOT EXISTS guessyear_channel_categories (
   categories_json TEXT NOT NULL DEFAULT '[]',
   PRIMARY KEY (guild_id, channel_id)
 );
+
+CREATE TABLE IF NOT EXISTS guessyear_duel_matchups (
+  guild_id TEXT NOT NULL,
+  user_a TEXT NOT NULL,
+  user_b TEXT NOT NULL,
+  wins_a INTEGER NOT NULL DEFAULT 0,
+  wins_b INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (guild_id, user_a, user_b)
+);
+
+CREATE TABLE IF NOT EXISTS guessyear_achievements (
+  guild_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  achievement_key TEXT NOT NULL,
+  earned_at INTEGER NOT NULL,
+  PRIMARY KEY (guild_id, user_id, achievement_key)
+);

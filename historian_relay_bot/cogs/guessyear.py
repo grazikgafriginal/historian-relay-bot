@@ -125,6 +125,60 @@ XP_EXACT = 50
 XP_BONUS_CORRECT = 15
 XP_DUEL_WIN = 30
 
+DIFFICULTY_STARS = {1: "⭐", 2: "⭐⭐", 3: "⭐⭐⭐", 4: "⭐⭐⭐⭐", 5: "⭐⭐⭐⭐⭐"}
+DIFFICULTY_XP_MULTIPLIER = {1: 1.0, 2: 1.0, 3: 1.25, 4: 1.5, 5: 2.0}
+
+
+def event_difficulty(evt: Dict[str, Any]) -> int:
+    year = int(evt.get("year", 2000))
+    tags = {str(t).lower() for t in evt.get("tags", [])}
+    score = 0
+    if year < 0:
+        score += 3
+    elif year < 500:
+        score += 2
+    elif year < 1500:
+        score += 1
+    hard_tags = {"ancient", "asia", "africa", "science"}
+    score += len(tags & hard_tags)
+    return max(1, min(5, score))
+
+
+def century_range_hint(year: int) -> Optional[str]:
+    if year >= 500:
+        return None
+    if year <= -300:
+        return "Era: **500 – 300 BCE**"
+    elif year <= 0:
+        return "Era: **300 BCE – 1 CE**"
+    else:
+        return "Era: **1 – 500 CE**"
+
+
+ACHIEVEMENTS = [
+    {"key": "first_win", "check": "wins", "threshold": 1, "emoji": "🏆", "label": "First Victory"},
+    {"key": "wins_10", "check": "wins", "threshold": 10, "emoji": "⚔️", "label": "Seasoned Victor"},
+    {"key": "wins_50", "check": "wins", "threshold": 50, "emoji": "👑", "label": "History Champion"},
+    {"key": "plays_25", "check": "plays", "threshold": 25, "emoji": "📚", "label": "Dedicated Student"},
+    {"key": "plays_100", "check": "plays", "threshold": 100, "emoji": "🎓", "label": "Century of Rounds"},
+    {"key": "exact_5", "check": "exact_hits", "threshold": 5, "emoji": "🎯", "label": "Sharpshooter"},
+    {"key": "exact_25", "check": "exact_hits", "threshold": 25, "emoji": "💎", "label": "Precision Master"},
+    {"key": "streak_5", "check": "best_streak", "threshold": 5, "emoji": "🔥", "label": "On Fire"},
+    {"key": "streak_10", "check": "best_streak", "threshold": 10, "emoji": "☄️", "label": "Unstoppable"},
+    {"key": "duel_wins_10", "check": "duel_wins", "threshold": 10, "emoji": "⚔️", "label": "Duel Master"},
+]
+
+
+def check_achievements(stats: Dict[str, Any], earned: set) -> List[Dict[str, Any]]:
+    new = []
+    for ach in ACHIEVEMENTS:
+        if ach["key"] in earned:
+            continue
+        val = int(stats.get(ach["check"], 0))
+        if val >= ach["threshold"]:
+            new.append(ach)
+    return new
+
 
 def get_xp_title(xp: int) -> str:
     title = XP_TITLES[0][1]
@@ -1182,7 +1236,7 @@ class GuessYearCog(commands.Cog):
         fresh = [evt for evt in pool if str(evt.get("id")) not in used]
         return random.choice(fresh or pool)
 
-    def _build_duel_challenge_embed(self, guild: discord.Guild, state: DuelChallengeState) -> discord.Embed:
+    async def _build_duel_challenge_embed(self, guild: discord.Guild, state: DuelChallengeState) -> discord.Embed:
         challenger = guild.get_member(state.challenger_user_id)
         opponent = guild.get_member(state.opponent_user_id)
         categories = self._format_category_list(self._categories_for_channel(state.guild_id, state.channel_id))
@@ -1191,6 +1245,14 @@ class GuessYearCog(commands.Cog):
             description=f"{challenger.mention if challenger else f'<@{state.challenger_user_id}>'} challenged {opponent.mention if opponent else f'<@{state.opponent_user_id}>'} to a hidden-guess duel.",
             color=discord.Color.orange(),
         )
+        try:
+            c_wins, o_wins = await self.bot.db.guessyear_get_duel_matchup(state.guild_id, state.challenger_user_id, state.opponent_user_id)
+            if c_wins or o_wins:
+                c_name = challenger.display_name if challenger else str(state.challenger_user_id)
+                o_name = opponent.display_name if opponent else str(state.opponent_user_id)
+                embed.add_field(name="📜 Head-to-Head", value=f"**{c_name}** {c_wins} – {o_wins} **{o_name}**", inline=False)
+        except Exception:
+            pass
         embed.add_field(name="Format", value="One hidden guess each per question. Guesses are revealed only when each question ends.", inline=False)
         embed.add_field(name="Questions", value=f"**{state.total_questions}**", inline=True)
         embed.add_field(name="Categories", value=categories, inline=False)
@@ -1522,7 +1584,7 @@ class GuessYearCog(commands.Cog):
         self._duel_active[(guild.id, duel_channel.id)] = duel_state
         self._schedule_duel_end(duel_state)
 
-        accepted_embed = self._build_duel_challenge_embed(guild, challenge)
+        accepted_embed = await self._build_duel_challenge_embed(guild, challenge)
         accepted_embed.color = discord.Color.green()
         if isinstance(duel_channel, discord.Thread):
             accepted_embed.add_field(name="Duel thread", value=duel_channel.mention, inline=False)
@@ -1712,15 +1774,17 @@ class GuessYearCog(commands.Cog):
 
             self._duel_active.pop(key, None)
 
-            # Record duel W/L stats + XP
+            # Record duel W/L stats, matchup, + XP
             challenger_score = int(state.scores.get(state.challenger_user_id, 0))
             opponent_score = int(state.scores.get(state.opponent_user_id, 0))
             try:
                 if challenger_score > opponent_score:
                     await self.bot.db.guessyear_stats_record_duel_result(guild_id, state.challenger_user_id, state.opponent_user_id)
+                    await self.bot.db.guessyear_record_duel_matchup(guild_id, state.challenger_user_id, state.opponent_user_id)
                     await self.bot.db.guessyear_stats_add_xp(guild_id, state.challenger_user_id, XP_DUEL_WIN)
                 elif opponent_score > challenger_score:
                     await self.bot.db.guessyear_stats_record_duel_result(guild_id, state.opponent_user_id, state.challenger_user_id)
+                    await self.bot.db.guessyear_record_duel_matchup(guild_id, state.opponent_user_id, state.challenger_user_id)
                     await self.bot.db.guessyear_stats_add_xp(guild_id, state.opponent_user_id, XP_DUEL_WIN)
             except Exception:
                 pass
@@ -1809,17 +1873,19 @@ class GuessYearCog(commands.Cog):
 
         # Stats: count plays for all guessers; count win for winner.
         all_player_ids = [int(g["user_id"]) for g in guesses]
+        evt = self._events_by_id.get(state.event_id)
+        diff = event_difficulty(evt) if evt else 1
+        xp_mult = DIFFICULTY_XP_MULTIPLIER.get(diff, 1.0)
         try:
             await self.bot.db.guessyear_stats_record_play(guild_id, all_player_ids)
-            # XP: everyone who played gets participation XP
             for uid in all_player_ids:
-                await self.bot.db.guessyear_stats_add_xp(guild_id, uid, XP_PLAY)
+                await self.bot.db.guessyear_stats_add_xp(guild_id, uid, int(XP_PLAY * xp_mult))
             if winner_user_id is not None:
                 await self.bot.db.guessyear_stats_record_win(guild_id, int(winner_user_id))
-                await self.bot.db.guessyear_stats_add_xp(guild_id, int(winner_user_id), XP_WIN)
+                await self.bot.db.guessyear_stats_add_xp(guild_id, int(winner_user_id), int(XP_WIN * xp_mult))
                 if winner_diff == 0:
                     await self.bot.db.guessyear_stats_record_exact_hit(guild_id, int(winner_user_id))
-                    await self.bot.db.guessyear_stats_add_xp(guild_id, int(winner_user_id), XP_EXACT)
+                    await self.bot.db.guessyear_stats_add_xp(guild_id, int(winner_user_id), int(XP_EXACT * xp_mult))
             for diff_val, _ts, uid, _gy in scored:
                 await self.bot.db.guessyear_stats_record_distance(guild_id, uid, diff_val)
             for uid in all_player_ids:
@@ -1827,7 +1893,6 @@ class GuessYearCog(commands.Cog):
         except Exception:
             pass
 
-        evt = self._events_by_id.get(state.event_id)
         if winner_user_id is not None and winner_diff == 0 and evt and self._bonus_modes_for_event(evt):
             self._recent_finished[key] = {
                 "round_id": state.round_id,
@@ -1838,6 +1903,22 @@ class GuessYearCog(commands.Cog):
         else:
             self._recent_finished.pop(key, None)
             self._bonus_active.pop(key, None)
+
+        # Check achievements for all players
+        new_achievements: List[Tuple[int, Dict[str, Any]]] = []
+        try:
+            for uid in all_player_ids:
+                user_stats = await self.bot.db.guessyear_stats_get_user(guild_id, uid)
+                if not user_stats:
+                    continue
+                earned = await self.bot.db.guessyear_get_achievements(guild_id, uid)
+                unlocked = check_achievements(user_stats, earned)
+                for ach in unlocked:
+                    granted = await self.bot.db.guessyear_grant_achievement(guild_id, uid, ach["key"])
+                    if granted:
+                        new_achievements.append((uid, ach))
+        except Exception:
+            pass
 
         # Fetch channel
         channel = self.bot.get_channel(channel_id)
@@ -1858,6 +1939,7 @@ class GuessYearCog(commands.Cog):
                 color=discord.Color.gold(),
             )
             embed.add_field(name="Correct year", value=f"**{state.correct_year}**", inline=True)
+            embed.add_field(name="Difficulty", value=DIFFICULTY_STARS.get(diff, "⭐"), inline=True)
             embed.add_field(name="Guesses", value=f"**{total_guesses}** ({total_players} player{'s' if total_players != 1 else ''})", inline=True)
 
             if winner_user_id is None:
@@ -1910,6 +1992,13 @@ class GuessYearCog(commands.Cog):
                     f"🎁 <@{winner_user_id}> unlocked a bonus round for this event. "
                     f"Start it with {modes_text}."
                 )
+
+            # Achievement announcements
+            if new_achievements:
+                ach_lines = []
+                for uid, ach in new_achievements:
+                    ach_lines.append(f"{ach['emoji']} <@{uid}> earned **{ach['label']}**!")
+                await channel.send("\n".join(ach_lines))
 
             # Reaction-based next round (skip during rapid-fire)
             if not forced and key not in self._rapid_active:
@@ -1995,13 +2084,18 @@ class GuessYearCog(commands.Cog):
                                 self._active[key] = state
                                 self._schedule_end(state)
                                 category_text = self._format_category_list(self._categories_for_channel(guild_id, channel_id))
+                                diff = event_difficulty(evt)
                                 embed = discord.Embed(
                                     title=f"🕰️ Guess the Year #{round_id}",
                                     description=state.prompt,
                                     color=discord.Color.blue(),
                                 )
+                                embed.add_field(name="Difficulty", value=DIFFICULTY_STARS.get(diff, "⭐"), inline=True)
                                 embed.add_field(name="Categories", value=category_text, inline=True)
                                 embed.add_field(name="Time", value=f"**{self.bot.cfg.GUESSYEAR_ROUND_SECONDS}s**", inline=True)
+                                era_hint = century_range_hint(int(evt["year"]))
+                                if era_hint:
+                                    embed.add_field(name="🏛️ Ancient Event", value=era_hint, inline=False)
                                 embed.add_field(name="How to play", value="Type a year (e.g. `1066`). Use `!hint` for clues.", inline=False)
                                 await fake_ctx_channel.send(embed=embed)
                 break
@@ -2145,13 +2239,18 @@ class GuessYearCog(commands.Cog):
         self._schedule_end(state)
 
         category_text = self._format_category_list(self._categories_for_channel(ctx.guild.id, ctx.channel.id))
+        diff = event_difficulty(evt)
         embed = discord.Embed(
             title=f"🕰️ Guess the Year #{round_id}",
             description=state.prompt,
             color=discord.Color.blue(),
         )
+        embed.add_field(name="Difficulty", value=DIFFICULTY_STARS.get(diff, "⭐"), inline=True)
         embed.add_field(name="Categories", value=category_text, inline=True)
         embed.add_field(name="Time", value=f"**{self.bot.cfg.GUESSYEAR_ROUND_SECONDS}s**", inline=True)
+        era_hint = century_range_hint(correct_year)
+        if era_hint:
+            embed.add_field(name="🏛️ Ancient Event", value=era_hint, inline=False)
         embed.add_field(name="How to play", value="Type a year (e.g. `1066`). Use `!hint` for clues.", inline=False)
         await ctx.send(embed=embed)
 
@@ -2334,12 +2433,17 @@ class GuessYearCog(commands.Cog):
 
         channel = self.bot.get_channel(channel_id)
         if isinstance(channel, (discord.TextChannel, discord.Thread)):
+            diff = event_difficulty(evt)
             embed = discord.Embed(
                 title=f"⚡ Rapid-Fire #{current_num}/{total}",
                 description=state.prompt,
                 color=discord.Color.orange(),
             )
+            embed.add_field(name="Difficulty", value=DIFFICULTY_STARS.get(diff, "⭐"), inline=True)
             embed.add_field(name="Time", value=f"**{rapid['timer']}s**", inline=True)
+            era_hint = century_range_hint(int(evt["year"]))
+            if era_hint:
+                embed.add_field(name="🏛️ Ancient Event", value=era_hint, inline=False)
             embed.add_field(name="How to play", value="Type a year (e.g. `1066`).", inline=False)
             await channel.send(embed=embed)
 
@@ -2471,7 +2575,7 @@ class GuessYearCog(commands.Cog):
 
         view = DuelChallengeView(self, challenge)
         self._duel_challenge_views[key] = view
-        embed = self._build_duel_challenge_embed(ctx.guild, challenge)
+        embed = await self._build_duel_challenge_embed(ctx.guild, challenge)
         message = await ctx.send(content=opponent.mention, embed=embed, view=view)
         view.message = message
 
@@ -2484,7 +2588,7 @@ class GuessYearCog(commands.Cog):
 
         challenge = self._find_duel_challenge_for_context(ctx.guild.id, ctx.channel.id)
         if challenge and challenge.expires_at > int(time.time()):
-            embed = self._build_duel_challenge_embed(ctx.guild, challenge)
+            embed = await self._build_duel_challenge_embed(ctx.guild, challenge)
             return await ctx.send(embed=embed)
 
         duel = self._find_duel_for_context(ctx.guild.id, ctx.channel.id)
