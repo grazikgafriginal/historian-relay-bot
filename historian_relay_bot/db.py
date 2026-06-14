@@ -254,6 +254,37 @@ class Database:
             """
         )
 
+        # Migrate guessyear_stats: add new columns if missing.
+        stats_row = await self.fetchone(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='guessyear_stats'"
+        )
+        if stats_row:
+            async with self._conn.execute("PRAGMA table_info('guessyear_stats')") as cur:
+                stats_cols = {str(r[1]) for r in await cur.fetchall()}
+            new_cols = {
+                "exact_hits": "INTEGER NOT NULL DEFAULT 0",
+                "current_streak": "INTEGER NOT NULL DEFAULT 0",
+                "best_streak": "INTEGER NOT NULL DEFAULT 0",
+                "total_distance": "INTEGER NOT NULL DEFAULT 0",
+                "duel_wins": "INTEGER NOT NULL DEFAULT 0",
+                "duel_losses": "INTEGER NOT NULL DEFAULT 0",
+            }
+            for col_name, col_def in new_cols.items():
+                if col_name not in stats_cols:
+                    await self._conn.execute(f"ALTER TABLE guessyear_stats ADD COLUMN {col_name} {col_def}")
+
+        # Create channel categories table if missing.
+        await self._conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS guessyear_channel_categories (
+              guild_id TEXT NOT NULL,
+              channel_id TEXT NOT NULL,
+              categories_json TEXT NOT NULL DEFAULT '[]',
+              PRIMARY KEY (guild_id, channel_id)
+            )
+            """
+        )
+
         await self._conn.commit()
 
     async def _rebuild_guessyear_rounds_table(self) -> None:
@@ -642,18 +673,17 @@ class Database:
 
     async def guessyear_upsert_guess(self, round_id: int, user_id: int, guess_year: int, guessed_at: int, policy: str):
         """
-        Returns (ok, already_had_guess)
+        Returns (ok, existing_guess_year_or_None)
         """
-        # Check if already guessed
         cur = await self.conn.execute(
             "SELECT guess_year FROM guessyear_guesses WHERE round_id=? AND user_id=?",
             (int(round_id), str(user_id)),
         )
         existing = await cur.fetchone()
-        already = existing is not None
+        already = int(existing[0]) if existing is not None else None
 
-        if already and policy == "first":
-            return True, True
+        if already is not None and policy == "first":
+            return True, already
 
         if policy == "latest":
             q = """
@@ -691,8 +721,9 @@ class Database:
         for uid in set(user_ids):
             await self.conn.execute(
                 """
-                INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, last_played_at)
-                VALUES (?, ?, 0, 1, ?)
+                INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, exact_hits, current_streak,
+                    best_streak, total_distance, duel_wins, duel_losses, last_played_at)
+                VALUES (?, ?, 0, 1, 0, 0, 0, 0, 0, 0, ?)
                 ON CONFLICT(guild_id, user_id) DO UPDATE SET
                   plays = plays + 1,
                   last_played_at = excluded.last_played_at
@@ -705,8 +736,9 @@ class Database:
         now = int(time.time())
         await self.conn.execute(
             """
-            INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, last_played_at)
-            VALUES (?, ?, 1, 0, ?)
+            INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, exact_hits, current_streak,
+                best_streak, total_distance, duel_wins, duel_losses, last_played_at)
+            VALUES (?, ?, 1, 0, 0, 1, 1, 0, 0, 0, ?)
             ON CONFLICT(guild_id, user_id) DO UPDATE SET
               wins = wins + 1,
               last_played_at = excluded.last_played_at
@@ -721,7 +753,8 @@ class Database:
         Ordering favors wins, then plays, then recency.
         """
         q = """
-        SELECT user_id, wins, plays, last_played_at
+        SELECT user_id, wins, plays, exact_hits, current_streak, best_streak,
+               total_distance, duel_wins, duel_losses, last_played_at
         FROM guessyear_stats
         WHERE guild_id=?
         ORDER BY wins DESC, plays DESC, last_played_at DESC
@@ -743,13 +776,20 @@ class Database:
             user_id,
             wins,
             plays,
+            exact_hits,
+            current_streak,
+            best_streak,
+            total_distance,
+            duel_wins,
+            duel_losses,
             last_played_at,
             RANK() OVER (ORDER BY wins DESC, plays DESC, last_played_at DESC) AS rank,
             COUNT(*) OVER () AS total
           FROM guessyear_stats
           WHERE guild_id=?
         )
-        SELECT user_id, wins, plays, last_played_at, rank, total
+        SELECT user_id, wins, plays, exact_hits, current_streak, best_streak,
+               total_distance, duel_wins, duel_losses, last_played_at, rank, total
         FROM ranked
         WHERE user_id=?
         """
@@ -776,6 +816,97 @@ class Database:
             )
             await self._conn.commit()
             return (cur.rowcount or 0) > 0
+
+    # --- category persistence ---
+
+    async def guessyear_get_channel_categories(self, guild_id: int, channel_id: int) -> Optional[str]:
+        cur = await self.conn.execute(
+            "SELECT categories_json FROM guessyear_channel_categories WHERE guild_id=? AND channel_id=?",
+            (str(guild_id), str(channel_id)),
+        )
+        row = await cur.fetchone()
+        return str(row[0]) if row else None
+
+    async def guessyear_set_channel_categories(self, guild_id: int, channel_id: int, categories_json: str) -> None:
+        await self.conn.execute(
+            """
+            INSERT INTO guessyear_channel_categories (guild_id, channel_id, categories_json)
+            VALUES (?, ?, ?)
+            ON CONFLICT(guild_id, channel_id) DO UPDATE SET categories_json=excluded.categories_json
+            """,
+            (str(guild_id), str(channel_id), categories_json),
+        )
+        await self.conn.commit()
+
+    async def guessyear_delete_channel_categories(self, guild_id: int, channel_id: int) -> None:
+        await self.conn.execute(
+            "DELETE FROM guessyear_channel_categories WHERE guild_id=? AND channel_id=?",
+            (str(guild_id), str(channel_id)),
+        )
+        await self.conn.commit()
+
+    async def guessyear_load_all_channel_categories(self) -> list[dict[str, Any]]:
+        cur = await self.conn.execute("SELECT guild_id, channel_id, categories_json FROM guessyear_channel_categories")
+        rows = await cur.fetchall()
+        cols = [c[0] for c in cur.description]
+        return [dict(zip(cols, r)) for r in rows]
+
+    # --- extended stats ---
+
+    async def guessyear_stats_record_exact_hit(self, guild_id: int, user_id: int) -> None:
+        await self.conn.execute(
+            """
+            UPDATE guessyear_stats SET exact_hits = exact_hits + 1
+            WHERE guild_id=? AND user_id=?
+            """,
+            (str(guild_id), str(user_id)),
+        )
+        await self.conn.commit()
+
+    async def guessyear_stats_record_distance(self, guild_id: int, user_id: int, distance: int) -> None:
+        await self.conn.execute(
+            """
+            UPDATE guessyear_stats SET total_distance = total_distance + ?
+            WHERE guild_id=? AND user_id=?
+            """,
+            (int(distance), str(guild_id), str(user_id)),
+        )
+        await self.conn.commit()
+
+    async def guessyear_stats_update_streak(self, guild_id: int, user_id: int, won: bool) -> None:
+        if won:
+            await self.conn.execute(
+                """
+                UPDATE guessyear_stats
+                SET current_streak = current_streak + 1,
+                    best_streak = MAX(best_streak, current_streak + 1)
+                WHERE guild_id=? AND user_id=?
+                """,
+                (str(guild_id), str(user_id)),
+            )
+        else:
+            await self.conn.execute(
+                "UPDATE guessyear_stats SET current_streak = 0 WHERE guild_id=? AND user_id=?",
+                (str(guild_id), str(user_id)),
+            )
+        await self.conn.commit()
+
+    async def guessyear_stats_record_duel_result(self, guild_id: int, winner_id: int, loser_id: int) -> None:
+        now = int(time.time())
+        for uid, w, l in [(winner_id, 1, 0), (loser_id, 0, 1)]:
+            await self.conn.execute(
+                """
+                INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, exact_hits, current_streak,
+                    best_streak, total_distance, duel_wins, duel_losses, last_played_at)
+                VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, ?, ?)
+                ON CONFLICT(guild_id, user_id) DO UPDATE SET
+                  duel_wins = duel_wins + ?,
+                  duel_losses = duel_losses + ?,
+                  last_played_at = excluded.last_played_at
+                """,
+                (str(guild_id), str(uid), w, l, now, w, l),
+            )
+        await self.conn.commit()
 
 
 

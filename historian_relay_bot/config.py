@@ -130,7 +130,7 @@ class BotConfig:
     # --------------------
     GUESSYEAR_ENABLED: bool = True
     GUESSYEAR_ALLOWED_CHANNEL_IDS: List[int] = field(default_factory=list)  # empty = allow all
-    GUESSYEAR_ROUND_SECONDS: int = 15
+    GUESSYEAR_ROUND_SECONDS: int = 30
     GUESSYEAR_COOLDOWN_SECONDS: int = 5
     GUESSYEAR_MIN_YEAR: int = 1
     GUESSYEAR_MAX_YEAR: int = 0  # 0 = current year at runtime
@@ -193,7 +193,7 @@ def load_config() -> BotConfig:
 
         GUESSYEAR_ENABLED=_get_bool("GUESSYEAR_ENABLED", bool(data.get("GUESSYEAR_ENABLED", True))),
         GUESSYEAR_ALLOWED_CHANNEL_IDS=_get_int_list("GUESSYEAR_ALLOWED_CHANNEL_IDS") or list(map(int, data.get("GUESSYEAR_ALLOWED_CHANNEL_IDS", []) or [])),
-        GUESSYEAR_ROUND_SECONDS=int(env_or_json("GUESSYEAR_ROUND_SECONDS") or data.get("GUESSYEAR_ROUND_SECONDS", 15)),
+        GUESSYEAR_ROUND_SECONDS=int(env_or_json("GUESSYEAR_ROUND_SECONDS") or data.get("GUESSYEAR_ROUND_SECONDS", 30)),
         GUESSYEAR_COOLDOWN_SECONDS=int(env_or_json("GUESSYEAR_COOLDOWN_SECONDS") or data.get("GUESSYEAR_COOLDOWN_SECONDS", 5)),
         GUESSYEAR_MIN_YEAR=int(env_or_json("GUESSYEAR_MIN_YEAR") or data.get("GUESSYEAR_MIN_YEAR", 1)),
         GUESSYEAR_MAX_YEAR=int(env_or_json("GUESSYEAR_MAX_YEAR") or data.get("GUESSYEAR_MAX_YEAR", 0)),

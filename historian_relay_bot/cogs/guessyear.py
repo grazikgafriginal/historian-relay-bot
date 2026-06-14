@@ -177,6 +177,12 @@ class CategorySelect(discord.ui.Select):
             return
 
         self.cog._channel_categories[(self.guild_id, self.channel_id)] = selected
+        try:
+            await self.cog.bot.db.guessyear_set_channel_categories(
+                self.guild_id, self.channel_id, json.dumps(selected),
+            )
+        except Exception:
+            pass
         for option in self.options:
             option.default = option.value in set(selected)
 
@@ -198,6 +204,10 @@ class CategoryResetButton(discord.ui.Button):
             return
 
         self.cog._channel_categories.pop((self.guild_id, self.channel_id), None)
+        try:
+            await self.cog.bot.db.guessyear_delete_channel_categories(self.guild_id, self.channel_id)
+        except Exception:
+            pass
         view = GuessYearCategoriesView(self.cog, self.owner_id, self.guild_id, self.channel_id)
         view.message = interaction.message
         embed = self.cog._build_categories_embed(self.guild_id, self.channel_id, interaction.user)
@@ -474,6 +484,17 @@ class GuessYearCog(commands.Cog):
         if not self.bot.cfg.GUESSYEAR_ENABLED:
             return
 
+        # Restore persisted category selections
+        try:
+            cat_rows = await self.bot.db.guessyear_load_all_channel_categories()
+            for cr in cat_rows:
+                key = (int(cr["guild_id"]), int(cr["channel_id"]))
+                cats = json.loads(cr["categories_json"])
+                if isinstance(cats, list) and cats:
+                    self._channel_categories[key] = cats
+        except Exception:
+            log.exception("Failed to restore GuessYear channel categories")
+
         now = int(time.time())
         try:
             rows = await self.bot.db.guessyear_list_active_rounds(now)
@@ -711,10 +732,31 @@ class GuessYearCog(commands.Cog):
                 modes.append(mode)
         return modes
 
+    @staticmethod
+    def _levenshtein(s1: str, s2: str) -> int:
+        if len(s1) < len(s2):
+            return GuessYearCog._levenshtein(s2, s1)
+        if not s2:
+            return len(s1)
+        prev = list(range(len(s2) + 1))
+        for i, c1 in enumerate(s1):
+            curr = [i + 1]
+            for j, c2 in enumerate(s2):
+                curr.append(min(prev[j + 1] + 1, curr[j] + 1, prev[j] + (c1 != c2)))
+            prev = curr
+        return prev[-1]
+
     def _bonus_matches(self, answer: str, valid_answers: List[str]) -> bool:
         normalized = self._normalize_bonus_text(answer)
-        valid = {self._normalize_bonus_text(a) for a in valid_answers}
-        return normalized in valid
+        for a in valid_answers:
+            valid = self._normalize_bonus_text(a)
+            if normalized == valid:
+                return True
+            if len(valid) >= 5 and valid in normalized:
+                return True
+            if len(valid) >= 5 and self._levenshtein(normalized, valid) <= 2:
+                return True
+        return False
 
     def _format_member_label(self, guild: discord.Guild, uid: int, member: Optional[discord.Member]) -> str:
         mention = member.mention if member else f"<@{uid}>"
@@ -1226,21 +1268,17 @@ class GuessYearCog(commands.Cog):
 
     async def _end_duel_when_ready(self, state: DuelState) -> None:
         delay = max(1, state.ends_at - int(time.time()))
-        question_snapshot = state.current_question  # ADD
+        question_snapshot = state.current_question
         try:
             await asyncio.sleep(delay)
         except asyncio.CancelledError:
-            log.warning("DEBUG timer CANCELLED: q=%s", state.current_question)  # ADD
             return
-        
-        log.warning("DEBUG timer FIRED: q=%s snapshot=%s", state.current_question, question_snapshot)  # ADD
 
         key = (state.guild_id, state.channel_id)
         current = self._duel_active.get(key)
         if not current or current is not state:
-            log.warning("DEBUG bailed: no current or identity mismatch")  # ADD
             return
-        if state.current_question != question_snapshot:  # ADD
+        if state.current_question != question_snapshot:
             return
 
         await self._finish_duel(state.guild_id, state.channel_id, forced=False)
@@ -1498,41 +1536,33 @@ class GuessYearCog(commands.Cog):
         
         # Guard against re-entrant calls (e.g. timer fires while guess submission is mid-await)
         if key in self._duel_finishing:
-            log.warning("DEBUG _finish_duel: re-entrancy guard hit")  # ADD
             return
         self._duel_finishing.add(key)
 
         state = self._duel_active.get(key)
         if not state:
-            log.warning("DEBUG _finish_duel: no state found")  # ADD
             self._duel_finishing.discard(key)
             return
 
         task = self._duel_tasks.pop(key, None)
         current_task = asyncio.current_task()
-        if task and not task.done() and task is not current_task:  # ADD: task is not current_task
+        if task and not task.done() and task is not current_task:
             task.cancel()
 
         try:
             guild = self.bot.get_guild(guild_id)
-            log.warning("DEBUG guild=%s channel_obj=%s", guild, self.bot.get_channel(channel_id))  # ADD
             if guild is None:
-                log.warning("DEBUG _finish_duel: guild is None")  # ADD
                 return
 
             channel = self.bot.get_channel(channel_id)
             if channel is None:
                 try:
                     channel = await self.bot.fetch_channel(channel_id)
-                    log.warning("DEBUG fetched channel=%s", channel)  # ADD
                 except BaseException:
-                    log.exception("DEBUG _finish_duel CRASHED or CANCELLED")
+                    log.exception("Failed to fetch duel channel")
                     raise
                 finally:
                     self._duel_finishing.discard(key)
-            log.warning("DEBUG channel type=%s", type(channel))  # ADD
-            
-            log.warning("DEBUG _finish_duel: scoring, current_q=%s total=%s", state.current_question, state.total_questions)  # ADD
 
             scored: List[Tuple[int, int, int, int]] = []
             for uid, (guess_year, guessed_at) in state.guesses.items():
@@ -1546,7 +1576,6 @@ class GuessYearCog(commands.Cog):
             if scored:
                 winner_diff, _ts, winner_user_id, winner_guess = scored[0]
                 state.scores[winner_user_id] = int(state.scores.get(winner_user_id, 0)) + 1
-                log.warning("DEBUG after scoring: winner=%s", winner_user_id)  # ADD
 
             result = DuelQuestionResult(
                 question_number=state.current_question,
@@ -1559,24 +1588,17 @@ class GuessYearCog(commands.Cog):
                 winner_diff=winner_diff,
             )
             state.history.append(result)
-            log.warning("DEBUG after result built")  # ADD
 
             if isinstance(channel, (discord.TextChannel, discord.Thread)):
                 question_embed = self._build_duel_result_embed(guild, state, result, forced=forced)
-                log.warning("DEBUG after embed built")  # ADD
                 try:
                     await asyncio.wait_for(channel.send(embed=question_embed), timeout=10.0)
                 except asyncio.TimeoutError:
-                        log.warning("DEBUG _finish_duel: channel.send timed out")
+                    log.warning("Duel result send timed out for guild=%s channel=%s", guild_id, channel_id)
 
             if not forced and state.current_question < state.total_questions:
-                log.warning("DEBUG _finish_duel: picking next event")  # ADD
                 used_ids = {str(r.event_id) for r in state.history}
                 next_evt = self._pick_duel_event(guild_id, channel_id, used_event_ids=used_ids)
-                log.warning("DEBUG _finish_duel: next_evt=%s", next_evt)  # ADD
-                if next_evt is None:  # ADD
-                    if isinstance(channel, (discord.TextChannel, discord.Thread)):  # ADD
-                        await channel.send("⚠️ Debug: no next event found, ending duel early.")  # ADD
                 if next_evt is not None:
                     state.current_question += 1
                     state.event_id = str(next_evt["id"])
@@ -1603,6 +1625,17 @@ class GuessYearCog(commands.Cog):
                     pass
 
             self._duel_active.pop(key, None)
+
+            # Record duel W/L stats
+            challenger_score = int(state.scores.get(state.challenger_user_id, 0))
+            opponent_score = int(state.scores.get(state.opponent_user_id, 0))
+            try:
+                if challenger_score > opponent_score:
+                    await self.bot.db.guessyear_stats_record_duel_result(guild_id, state.challenger_user_id, state.opponent_user_id)
+                elif opponent_score > challenger_score:
+                    await self.bot.db.guessyear_stats_record_duel_result(guild_id, state.opponent_user_id, state.challenger_user_id)
+            except Exception:
+                pass
 
             last_evt = self._events_by_id.get(result.event_id)
             if result.winner_user_id is not None and result.winner_diff == 0 and last_evt and self._bonus_modes_for_event(last_evt):
@@ -1634,7 +1667,7 @@ class GuessYearCog(commands.Cog):
                 await self._prompt_thread_close(channel, state)
 
         except Exception:
-            log.exception("DEBUG _finish_duel CRASHED")
+            log.exception("Failed to finish duel")
             raise
         finally:
             self._duel_finishing.discard(key)
@@ -1687,12 +1720,20 @@ class GuessYearCog(commands.Cog):
             winner_diff, _ts, winner_user_id, winner_guess = scored[0]
 
         # Stats: count plays for all guessers; count win for winner.
+        all_player_ids = [int(g["user_id"]) for g in guesses]
         try:
-            await self.bot.db.guessyear_stats_record_play(guild_id, [int(g["user_id"]) for g in guesses])
+            await self.bot.db.guessyear_stats_record_play(guild_id, all_player_ids)
             if winner_user_id is not None:
                 await self.bot.db.guessyear_stats_record_win(guild_id, int(winner_user_id))
+                if winner_diff == 0:
+                    await self.bot.db.guessyear_stats_record_exact_hit(guild_id, int(winner_user_id))
+            # Track distance for each guesser
+            for diff_val, _ts, uid, _gy in scored:
+                await self.bot.db.guessyear_stats_record_distance(guild_id, uid, diff_val)
+            # Update streaks: winner gets +1, everyone else resets
+            for uid in all_player_ids:
+                await self.bot.db.guessyear_stats_update_streak(guild_id, uid, uid == winner_user_id)
         except Exception:
-            # Stats are optional; never fail the round end.
             pass
 
         evt = self._events_by_id.get(state.event_id)
@@ -1720,29 +1761,53 @@ class GuessYearCog(commands.Cog):
             total_guesses = len(guesses)
             total_players = len(unique_players)
 
-            lines: List[str] = []
-            lines.append(f"**Prompt:** {state.prompt}")
-            lines.append(f"**Correct year:** **{state.correct_year}**")
-            lines.append(f"**Guesses:** **{total_guesses}** ({total_players} player{'s' if total_players != 1 else ''})")
-
-            if forced:
-                lines.append("_Round was ended by a moderator._")
+            embed = discord.Embed(
+                title=f"🕰️ Guess the Year — Round #{state.round_id} Results",
+                description=state.prompt,
+                color=discord.Color.gold(),
+            )
+            embed.add_field(name="Correct year", value=f"**{state.correct_year}**", inline=True)
+            embed.add_field(name="Guesses", value=f"**{total_guesses}** ({total_players} player{'s' if total_players != 1 else ''})", inline=True)
 
             if winner_user_id is None:
-                lines.append("\nNo valid guesses were submitted. No winner this round.")
+                embed.add_field(name="Result", value="No valid guesses were submitted.", inline=False)
             else:
                 perfect = " 🎯" if (winner_diff == 0) else ""
-                lines.append(
-                    f"\n🏆 **Winner:** <@{winner_user_id}> (guessed **{winner_guess}**, off by **{winner_diff}**){perfect}"
+                embed.add_field(
+                    name="🏆 Winner",
+                    value=f"<@{winner_user_id}> guessed **{winner_guess}** (off by **{winner_diff}**){perfect}",
+                    inline=False,
                 )
-
                 top = scored[:3]
-                lines.append("\n**Top 3 closest:**")
+                top_lines = []
                 for i, (diff, _ts, uid, gy) in enumerate(top, start=1):
-                    lines.append(f"{i}. <@{uid}> — **{gy}** (off by **{diff}**)")
+                    top_lines.append(f"{i}. <@{uid}> — **{gy}** (off by **{diff}**)")
+                embed.add_field(name="Top 3 closest", value="\n".join(top_lines), inline=False)
 
-            msg = f"**🕰️ Guess the Year — Round #{state.round_id} ended**\n\n" + "\n".join(lines)
-            await channel.send(msg)
+            # "Did you know?" — show learn_explanation on round end
+            if evt:
+                explanation = self._get_learn_explanation(evt)
+                if explanation:
+                    embed.add_field(name="📚 Did you know?", value=explanation[:1024], inline=False)
+
+            if forced:
+                embed.set_footer(text="Round was ended by a moderator.")
+
+            # Streak announcement
+            if winner_user_id is not None:
+                try:
+                    streak_row = await self.bot.db.guessyear_stats_get_user(guild_id, winner_user_id)
+                    current_streak = int(streak_row.get("current_streak", 0)) if streak_row else 0
+                    if current_streak >= 3:
+                        embed.add_field(
+                            name="🔥 Streak",
+                            value=f"<@{winner_user_id}> is on a **{current_streak}**-round win streak!",
+                            inline=False,
+                        )
+                except Exception:
+                    pass
+
+            result_msg = await channel.send(embed=embed)
 
             if winner_user_id is not None and winner_diff == 0 and evt and self._bonus_modes_for_event(evt):
                 modes = self._bonus_modes_for_event(evt)
@@ -1755,11 +1820,84 @@ class GuessYearCog(commands.Cog):
                     f"Start it with {modes_text}."
                 )
 
+            # Reaction-based next round
+            if not forced:
+                try:
+                    await result_msg.add_reaction("🕰️")
+                    asyncio.create_task(self._watch_next_round_reaction(result_msg, guild_id, channel_id))
+                except Exception:
+                    pass
+
         # Cleanup memory + timer
         self._active.pop(key, None)
         task = self._end_tasks.pop(key, None)
         if task and not task.done():
             task.cancel()
+
+    async def _watch_next_round_reaction(self, message: discord.Message, guild_id: int, channel_id: int) -> None:
+        try:
+            await asyncio.sleep(30)
+        except asyncio.CancelledError:
+            return
+
+        try:
+            msg = await message.channel.fetch_message(message.id)
+        except Exception:
+            return
+
+        for reaction in msg.reactions:
+            if str(reaction.emoji) == "🕰️":
+                unique_users = 0
+                async for user in reaction.users():
+                    if not user.bot:
+                        unique_users += 1
+                if unique_users >= 2:
+                    key = (guild_id, channel_id)
+                    if key not in self._active and key not in self._duel_active and key not in self._bonus_active:
+                        fake_ctx_channel = self.bot.get_channel(channel_id)
+                        if isinstance(fake_ctx_channel, (discord.TextChannel, discord.Thread)):
+                            evt = self._pick_event(guild_id, channel_id)
+                            if evt:
+                                await fake_ctx_channel.send("🕰️ **2+ players want another round — starting automatically!**", delete_after=5)
+                                now = int(time.time())
+                                ends_at = now + int(self.bot.cfg.GUESSYEAR_ROUND_SECONDS)
+                                try:
+                                    round_id = await self.bot.db.guessyear_create_round(
+                                        guild_id=guild_id,
+                                        channel_id=channel_id,
+                                        started_by_user_id=self.bot.user.id,
+                                        event_id=str(evt["id"]),
+                                        correct_year=int(evt["year"]),
+                                        started_at=now,
+                                        ends_at=ends_at,
+                                    )
+                                except Exception:
+                                    return
+                                state = RoundState(
+                                    round_id=int(round_id),
+                                    guild_id=guild_id,
+                                    channel_id=channel_id,
+                                    event_id=str(evt["id"]),
+                                    correct_year=int(evt["year"]),
+                                    prompt=str(evt["prompt"]),
+                                    hints=list(evt.get("hints", [])),
+                                    started_at=now,
+                                    ends_at=ends_at,
+                                    hints_used=0,
+                                )
+                                self._active[key] = state
+                                self._schedule_end(state)
+                                category_text = self._format_category_list(self._categories_for_channel(guild_id, channel_id))
+                                embed = discord.Embed(
+                                    title=f"🕰️ Guess the Year #{round_id}",
+                                    description=state.prompt,
+                                    color=discord.Color.blue(),
+                                )
+                                embed.add_field(name="Categories", value=category_text, inline=True)
+                                embed.add_field(name="Time", value=f"**{self.bot.cfg.GUESSYEAR_ROUND_SECONDS}s**", inline=True)
+                                embed.add_field(name="How to play", value="Type a year (e.g. `1066`). Use `!hint` for clues.", inline=False)
+                                await fake_ctx_channel.send(embed=embed)
+                break
 
     # ---------- commands ----------
 
@@ -1855,13 +1993,68 @@ class GuessYearCog(commands.Cog):
         self._schedule_end(state)
 
         category_text = self._format_category_list(self._categories_for_channel(ctx.guild.id, ctx.channel.id))
-        await ctx.send(
-            f"**🕰️ Guess the Year #{round_id}**\n"
-            f"**Prompt:** {state.prompt}\n"
-            f"**Categories:** {category_text}\n\n"
-            f"Submit your guess as a year (e.g., `1066`).\n"
-            f"Time: **{self.bot.cfg.GUESSYEAR_ROUND_SECONDS}s**. Use `!hint` for clues."
+        embed = discord.Embed(
+            title=f"🕰️ Guess the Year #{round_id}",
+            description=state.prompt,
+            color=discord.Color.blue(),
         )
+        embed.add_field(name="Categories", value=category_text, inline=True)
+        embed.add_field(name="Time", value=f"**{self.bot.cfg.GUESSYEAR_ROUND_SECONDS}s**", inline=True)
+        embed.add_field(name="How to play", value="Type a year (e.g. `1066`). Use `!hint` for clues.", inline=False)
+        await ctx.send(embed=embed)
+
+    @guessyear.command(name="help")
+    async def guessyear_help(self, ctx: commands.Context):
+        """Show all GuessYear commands."""
+        embed = discord.Embed(
+            title="🕰️ GuessYear — Command Reference",
+            description="A history trivia game. Guess the year of famous events!",
+            color=discord.Color.blurple(),
+        )
+        embed.add_field(
+            name="🎮 Playing",
+            value=(
+                "`!guessyear` — Start a new round\n"
+                "`!hint` — Reveal a hint during a round\n"
+                "`!guess <year>` — Submit a guess (or just type a year)\n"
+                "`!guessyear status` — Check the current round"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="⚔️ Duels",
+            value=(
+                "`!duel @user [n]` — Challenge someone (1–10 questions)\n"
+                "`!duelstatus` — Check duel status\n"
+                "`!duelcancel` — Cancel a duel"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="📚 Learning",
+            value=(
+                "`!learn` — Start a private practice session\n"
+                "`!learnhint` / `!learnnext` / `!learnstop`"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="🎁 Bonus",
+            value="`!bonus month` or `!bonus person` — Start a bonus after an exact-year win",
+            inline=False,
+        )
+        embed.add_field(
+            name="📊 Stats & Categories",
+            value=(
+                "`!guessyear top [n]` — Leaderboard\n"
+                "`!guessyear me` — Your stats\n"
+                "`!categories` — Set categories for this channel\n"
+                "`!categories reset` — Reset to all categories"
+            ),
+            inline=False,
+        )
+        embed.set_footer(text="Rounds last 30s by default. Get hints to narrow it down!")
+        await ctx.send(embed=embed)
 
     @guessyear.command(name="status")
     async def guessyear_status(self, ctx: commands.Context):
@@ -1961,12 +2154,14 @@ class GuessYearCog(commands.Cog):
         self._active[(ctx.guild.id, ctx.channel.id)] = state
         self._schedule_end(state)
 
-        await ctx.send(
-            f"**🕰️ Guess the Year #{round_id}**\n"
-            f"**Prompt:** {state.prompt}\n\n"
-            f"Submit your guess as a year (e.g., `1066`).\n"
-            f"Time: **{self.bot.cfg.GUESSYEAR_ROUND_SECONDS}s**. Use `!hint` for clues."
-        )   
+        embed = discord.Embed(
+            title=f"🕰️ Guess the Year #{round_id}",
+            description=state.prompt,
+            color=discord.Color.blue(),
+        )
+        embed.add_field(name="Time", value=f"**{self.bot.cfg.GUESSYEAR_ROUND_SECONDS}s**", inline=True)
+        embed.add_field(name="How to play", value="Type a year (e.g. `1066`). Use `!hint` for clues.", inline=False)
+        await ctx.send(embed=embed)
 
     @commands.command(name="duel")
     async def duel(self, ctx: commands.Context, opponent: discord.Member, questions: int = 1):
@@ -2134,6 +2329,8 @@ class GuessYearCog(commands.Cog):
             uid = int(r["user_id"])
             wins = int(r["wins"])
             plays = int(r["plays"])
+            exact_hits = int(r.get("exact_hits") or 0)
+            best_streak = int(r.get("best_streak") or 0)
             member = ctx.guild.get_member(uid)
             mention = member.mention if member else f"<@{uid}>"
 
@@ -2144,12 +2341,19 @@ class GuessYearCog(commands.Cog):
                     member = None
 
             raw_name = member.display_name if member else f"User {uid}"
-            discord.utils.escape_markdown(raw_name)
+            raw_name = discord.utils.escape_markdown(raw_name)
             rate = (wins / plays * 100.0) if plays > 0 else 0.0
+
+            extras = []
+            if exact_hits:
+                extras.append(f"🎯 **{exact_hits}**")
+            if best_streak >= 3:
+                extras.append(f"🔥 **{best_streak}** best streak")
+            extra_str = (" • " + " • ".join(extras)) if extras else ""
 
             lines.append(
                 f"{rank_prefix(i)} **{mention}**\n"
-                f"🏆 **{wins}** wins • 🎲 **{plays}** plays • 📈 **{rate:.0f}%** win rate"
+                f"🏆 **{wins}** wins • 🎲 **{plays}** plays • 📈 **{rate:.0f}%** win rate{extra_str}"
             )
 
         embed = discord.Embed(
@@ -2181,7 +2385,14 @@ class GuessYearCog(commands.Cog):
 
         wins = int(row["wins"])
         plays = int(row["plays"])
+        exact_hits = int(row.get("exact_hits") or 0)
+        current_streak = int(row.get("current_streak") or 0)
+        best_streak = int(row.get("best_streak") or 0)
+        total_distance = int(row.get("total_distance") or 0)
+        duel_wins = int(row.get("duel_wins") or 0)
+        duel_losses = int(row.get("duel_losses") or 0)
         rate = (wins / plays * 100.0) if plays > 0 else 0.0
+        avg_distance = (total_distance / plays) if plays > 0 else 0.0
         rank = int(row["rank"]) if row.get("rank") is not None else None
         total = int(row["total"]) if row.get("total") is not None else None
         last_played = int(row.get("last_played_at") or 0)
@@ -2189,18 +2400,26 @@ class GuessYearCog(commands.Cog):
         when = f"<t:{last_played}:R>" if last_played else "never"
         rank_str = f"#{rank} of {total}" if rank and total else "(unranked)"
 
-        await ctx.send(
-            "\n".join(
-                [
-                    f"**📊 GuessYear stats for {ctx.author.mention}**",
-                    f"Rank: **{rank_str}**",
-                    f"Wins: **{wins}**",
-                    f"Plays: **{plays}**",
-                    f"Win rate: **{rate:.0f}%**",
-                    f"Last played: **{when}**",
-                ]
-            )
+        embed = discord.Embed(
+            title=f"📊 GuessYear Stats",
+            description=f"Stats for {ctx.author.mention}",
+            color=discord.Color.blurple(),
         )
+        embed.add_field(name="Rank", value=f"**{rank_str}**", inline=True)
+        embed.add_field(name="Wins", value=f"**{wins}**", inline=True)
+        embed.add_field(name="Plays", value=f"**{plays}**", inline=True)
+        embed.add_field(name="Win rate", value=f"**{rate:.0f}%**", inline=True)
+        embed.add_field(name="🎯 Exact hits", value=f"**{exact_hits}**", inline=True)
+        embed.add_field(name="📏 Avg distance", value=f"**{avg_distance:.1f}** years", inline=True)
+        streak_text = f"**{current_streak}**"
+        if current_streak >= 3:
+            streak_text = f"🔥 **{current_streak}**"
+        embed.add_field(name="Current streak", value=streak_text, inline=True)
+        embed.add_field(name="Best streak", value=f"**{best_streak}**", inline=True)
+        if duel_wins or duel_losses:
+            embed.add_field(name="⚔️ Duels", value=f"**{duel_wins}W – {duel_losses}L**", inline=True)
+        embed.add_field(name="Last played", value=when, inline=False)
+        await ctx.send(embed=embed)
 
     @commands.group(name="categories", invoke_without_command=True)
     async def categories(self, ctx: commands.Context):
@@ -2229,6 +2448,10 @@ class GuessYearCog(commands.Cog):
             return
 
         self._channel_categories.pop((ctx.guild.id, ctx.channel.id), None)
+        try:
+            await self.bot.db.guessyear_delete_channel_categories(ctx.guild.id, ctx.channel.id)
+        except Exception:
+            pass
         embed = self._build_categories_embed(ctx.guild.id, ctx.channel.id, ctx.author)
         embed.description = "This channel has been reset to **all categories** for future GuessYear rounds."
         await ctx.send(embed=embed)
@@ -2582,7 +2805,7 @@ class GuessYearCog(commands.Cog):
             policy = "first"
 
         try:
-            ok, already = await self.bot.db.guessyear_upsert_guess(
+            ok, existing = await self.bot.db.guessyear_upsert_guess(
                 round_id=state.round_id,
                 user_id=message.author.id,
                 guess_year=guess_year,
@@ -2596,11 +2819,18 @@ class GuessYearCog(commands.Cog):
         if not ok:
             return
 
-        if already and policy == "first":
+        if existing is not None and policy == "first":
+            try:
+                await message.channel.send(
+                    f"Your first guess (**{existing}**) is locked in.",
+                    delete_after=5,
+                )
+            except Exception:
+                pass
             return
 
         try:
-            await message.channel.send(f"✅ {message.author.mention} guessed **{guess_year}**.")
+            await message.channel.send(f"✅ {message.author.mention} locked in a guess.", delete_after=5)
         except Exception:
             pass
 
