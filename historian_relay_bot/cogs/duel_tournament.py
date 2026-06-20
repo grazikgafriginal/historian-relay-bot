@@ -207,7 +207,7 @@ class TournamentMatchView(discord.ui.View):
         self.cog = cog
         self.match = match
 
-    @discord.ui.button(label="Click me to submit", style=discord.ButtonStyle.primary, emoji="🕵️")
+    @discord.ui.button(label="Submit your answer", style=discord.ButtonStyle.primary, emoji="📝")
     async def submit_hidden_guess(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await self.cog._open_guess_modal(interaction, self.match)
 
@@ -1838,81 +1838,132 @@ class DuelTournamentCog(commands.Cog):
 
     def _build_signup_embed(self, state: TournamentSignupState, guild: discord.Guild) -> discord.Embed:
         entrant_lines: list[str] = []
-        for uid in sorted(state.entrants):
+        for i, uid in enumerate(sorted(state.entrants), start=1):
             member = guild.get_member(uid)
+            name = member.display_name if member else f"<@{uid}>"
+            mention = member.mention if member else f"<@{uid}>"
             if state.status == "ready_check":
                 marker = "✅" if uid in state.ready_confirmed else "⏳"
+                entrant_lines.append(f"{marker} {name} ({mention})")
             else:
-                marker = "•"
-            if member is not None:
-                entrant_lines.append(f"{marker} {member.display_name} ({member.mention})")
-            else:
-                entrant_lines.append(f"{marker} <@{uid}>")
+                entrant_lines.append(f"`{i}.` ⚔️ {name} ({mention})")
+
+        slots_filled = len(state.entrants)
+        slots_total = state.bracket_size
+        fill_bar = self._progress_bar(slots_filled, slots_total, length=10)
 
         if state.status == "ready_check":
+            confirmed = len(state.ready_confirmed)
+            total = len(state.entrants)
+            ready_bar = self._progress_bar(confirmed, total, length=10)
             description = (
-                "Ready check is live. Confirm now so the bracket can start.\n\n"
-                f"**Confirmed:** {len(state.ready_confirmed)}/{len(state.entrants)}\n"
-                f"**Match format:** best of {state.best_of}\n"
+                "```\n"
+                "  ⚔️  READY CHECK  ⚔️\n"
+                "```\n"
+                "Confirm your attendance so the bracket can begin!\n\n"
+                f"**Ready:** {ready_bar} {confirmed}/{total}\n"
+                f"**Format:** Bo{state.best_of} single-elimination\n"
                 + (f"**Deadline:** <t:{state.ready_deadline_at}:R>\n" if state.ready_deadline_at else "")
-                + "**DMs sent:** yes, with channel fallback if a DM cannot be delivered.\n"
-                + "**Bracket rule:** the tournament starts with any confirmed player count from 2 to 16, with byes assigned automatically when needed."
+                + "\n> DMs were sent to all entrants. If you didn't get one, use the buttons below."
             )
-            title = f"{state.title} • Ready Check"
-            footer = "Use Ready / Drop below, or !dueltourney ready / !dueltourney drop."
+            title = f"🔔 {state.title} — Ready Check"
+            footer = "✅ Ready  •  🚪 Drop  •  or use !dueltourney ready / drop"
             color = discord.Color.orange()
-            field_name = f"Players ({len(state.entrants)}/{state.bracket_size})"
+            field_name = f"⚔️ Players ({total})"
         else:
             if state.status == "active":
                 description = (
-                    "Signup is closed and the tournament is being created now.\n\n"
-                    f"**Entrants locked:** {len(state.entrants)}\n"
-                    f"**Match format:** best of {state.best_of}\n"
-                    + "**Bracket rule:** byes are assigned automatically when needed.\n"
-                    + "**Next step:** the first match thread should appear shortly."
+                    "```\n"
+                    "  ⚔️  TOURNAMENT STARTING  ⚔️\n"
+                    "```\n"
+                    "Signup is locked. The bracket is being seeded now.\n\n"
+                    f"**Entrants:** {slots_filled}\n"
+                    f"**Format:** Bo{state.best_of} single-elimination\n"
+                    "\n> The first match thread will appear shortly."
                 )
-                footer = "Tournament is starting."
+                footer = "🏁 Tournament is starting..."
                 color = discord.Color.green()
             elif state.status == "cancelled":
-                description = "This tournament is no longer active."
-                footer = "Tournament cancelled."
+                description = (
+                    "```\n"
+                    "  ❌  CANCELLED  ❌\n"
+                    "```\n"
+                    "This tournament has been cancelled."
+                )
+                footer = "Tournament cancelled by a moderator."
                 color = discord.Color.dark_grey()
             else:
                 description = (
-                    "Friday mini cup signups are open. Join now and the bot will seed a single-elimination bracket.\n\n"
-                    f"**Signup cap:** {state.bracket_size}\n"
-                    f"**Match format:** best of {state.best_of}\n"
-                    + (f"**Signup window:** {state.signup_window_minutes} minute(s)\n" if state.signup_window_minutes else "")
-                    + (f"**Auto-ready-check:** <t:{state.signup_deadline_at}:R>\n" if state.signup_deadline_at else "")
-                    + "**Start rule:** the tournament can start with 2 or more confirmed players. Byes are assigned automatically when needed.\n"
-                    + "**Tiebreaker:** if both guesses are equally close, the earlier guess wins the point."
+                    "```\n"
+                    "  ⚔️  SIGNUPS OPEN  ⚔️\n"
+                    "```\n"
+                    "Join the bracket and prove your history knowledge!\n\n"
+                    f"**Slots:** {fill_bar} {slots_filled}/{slots_total}\n"
+                    f"**Format:** Bo{state.best_of} single-elimination\n"
+                    + (f"**Signup closes:** <t:{state.signup_deadline_at}:R>\n" if state.signup_deadline_at else "")
+                    + (f"**Window:** {state.signup_window_minutes} min\n" if state.signup_window_minutes else "")
+                    + "\n> 📋 **Rules:** 2+ players to start • byes auto-assigned • earliest guess breaks ties"
                 )
-                footer = "Use the buttons below or !dueltourney join / !dueltourney leave."
+                footer = "⚔️ Join  •  👋 Leave  •  or use !dueltourney join / leave"
                 color = discord.Color.gold()
-            title = state.title
-            field_name = f"Entrants ({len(state.entrants)}/{state.bracket_size})"
+            title = f"🏆 {state.title}"
+            field_name = f"⚔️ Entrants ({slots_filled}/{slots_total})"
 
         embed = discord.Embed(title=title, description=description, color=color)
-        embed.add_field(name=field_name, value="\n".join(entrant_lines) if entrant_lines else "No entrants yet.", inline=False)
+        embed.add_field(name=field_name, value="\n".join(entrant_lines) if entrant_lines else "*No entrants yet — be the first!*", inline=False)
         embed.set_footer(text=footer)
         return embed
+
+    @staticmethod
+    def _progress_bar(value: int, maximum: int, *, length: int = 10) -> str:
+        if maximum <= 0:
+            return "▱" * length
+        filled = min(length, round(value / maximum * length))
+        return "▰" * filled + "▱" * (length - filled)
 
     def _build_match_embed(self, match: TournamentMatchState, guild: discord.Guild) -> discord.Embed:
         p1 = guild.get_member(match.player1_user_id)
         p2 = guild.get_member(match.player2_user_id)
+        p1_name = p1.display_name if p1 else str(match.player1_user_id)
+        p2_name = p2.display_name if p2 else str(match.player2_user_id)
         s1 = match.scores.get(match.player1_user_id, 0)
         s2 = match.scores.get(match.player2_user_id, 0)
-        round_title = 'Final' if match.is_final else f'Round {match.round_number}'
-        embed = discord.Embed(
-            title=f"Tournament Match • {round_title}",
-            description=match.prompt,
-            color=discord.Color.blurple(),
+        wins_needed = match.wins_needed
+
+        if match.is_final:
+            round_label = "🏆 Grand Final"
+            color = discord.Color.gold()
+        else:
+            round_label = f"Round {match.round_number}"
+            color = discord.Color.blurple()
+
+        p1_pips = "🟢" * s1 + "⚫" * (wins_needed - s1)
+        p2_pips = "🟢" * s2 + "⚫" * (wins_needed - s2)
+
+        scoreboard = (
+            f"```\n"
+            f"  {p1_name[:16]:<16}  {s1}\n"
+            f"  {'vs':^16}\n"
+            f"  {p2_name[:16]:<16}  {s2}\n"
+            f"```"
         )
-        embed.add_field(name="Players", value=f"{p1.mention if p1 else f'<@{match.player1_user_id}>'} vs {p2.mention if p2 else f'<@{match.player2_user_id}>'}", inline=False)
-        embed.add_field(name="Score", value=f"{s1} - {s2}", inline=True)
-        embed.add_field(name="Question", value=f"{match.current_question}/{match.best_of}", inline=True)
-        embed.add_field(name="How to play", value="Press **Submit your answer** and enter the year.", inline=False)
-        embed.set_footer(text="Earliest guess wins equal-distance ties.")
+
+        embed = discord.Embed(
+            title=f"⚔️ {round_label} — Question {match.current_question}/{match.best_of}",
+            description=(
+                f"📜 *{match.prompt}*\n\n"
+                f"{scoreboard}\n"
+                f"{p1_pips}  **{p1_name[:16]}**\n"
+                f"{p2_pips}  **{p2_name[:16]}**"
+            ),
+            color=color,
+        )
+        embed.add_field(
+            name="🕵️ How to answer",
+            value="Press the button below and enter the year in the popup.",
+            inline=False,
+        )
+        embed.set_footer(text=f"First to {wins_needed} wins  •  Earliest guess breaks ties  •  60s per question")
         return embed
     def _build_match_view(self, match: TournamentMatchState, *, disabled: bool = False) -> TournamentMatchView:
         view = TournamentMatchView(self, match)
@@ -2147,77 +2198,102 @@ class DuelTournamentCog(commands.Cog):
         sorted_rounds = sorted(tournament.round_pairings)
         total_rounds = len(sorted_rounds)
         round_labels = {r: f"Round {r}" for r in sorted_rounds}
+        if total_rounds >= 1:
+            round_labels[sorted_rounds[-1]] = "🏆 Final"
         if total_rounds >= 2:
-            round_labels[sorted_rounds[-1]] = "Final"
-            round_labels[sorted_rounds[-2]] = "Semi-Final"
+            round_labels[sorted_rounds[-2]] = "⚔️ Semi-Final"
+        if total_rounds >= 3:
+            round_labels[sorted_rounds[-3]] = "🗡️ Quarter-Final"
 
         bracket_lines: list[str] = []
         for round_number in sorted_rounds:
             pairings = tournament.round_pairings.get(round_number, [])
             winners = tournament.round_winners.get(round_number, {})
             label = round_labels.get(round_number, f"Round {round_number}")
-            bracket_lines.append(f"┌{'─' * 30}┐")
-            bracket_lines.append(f"│ {label:^28} │")
-            bracket_lines.append(f"├{'─' * 30}┤")
+            bracket_lines.append(f"╔{'═' * 30}╗")
+            bracket_lines.append(f"║ {label:^28} ║")
+            bracket_lines.append(f"╠{'═' * 30}╣")
 
             for idx, (player1, player2) in enumerate(pairings, start=1):
                 if player2 is None:
                     p1 = self._bracket_name(guild, player1)
-                    bracket_lines.append(f"│  {p1} (bye){'':>{24 - len(p1)}}│")
+                    bracket_lines.append(f"║  {p1} ───── BYE{'':>{19 - len(p1)}}║")
                     continue
 
                 p1 = self._bracket_name(guild, player1)
                 p2 = self._bracket_name(guild, player2)
                 winner_user_id = winners.get(idx)
 
-                mark1 = " ✓" if winner_user_id == player1 else "  "
-                mark2 = " ✓" if winner_user_id == player2 else "  "
-                if not winner_user_id:
-                    mark1 = mark2 = "  "
+                mark1 = " ◄" if winner_user_id == player1 else "  "
+                mark2 = " ◄" if winner_user_id == player2 else "  "
+                status = "⚡" if not winner_user_id else "✦"
 
-                line1 = f"│  {p1}{mark1}"
-                line2 = f"│  {p2}{mark2}"
-                bracket_lines.append(f"{line1:>31}│")
-                bracket_lines.append(f"│{'  vs':^30}│")
-                bracket_lines.append(f"{line2:>31}│")
+                line1 = f"║  {p1}{mark1}"
+                line2 = f"║  {p2}{mark2}"
+                bracket_lines.append(f"{line1:<31}║")
+                bracket_lines.append(f"║{'  ' + status + ' vs ' + status:^30}║")
+                bracket_lines.append(f"{line2:<31}║")
                 if idx < len(pairings):
-                    bracket_lines.append(f"│{'─' * 30}│")
+                    bracket_lines.append(f"║{'─' * 30}║")
 
-            bracket_lines.append(f"└{'─' * 30}┘")
+            bracket_lines.append(f"╚{'═' * 30}╝")
             bracket_lines.append("")
 
         if tournament.winner_user_id:
             champ = self._bracket_name(guild, tournament.winner_user_id, max_len=20)
-            bracket_lines.append(f"  🏆 Champion: {champ}")
+            bracket_lines.append(f"  👑 CHAMPION: {champ}")
 
         bracket_text = "\n".join(bracket_lines).strip()
         if not bracket_text:
             bracket_text = "Bracket will appear once matches are seeded."
 
+        total_matches = sum(1 for pairs in tournament.round_pairings.values() for _, p2 in pairs if p2 is not None)
+        completed = sum(1 for winners in tournament.round_winners.values() for w in winners.values() if w is not None)
+
+        if tournament.winner_user_id:
+            title_emoji = "👑"
+            color = discord.Color.gold()
+        elif tournament.status == "paused":
+            title_emoji = "⏸️"
+            color = discord.Color.light_grey()
+        else:
+            title_emoji = "📋"
+            color = discord.Color.dark_gold()
+
         embed = discord.Embed(
-            title=f"{tournament.title} • Bracket Board",
-            color=discord.Color.gold(),
+            title=f"{title_emoji} {tournament.title} — Bracket",
+            color=color,
         )
         embed.description = f"```\n{bracket_text}\n```"
 
         if tournament.winner_user_id:
-            embed.add_field(name="🏆 Champion", value=self._user_ref(guild, tournament.winner_user_id), inline=False)
+            embed.add_field(name="👑 Champion", value=self._user_ref(guild, tournament.winner_user_id), inline=False)
         else:
-            embed.add_field(name="Status", value=f"{tournament.status.title()} • Round {tournament.round_number}", inline=False)
+            progress_bar = self._progress_bar(completed, max(total_matches, 1), length=12)
+            embed.add_field(
+                name="Status",
+                value=f"{progress_bar} {completed}/{total_matches} matches\n{tournament.status.title()} — Round {tournament.round_number}",
+                inline=False,
+            )
 
         detail_lines: list[str] = []
         for round_number in sorted_rounds:
+            label = round_labels.get(round_number, f"R{round_number}")
             pairings = tournament.round_pairings.get(round_number, [])
             winners = tournament.round_winners.get(round_number, {})
             for idx, (player1, player2) in enumerate(pairings, start=1):
                 if player2 is None:
                     continue
                 winner = winners.get(idx)
-                status = f"→ {self._user_ref(guild, winner)}" if winner else "⏳"
-                detail_lines.append(f"{self._user_ref(guild, player1)} vs {self._user_ref(guild, player2)} {status}")
+                if winner:
+                    status = f"✅ {self._user_ref(guild, winner)}"
+                else:
+                    status = "⏳ *in progress*"
+                detail_lines.append(f"**{label}** {self._user_ref(guild, player1)} vs {self._user_ref(guild, player2)} {status}")
         if detail_lines:
-            embed.add_field(name="Match Details", value="\n".join(detail_lines[:15]), inline=False)
+            embed.add_field(name="📋 Match Details", value="\n".join(detail_lines[:15]), inline=False)
 
+        embed.set_footer(text=f"Bo{tournament.best_of} single-elimination  •  {len(tournament.entrants)} entrants")
         return embed
 
     async def _refresh_bracket_message(self, host_channel: discord.TextChannel, tournament: TournamentState) -> None:
@@ -2339,10 +2415,21 @@ class DuelTournamentCog(commands.Cog):
         if is_final:
             guild = self.bot.get_guild(tournament.guild_id)
             await self._award_finalist_points(tournament, [player1_user_id, player2_user_id])
-            await self._send_managed_message(
-                host_channel,
-                f"🔥 **Final is live** — {self._user_ref(guild, player1_user_id)} vs {self._user_ref(guild, player2_user_id)}"
+            final_embed = discord.Embed(
+                title="🔥 THE GRAND FINAL 🔥",
+                description=(
+                    f"```\n"
+                    f"  ╔══════════════════════════╗\n"
+                    f"  ║     GRAND  FINAL         ║\n"
+                    f"  ╚══════════════════════════╝\n"
+                    f"```\n"
+                    f"**{self._user_ref(guild, player1_user_id)}**  ⚔️  **{self._user_ref(guild, player2_user_id)}**\n\n"
+                    f"The final match thread is now open below!"
+                ),
+                color=discord.Color.gold(),
             )
+            final_embed.set_footer(text="May the best historian win!")
+            await self._send_managed_message(host_channel, embed=final_embed)
         match = await self._launch_match(
             host_channel,
             tournament,
@@ -2419,10 +2506,17 @@ class DuelTournamentCog(commands.Cog):
 
         p1 = host_channel.guild.get_member(player1_user_id)
         p2 = host_channel.guild.get_member(player2_user_id)
-        seed_message = await self._send_managed_message(host_channel,
-            f"⚔️ **Round {round_number}, Match {bracket_position}** — "
-            f"{p1.mention if p1 else f'<@{player1_user_id}>'} vs {p2.mention if p2 else f'<@{player2_user_id}>'}"
+        round_label = "🏆 Final" if is_final else f"Round {round_number}"
+        seed_embed = discord.Embed(
+            title=f"⚔️ {round_label} — Match {bracket_position}",
+            description=(
+                f"{p1.mention if p1 else f'<@{player1_user_id}>'} **vs** "
+                f"{p2.mention if p2 else f'<@{player2_user_id}>'}\n\n"
+                f"Bo{tournament.best_of} • Thread is open below 👇"
+            ),
+            color=discord.Color.gold() if is_final else discord.Color.blurple(),
         )
+        seed_message = await self._send_managed_message(host_channel, embed=seed_embed)
         thread = await host_channel.create_thread(
             name=f"duel-cup-r{round_number}-m{bracket_position}-{int(time.time()) % 10000}",
             message=seed_message,
@@ -2614,17 +2708,30 @@ class DuelTournamentCog(commands.Cog):
             p1_label = f"<@{match.player1_user_id}>"
             p2_label = f"<@{match.player2_user_id}>"
 
-        lines = [
-            f"**Correct year:** {match.correct_year}",
-            f"{p1_label} guessed **{p1_guess[0]}**" if p1_guess else f"{p1_label} did not submit a guess.",
-            f"{p2_label} guessed **{p2_guess[0]}**" if p2_guess else f"{p2_label} did not submit a guess.",
-        ]
-        if winner_user_id is None:
-            lines.append("No point awarded this round.")
-        else:
-            lines.append(f"Point goes to <@{winner_user_id}> (off by {winner_diff} year(s)).")
+        s1 = match.scores.get(match.player1_user_id, 0)
+        s2 = match.scores.get(match.player2_user_id, 0)
 
-        await self._send_managed_message(thread, "\n".join(lines))
+        reveal_embed = discord.Embed(
+            title=f"📊 Question {result.question_number} — Results",
+            color=discord.Color.green() if winner_user_id else discord.Color.light_grey(),
+        )
+        reveal_embed.add_field(name="📅 Correct Year", value=f"**{match.correct_year}**", inline=False)
+
+        p1_text = f"**{p1_guess[0]}** (off by {abs(p1_guess[0] - match.correct_year)})" if p1_guess else "❌ *No guess submitted*"
+        p2_text = f"**{p2_guess[0]}** (off by {abs(p2_guess[0] - match.correct_year)})" if p2_guess else "❌ *No guess submitted*"
+        reveal_embed.add_field(name=f"{p1_label}", value=p1_text, inline=True)
+        reveal_embed.add_field(name=f"{p2_label}", value=p2_text, inline=True)
+
+        if winner_user_id is None:
+            reveal_embed.add_field(name="Verdict", value="No point awarded.", inline=False)
+        elif winner_diff == 0:
+            reveal_embed.add_field(name="🎯 Verdict", value=f"**EXACT!** Point to <@{winner_user_id}>!", inline=False)
+        else:
+            reveal_embed.add_field(name="✅ Verdict", value=f"Point to <@{winner_user_id}> (off by {winner_diff})", inline=False)
+
+        reveal_embed.set_footer(text=f"Score: {s1} – {s2}  •  First to {match.wins_needed}")
+
+        await self._send_managed_message(thread, embed=reveal_embed)
 
         score1 = match.scores.get(match.player1_user_id, 0)
         score2 = match.scores.get(match.player2_user_id, 0)
@@ -2677,16 +2784,21 @@ class DuelTournamentCog(commands.Cog):
         for user_id in flagged_user_ids:
             await self._record_no_show(tournament.guild_id, user_id, match_no_shows=1)
 
-        await self._send_managed_message(
-            host_channel,
-            f"🏁 **Round {match.round_number}, Match {match.bracket_position} finished** — "
-            f"winner: {winner_mention} (`{score1}-{score2}`)"
-            + (f" • Thread: {thread.mention}" if isinstance(thread, discord.Thread) else "")
-            + (
-                f" • no-show flagged: {', '.join(f'<@{user_id}>' for user_id in flagged_user_ids)}"
-                if flagged_user_ids else ""
-            )
+        match_embed = discord.Embed(
+            title=f"🏁 Match Complete — R{match.round_number} M{match.bracket_position}",
+            color=discord.Color.green(),
         )
+        p1_ref = self._user_ref(host_channel.guild, match.player1_user_id)
+        p2_ref = self._user_ref(host_channel.guild, match.player2_user_id)
+        match_embed.add_field(name="Matchup", value=f"{p1_ref} vs {p2_ref}", inline=False)
+        match_embed.add_field(name="Winner", value=winner_mention, inline=True)
+        match_embed.add_field(name="Score", value=f"`{score1} – {score2}`", inline=True)
+        if isinstance(thread, discord.Thread):
+            match_embed.add_field(name="Thread", value=thread.mention, inline=True)
+        if flagged_user_ids:
+            match_embed.add_field(name="⚠️ No-show", value=", ".join(f"<@{uid}>" for uid in flagged_user_ids), inline=False)
+        match_embed.set_footer(text=f"{match.winner_user_id and 'advances to the next round' or ''}")
+        await self._send_managed_message(host_channel, embed=match_embed)
         tournament.active_match_ids.discard(match.match_id)
         task = self._match_tasks.pop(match.match_id, None)
         if task and not task.done():
@@ -2710,10 +2822,21 @@ class DuelTournamentCog(commands.Cog):
             await self._set_tournament_status(tournament.tournament_id, "finished", winner_user_id=tournament.winner_user_id)
             if tournament.winner_user_id is not None:
                 await self._season_add_points(tournament.guild_id, tournament.winner_user_id, points=8, tournament_wins=1)
-                await self._send_managed_message(
-                    host_channel,
-                    f"🏆 **{tournament.title} champion:** <@{tournament.winner_user_id}>"
+                champ_embed = discord.Embed(
+                    title="👑 CHAMPION CROWNED 👑",
+                    description=(
+                        f"```\n"
+                        f"  ╔══════════════════════════╗\n"
+                        f"  ║      🏆 CHAMPION 🏆      ║\n"
+                        f"  ╚══════════════════════════╝\n"
+                        f"```\n\n"
+                        f"<@{tournament.winner_user_id}> wins **{tournament.title}**!\n\n"
+                        f"🎖️ +8 season points awarded"
+                    ),
+                    color=discord.Color.gold(),
                 )
+                champ_embed.set_footer(text="Use !dueltourney season to see the standings")
+                await self._send_managed_message(host_channel, embed=champ_embed)
                 await self._apply_champion_role(host_channel.guild, tournament.winner_user_id)
             else:
                 await self._send_managed_message(host_channel, f"{tournament.title} ended without a winner.")
@@ -2887,11 +3010,45 @@ class DuelTournamentCog(commands.Cog):
 
     @commands.group(name="dueltourney", invoke_without_command=True)
     async def dueltourney(self, ctx: commands.Context) -> None:
-        await ctx.send(
-            "Use `!dueltourney open`, `!dueltourney join`, `!dueltourney leave`, `!dueltourney start`, "
-            "`!dueltourney ready`, `!dueltourney drop`, `!dueltourney noshow`, `!dueltourney pause`, `!dueltourney resume`, "
-            "`!dueltourney dq`, `!dueltourney advance`, `!dueltourney remake`, `!dueltourney status`, or `!dueltourney cancel`."
+        embed = discord.Embed(
+            title="⚔️ Duel Tournament Commands",
+            color=discord.Color.gold(),
         )
+        embed.add_field(
+            name="🎮 Player Commands",
+            value=(
+                "`!dueltourney join` — Join signup\n"
+                "`!dueltourney leave` — Leave signup\n"
+                "`!dueltourney ready` — Confirm ready check\n"
+                "`!dueltourney drop` — Drop from ready check\n"
+                "`!dueltourney profile [@user]` — View tournament stats\n"
+                "`!dueltourney noshow [@user]` — View no-show record"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="📊 Standings",
+            value=(
+                "`!dueltourney season` — Current season standings\n"
+                "`!dueltourney leaderboard` — All-time legends\n"
+                "`!dueltourney history` — Recent tournaments\n"
+                "`!dueltourney status` — Live tournament status"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="🛠️ Mod Commands",
+            value=(
+                "`!dueltourney open [cap] [bo]` — Open signups\n"
+                "`!dueltourney start` — Begin ready check\n"
+                "`!dueltourney pause / resume` — Pause/resume\n"
+                "`!dueltourney dq @user` — Disqualify\n"
+                "`!dueltourney cancel` — Cancel tournament"
+            ),
+            inline=False,
+        )
+        embed.set_footer(text="⚔️ Prove your history knowledge in the arena!")
+        await ctx.send(embed=embed)
 
     @dueltourney.command(name="open")
     async def dueltourney_open(self, ctx: commands.Context, size: int = 8, best_of: int = 3) -> None:
@@ -3065,17 +3222,17 @@ class DuelTournamentCog(commands.Cog):
                 await ctx.send("No recurring duel tournament is scheduled for this channel.", delete_after=10)
                 return
             embed = discord.Embed(
-                title="Scheduled Duel Tournament",
+                title="📅 Scheduled Tournament",
                 description=(
-                    f"**When:** {self._format_weekday(schedule.weekday)} {schedule.hour_utc:02d}:{schedule.minute_utc:02d} UTC\n"
-                    f"**Signup window:** {schedule.signup_window_minutes} minute(s)\n"
-                    f"**Signup cap:** {schedule.bracket_size}\n"
-                    f"**Best of:** {schedule.best_of}"
+                    f"**📆 When:** {self._format_weekday(schedule.weekday)} at {schedule.hour_utc:02d}:{schedule.minute_utc:02d} UTC\n"
+                    f"**⏱️ Signup window:** {schedule.signup_window_minutes} min\n"
+                    f"**👥 Max players:** {schedule.bracket_size}\n"
+                    f"**⚔️ Format:** Bo{schedule.best_of}"
                 ),
                 color=discord.Color.gold(),
             )
             if schedule.last_fire_key:
-                embed.set_footer(text=f"Last fired key: {schedule.last_fire_key}")
+                embed.set_footer(text=f"Last run: {schedule.last_fire_key}")
             await ctx.send(embed=embed)
             return
         weekday = self._parse_weekday(weekday_or_status)
@@ -3137,30 +3294,38 @@ class DuelTournamentCog(commands.Cog):
         )
         season, standings = await self._season_standings(ctx.guild.id, limit=100)
         season_row = next((row for row in standings if row[0] == target.id), None)
-        embed = discord.Embed(
-            title=f"Duel Tournament Profile • {target.display_name}",
-            color=discord.Color.blurple(),
-        )
-        embed.add_field(name="Cups entered", value=str(stats['cups_entered']), inline=True)
-        embed.add_field(name="Match wins", value=str(stats['match_wins']), inline=True)
-        embed.add_field(name="Titles", value=str(stats['titles']), inline=True)
-        embed.add_field(name="Finals reached", value=str(stats['finals_reached']), inline=True)
-        embed.add_field(name="Reliability", value=f"{reliability}%", inline=True)
-        embed.add_field(name="No-show flags", value=str(no_show_stats['total_flags']), inline=True)
-        embed.add_field(
-            name="No-show detail",
-            value=(
-                f"Ready-check misses: {no_show_stats['readycheck_missed']}\n"
-                f"Match no-shows: {no_show_stats['match_no_shows']}\n"
-                f"Inactivity DQs: {no_show_stats['inactivity_dqs']}"
-            ),
-            inline=False,
-        )
-        if season_row:
-            embed.add_field(name=f"{season[1]} points", value=str(season_row[1]), inline=True)
-            embed.add_field(name="Season match wins", value=str(season_row[3]), inline=True)
+        title_count = stats['titles']
+        if title_count >= 5:
+            rank_badge = "👑 Legend"
+        elif title_count >= 3:
+            rank_badge = "💎 Veteran"
+        elif title_count >= 1:
+            rank_badge = "🏆 Champion"
         else:
-            embed.add_field(name=f"{season[1]} points", value="0", inline=True)
+            rank_badge = "⚔️ Challenger"
+
+        reliability_bar = self._progress_bar(reliability, 100, length=8)
+
+        embed = discord.Embed(
+            title=f"{rank_badge} — {target.display_name}",
+            color=discord.Color.gold() if title_count >= 1 else discord.Color.blurple(),
+        )
+        embed.set_thumbnail(url=target.display_avatar.url)
+        embed.add_field(name="🏆 Titles", value=f"**{stats['titles']}**", inline=True)
+        embed.add_field(name="⚔️ Match Wins", value=f"**{stats['match_wins']}**", inline=True)
+        embed.add_field(name="🏅 Finals", value=f"**{stats['finals_reached']}**", inline=True)
+        embed.add_field(name="📋 Cups Entered", value=f"**{stats['cups_entered']}**", inline=True)
+        embed.add_field(name="✅ Reliability", value=f"{reliability_bar} {reliability}%", inline=True)
+        embed.add_field(name="⚠️ Flags", value=f"**{no_show_stats['total_flags']}**", inline=True)
+        if season_row:
+            embed.add_field(
+                name=f"📊 {season[1]}",
+                value=f"**{season_row[1]}** pts • {season_row[3]} wins",
+                inline=False,
+            )
+        else:
+            embed.add_field(name=f"📊 {season[1]}", value="No points yet", inline=False)
+        embed.set_footer(text="Use !dueltourney noshow for detailed no-show breakdown")
         await ctx.send(embed=embed)
 
     @dueltourney.command(name="stats")
@@ -3179,20 +3344,30 @@ class DuelTournamentCog(commands.Cog):
             cups_entered=stats['cups_entered'],
             total_flags=int(no_show_stats['total_flags'] or 0),
         )
+        total_flags = int(no_show_stats['total_flags'] or 0)
+        reliability_bar = self._progress_bar(reliability, 100, length=10)
+        if reliability >= 90:
+            status_icon = "🟢"
+        elif reliability >= 70:
+            status_icon = "🟡"
+        else:
+            status_icon = "🔴"
+
         embed = discord.Embed(
-            title=f"No-show record • {target.display_name}",
-            color=discord.Color.orange() if int(no_show_stats['total_flags'] or 0) else discord.Color.green(),
+            title=f"⚠️ No-Show Record — {target.display_name}",
+            color=discord.Color.orange() if total_flags else discord.Color.green(),
         )
-        embed.add_field(name="Reliability", value=f"{reliability}%", inline=True)
-        embed.add_field(name="Total flags", value=str(no_show_stats['total_flags']), inline=True)
-        embed.add_field(name="Cups entered", value=str(stats['cups_entered']), inline=True)
-        embed.add_field(name="Missed ready-checks", value=str(no_show_stats['readycheck_missed']), inline=True)
-        embed.add_field(name="Match no-shows", value=str(no_show_stats['match_no_shows']), inline=True)
-        embed.add_field(name="Inactivity DQs", value=str(no_show_stats['inactivity_dqs']), inline=True)
+        embed.add_field(name=f"{status_icon} Reliability", value=f"{reliability_bar} **{reliability}%**", inline=False)
+        embed.add_field(name="📋 Cups Entered", value=f"**{stats['cups_entered']}**", inline=True)
+        embed.add_field(name="🚩 Total Flags", value=f"**{total_flags}**", inline=True)
+        embed.add_field(name="​", value="​", inline=True)
+        embed.add_field(name="🔔 Ready-check misses", value=str(no_show_stats['readycheck_missed']), inline=True)
+        embed.add_field(name="❌ Match no-shows", value=str(no_show_stats['match_no_shows']), inline=True)
+        embed.add_field(name="⏰ Inactivity DQs", value=str(no_show_stats['inactivity_dqs']), inline=True)
         last_no_show_at = no_show_stats['last_no_show_at']
         embed.add_field(
-            name="Last flagged",
-            value=(f"<t:{int(last_no_show_at)}:R>" if last_no_show_at else "No no-show events recorded."),
+            name="📅 Last flagged",
+            value=(f"<t:{int(last_no_show_at)}:R>" if last_no_show_at else "✨ *No flags on record*"),
             inline=False,
         )
         await ctx.send(embed=embed)
@@ -3206,11 +3381,16 @@ class DuelTournamentCog(commands.Cog):
             await ctx.send("No finished duel tournaments yet.", delete_after=10)
             return
         lines = []
-        for _tid, title, ended_at, winner_user_id, bracket_size, entrants in history:
-            winner = f"<@{winner_user_id}>" if winner_user_id else "No winner"
-            timestamp = f"<t:{ended_at}:R>" if ended_at else "Unknown time"
-            lines.append(f"**{title}** — winner: {winner} • entrants: {entrants}/{bracket_size} • ended {timestamp}")
-        embed = discord.Embed(title="Recent Duel Tournament History", description="\n".join(lines), color=discord.Color.gold())
+        for i, (_tid, title, ended_at, winner_user_id, bracket_size, entrants) in enumerate(history, start=1):
+            winner = f"<@{winner_user_id}>" if winner_user_id else "*No winner*"
+            timestamp = f"<t:{ended_at}:d>" if ended_at else "?"
+            lines.append(f"`{i}.` 🏆 {winner} — **{title}** ({entrants}/{bracket_size} players) • {timestamp}")
+        embed = discord.Embed(
+            title="📜 Tournament History",
+            description="\n".join(lines),
+            color=discord.Color.gold(),
+        )
+        embed.set_footer(text="Use !dueltourney season for the current standings")
         await ctx.send(embed=embed)
 
     @dueltourney.command(name="season")
@@ -3221,16 +3401,20 @@ class DuelTournamentCog(commands.Cog):
         if not standings:
             await ctx.send(f"No points have been earned in **{season[1]}** yet.")
             return
+        medals = ["🥇", "🥈", "🥉"]
         lines = []
         for idx, (user_id, points, entered, match_wins, titles, finals) in enumerate(standings[:10], start=1):
+            medal = medals[idx - 1] if idx <= 3 else f"`{idx}.`"
             lines.append(
-                f"**{idx}.** <@{user_id}> — **{points}** pts • cups {entered} • wins {match_wins} • titles {titles} • finals {finals}"
+                f"{medal} <@{user_id}> — **{points}** pts\n"
+                f"  ╰ 🏆 {titles} title(s) • ⚔️ {match_wins} wins • 🏅 {finals} finals • 📋 {entered} cups"
             )
         embed = discord.Embed(
-            title=f"Friday Duel Season • {season[1]}",
+            title=f"🏅 Season Standings — {season[1]}",
             description="\n".join(lines),
             color=discord.Color.gold(),
         )
+        embed.set_footer(text="Points: 8 for a title  •  3 per match win  •  2 for reaching the final")
         await ctx.send(embed=embed)
 
     @dueltourney.command(name="leaderboard")
@@ -3241,17 +3425,20 @@ class DuelTournamentCog(commands.Cog):
         if not standings:
             await ctx.send("No all-time duel tournament data yet.")
             return
+        medals = ["🥇", "🥈", "🥉"]
         lines = []
         for idx, (user_id, cups_entered, match_wins, titles, finals_reached) in enumerate(standings[:10], start=1):
+            medal = medals[idx - 1] if idx <= 3 else f"`{idx}.`"
             lines.append(
-                f"**{idx}.** <@{user_id}> — **{titles}** title(s) • wins {match_wins} • finals {finals_reached} • cups {cups_entered}"
+                f"{medal} <@{user_id}>\n"
+                f"  ╰ 🏆 **{titles}** title(s) • ⚔️ {match_wins} wins • 🏅 {finals_reached} finals • 📋 {cups_entered} cups"
             )
         embed = discord.Embed(
-            title="All-Time Friday Duel Leaderboard",
+            title="🏆 All-Time Duel Tournament Legends",
             description="\n".join(lines),
-            color=discord.Color.blurple(),
+            color=discord.Color.gold(),
         )
-        embed.set_footer(text="Leaderboard is all-time. Use !dueltourney season for the current monthly race.")
+        embed.set_footer(text="All-time stats  •  Use !dueltourney season for the current race")
         await ctx.send(embed=embed)
 
     @dueltourney.group(name="role", invoke_without_command=True)
@@ -3263,10 +3450,10 @@ class DuelTournamentCog(commands.Cog):
         if not ctx.guild:
             return
         config = self._get_guild_config(ctx.guild.id)
-        embed = discord.Embed(title="Duel Tournament Roles", color=discord.Color.blurple())
-        embed.add_field(name="Champion role", value=(f"<@&{config.champion_role_id}>" if config.champion_role_id else "Not set"), inline=False)
-        embed.add_field(name="Season leader role", value=(f"<@&{config.season_role_id}>" if config.season_role_id else "Not set"), inline=False)
-        embed.add_field(name="Ping role", value=(f"<@&{config.ping_role_id}>" if config.ping_role_id else "Not set"), inline=False)
+        embed = discord.Embed(title="🎭 Tournament Roles", color=discord.Color.blurple())
+        embed.add_field(name="👑 Champion", value=(f"<@&{config.champion_role_id}>" if config.champion_role_id else "*Not set*"), inline=False)
+        embed.add_field(name="🏅 Season Leader", value=(f"<@&{config.season_role_id}>" if config.season_role_id else "*Not set*"), inline=False)
+        embed.add_field(name="🔔 Ping", value=(f"<@&{config.ping_role_id}>" if config.ping_role_id else "*Not set*"), inline=False)
         await ctx.send(embed=embed)
 
     @dueltourney_role.command(name="champion")
@@ -3336,9 +3523,9 @@ class DuelTournamentCog(commands.Cog):
         if not ctx.guild:
             return
         config = self._get_guild_config(ctx.guild.id)
-        embed = discord.Embed(title="Duel Tournament Reminders", color=discord.Color.blurple())
-        embed.add_field(name="Before tournament", value=f"{config.reminder_minutes_before} minute(s)", inline=False)
-        embed.add_field(name="Last call during signup", value=f"{config.signup_last_call_minutes} minute(s)", inline=False)
+        embed = discord.Embed(title="🔔 Tournament Reminders", color=discord.Color.blurple())
+        embed.add_field(name="⏰ Pre-tournament alert", value=f"{config.reminder_minutes_before} min before", inline=True)
+        embed.add_field(name="📢 Last call", value=f"{config.signup_last_call_minutes} min before signup closes", inline=True)
         await ctx.send(embed=embed)
 
     @dueltourney_reminders.command(name="set")
@@ -3527,22 +3714,25 @@ class DuelTournamentCog(commands.Cog):
         if not active:
             await ctx.send("No duel tournament is currently active in this channel.", delete_after=10)
             return
+        status_emoji = {"active": "🟢", "paused": "⏸️"}.get(active.status, "⚪")
         embed = discord.Embed(
-            title=active.title,
+            title=f"📋 {active.title} — Status",
             description=(
-                f"**Status:** {active.status}\n"
+                f"**Status:** {status_emoji} {active.status.title()}\n"
                 f"**Round:** {active.round_number}\n"
-                f"**Best of:** {active.best_of}\n"
-                f"**Active matches:** {len(active.active_match_ids)}"
+                f"**Format:** Bo{active.best_of}\n"
+                f"**Active matches:** {len(active.active_match_ids)}\n"
+                f"**Entrants:** {len(active.entrants)}"
             ),
-            color=discord.Color.blurple(),
+            color=discord.Color.green() if active.status == "active" else discord.Color.light_grey(),
         )
         if active.next_round_players:
             embed.add_field(
-                name="Already advanced",
+                name="✅ Advanced to next round",
                 value=" ".join(f"<@{uid}>" for uid in active.next_round_players),
                 inline=False,
             )
+        embed.set_footer(text="Use !dueltourney pause / resume / cancel to manage")
         await ctx.send(embed=embed)
 
     @dueltourney.command(name="cancel")
