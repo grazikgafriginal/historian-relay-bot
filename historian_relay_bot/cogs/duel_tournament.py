@@ -108,7 +108,7 @@ class TournamentMatchState:
         return self.best_of // 2 + 1
 
 
-MATCH_MESSAGE_TTL_SECONDS = 3600
+MATCH_MESSAGE_TTL_SECONDS = 0
 
 
 @dataclass(slots=True)
@@ -782,11 +782,12 @@ class DuelTournamentCog(commands.Cog):
         delay_seconds: int = MATCH_MESSAGE_TTL_SECONDS,
     ) -> discord.Message:
         message = await channel.send(content=content, embed=embed, view=view)
-        asyncio.create_task(self._delete_message_later(message, delay_seconds))
+        if delay_seconds > 0:
+            asyncio.create_task(self._delete_message_later(message, delay_seconds))
         return message
 
     async def _delete_message_later(self, message: discord.Message | None, delay_seconds: int = MATCH_MESSAGE_TTL_SECONDS) -> None:
-        if message is None:
+        if message is None or delay_seconds <= 0:
             return
         try:
             await asyncio.sleep(max(1, delay_seconds))
@@ -2135,32 +2136,88 @@ class DuelTournamentCog(commands.Cog):
         await self._delete_tournament_runtime(tournament)
 
 
+    def _bracket_name(self, guild: discord.Guild | None, user_id: int | None, max_len: int = 14) -> str:
+        if user_id is None:
+            return "???"
+        member = guild.get_member(user_id) if guild else None
+        name = member.display_name if member else str(user_id)
+        return name[:max_len]
+
     def _build_bracket_embed(self, tournament: TournamentState, guild: discord.Guild | None) -> discord.Embed:
-        lines: list[str] = []
-        for round_number in sorted(tournament.round_pairings):
-            lines.append(f"**Round {round_number}**")
+        sorted_rounds = sorted(tournament.round_pairings)
+        total_rounds = len(sorted_rounds)
+        round_labels = {r: f"Round {r}" for r in sorted_rounds}
+        if total_rounds >= 2:
+            round_labels[sorted_rounds[-1]] = "Final"
+            round_labels[sorted_rounds[-2]] = "Semi-Final"
+
+        bracket_lines: list[str] = []
+        for round_number in sorted_rounds:
+            pairings = tournament.round_pairings.get(round_number, [])
+            winners = tournament.round_winners.get(round_number, {})
+            label = round_labels.get(round_number, f"Round {round_number}")
+            bracket_lines.append(f"┌{'─' * 30}┐")
+            bracket_lines.append(f"│ {label:^28} │")
+            bracket_lines.append(f"├{'─' * 30}┤")
+
+            for idx, (player1, player2) in enumerate(pairings, start=1):
+                if player2 is None:
+                    p1 = self._bracket_name(guild, player1)
+                    bracket_lines.append(f"│  {p1} (bye){'':>{24 - len(p1)}}│")
+                    continue
+
+                p1 = self._bracket_name(guild, player1)
+                p2 = self._bracket_name(guild, player2)
+                winner_user_id = winners.get(idx)
+
+                mark1 = " ✓" if winner_user_id == player1 else "  "
+                mark2 = " ✓" if winner_user_id == player2 else "  "
+                if not winner_user_id:
+                    mark1 = mark2 = "  "
+
+                line1 = f"│  {p1}{mark1}"
+                line2 = f"│  {p2}{mark2}"
+                bracket_lines.append(f"{line1:>31}│")
+                bracket_lines.append(f"│{'  vs':^30}│")
+                bracket_lines.append(f"{line2:>31}│")
+                if idx < len(pairings):
+                    bracket_lines.append(f"│{'─' * 30}│")
+
+            bracket_lines.append(f"└{'─' * 30}┘")
+            bracket_lines.append("")
+
+        if tournament.winner_user_id:
+            champ = self._bracket_name(guild, tournament.winner_user_id, max_len=20)
+            bracket_lines.append(f"  🏆 Champion: {champ}")
+
+        bracket_text = "\n".join(bracket_lines).strip()
+        if not bracket_text:
+            bracket_text = "Bracket will appear once matches are seeded."
+
+        embed = discord.Embed(
+            title=f"{tournament.title} • Bracket Board",
+            color=discord.Color.gold(),
+        )
+        embed.description = f"```\n{bracket_text}\n```"
+
+        if tournament.winner_user_id:
+            embed.add_field(name="🏆 Champion", value=self._user_ref(guild, tournament.winner_user_id), inline=False)
+        else:
+            embed.add_field(name="Status", value=f"{tournament.status.title()} • Round {tournament.round_number}", inline=False)
+
+        detail_lines: list[str] = []
+        for round_number in sorted_rounds:
             pairings = tournament.round_pairings.get(round_number, [])
             winners = tournament.round_winners.get(round_number, {})
             for idx, (player1, player2) in enumerate(pairings, start=1):
                 if player2 is None:
-                    lines.append(f"Match {idx}: {self._user_ref(guild, player1)} gets a bye")
                     continue
-                winner_user_id = winners.get(idx)
-                status = f" — winner: {self._user_ref(guild, winner_user_id)}" if winner_user_id else " — in progress"
-                lines.append(
-                    f"Match {idx}: {self._user_ref(guild, player1)} vs {self._user_ref(guild, player2)}{status}"
-                )
-            lines.append("")
-        description = "\n".join(lines).strip() or "Bracket will appear once matches are seeded."
-        embed = discord.Embed(
-            title=f"{tournament.title} • Bracket Board",
-            description=description,
-            color=discord.Color.gold(),
-        )
-        if tournament.winner_user_id:
-            embed.add_field(name="Champion", value=self._user_ref(guild, tournament.winner_user_id), inline=False)
-        else:
-            embed.add_field(name="Status", value=f"{tournament.status.title()} • Round {tournament.round_number}", inline=False)
+                winner = winners.get(idx)
+                status = f"→ {self._user_ref(guild, winner)}" if winner else "⏳"
+                detail_lines.append(f"{self._user_ref(guild, player1)} vs {self._user_ref(guild, player2)} {status}")
+        if detail_lines:
+            embed.add_field(name="Match Details", value="\n".join(detail_lines[:15]), inline=False)
+
         return embed
 
     async def _refresh_bracket_message(self, host_channel: discord.TextChannel, tournament: TournamentState) -> None:
