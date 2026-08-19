@@ -409,6 +409,45 @@ class DuelRoundView(discord.ui.View):
         await interaction.response.send_modal(DuelGuessModal(self.cog, active))
 
 
+class DuelGGView(discord.ui.View):
+    def __init__(self, cog: "GuessYearCog", guild_id: int, player_a: int, player_b: int):
+        super().__init__(timeout=60)
+        self.cog = cog
+        self.guild_id = guild_id
+        self.player_a = player_a
+        self.player_b = player_b
+        self._gg_sent: set = set()
+        self.message: Optional[discord.Message] = None
+
+    async def on_timeout(self) -> None:
+        for child in self.children:
+            child.disabled = True
+        try:
+            if self.message:
+                await self.message.edit(view=self)
+        except Exception:
+            pass
+
+    @discord.ui.button(label="GG!", style=discord.ButtonStyle.success, emoji="🤝")
+    async def gg_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if interaction.user.id not in (self.player_a, self.player_b):
+            return await interaction.response.send_message("Only duel participants can GG.", ephemeral=True)
+        if interaction.user.id in self._gg_sent:
+            return await interaction.response.send_message("You already said GG!", ephemeral=True)
+        self._gg_sent.add(interaction.user.id)
+        opponent = self.player_b if interaction.user.id == self.player_a else self.player_a
+        await self.cog.bot.db.guessyear_add_gg(self.guild_id, interaction.user.id, opponent)
+        await interaction.response.send_message(f"🤝 {interaction.user.mention} says **GG** to <@{opponent}>!")
+        if len(self._gg_sent) >= 2:
+            for child in self.children:
+                child.disabled = True
+            try:
+                if self.message:
+                    await self.message.edit(view=self)
+            except Exception:
+                pass
+
+
 class DuelRematchView(discord.ui.View):
     def __init__(self, cog: "GuessYearCog", guild_id: int, channel_id: int,
                  player_a: int, player_b: int, total_questions: int):
@@ -740,6 +779,8 @@ class GuessYearCog(commands.Cog):
         self._daily_date_key: Optional[str] = None
         self._recap_week_key: Optional[str] = None
 
+        self._double_xp_guilds: set = set()
+
         self._restore_started = False
 
         self._load_dataset()
@@ -846,13 +887,37 @@ class GuessYearCog(commands.Cog):
         mx = int(getattr(self.bot.cfg, "GUESSYEAR_MAX_YEAR", 0) or 0)
         return mx if mx > 0 else datetime.datetime.utcnow().year
 
-    def _pick_event(self, guild_id: Optional[int] = None, channel_id: Optional[int] = None) -> Optional[Dict[str, Any]]:
+    def _pick_event(self, guild_id: Optional[int] = None, channel_id: Optional[int] = None, *, min_difficulty: int = 0) -> Optional[Dict[str, Any]]:
         pool = self._events
         if guild_id is not None and channel_id is not None:
             pool = self._events_for_channel(guild_id, channel_id)
         if not pool:
             return None
+        if min_difficulty >= 2:
+            hard_pool = [e for e in pool if event_difficulty(e) >= min_difficulty]
+            if hard_pool:
+                pool = hard_pool
         return random.choice(pool)
+
+    async def _pick_event_scaled(self, guild_id: int, channel_id: int, player_ids: List[int]) -> Optional[Dict[str, Any]]:
+        min_diff = 0
+        try:
+            avg_dists = []
+            for uid in player_ids:
+                d = await self.bot.db.guessyear_user_avg_distance(guild_id, uid)
+                if d is not None:
+                    avg_dists.append(d)
+            if avg_dists:
+                overall_avg = sum(avg_dists) / len(avg_dists)
+                if overall_avg < 20:
+                    min_diff = 4
+                elif overall_avg < 50:
+                    min_diff = 3
+                elif overall_avg < 100:
+                    min_diff = 2
+        except Exception:
+            pass
+        return self._pick_event(guild_id, channel_id, min_difficulty=min_diff)
 
     def _remaining(self, ends_at: int) -> int:
         return max(0, ends_at - int(time.time()))
@@ -1388,13 +1453,18 @@ class GuessYearCog(commands.Cog):
 
         return None
 
-    def _pick_duel_event(self, guild_id: int, channel_id: int, used_event_ids: Optional[set[str]] = None) -> Optional[Dict[str, Any]]:
+    def _pick_duel_event(self, guild_id: int, channel_id: int, used_event_ids: Optional[set[str]] = None, *, min_difficulty: int = 0) -> Optional[Dict[str, Any]]:
         pool = self._events_for_channel(guild_id, channel_id)
         if not pool:
             return None
         used = used_event_ids or set()
         fresh = [evt for evt in pool if str(evt.get("id")) not in used]
-        return random.choice(fresh or pool)
+        candidates = fresh or pool
+        if min_difficulty >= 2:
+            hard = [e for e in candidates if event_difficulty(e) >= min_difficulty]
+            if hard:
+                candidates = hard
+        return random.choice(candidates)
 
     async def _build_duel_challenge_embed(self, guild: discord.Guild, state: DuelChallengeState) -> discord.Embed:
         challenger = guild.get_member(state.challenger_user_id)
@@ -1681,7 +1751,24 @@ class GuessYearCog(commands.Cog):
             await interaction.response.send_message("A duel is already active in this channel.", ephemeral=True)
             return
 
-        evt = self._pick_duel_event(guild.id, channel.id)
+        duel_min_diff = 0
+        try:
+            dists = []
+            for uid in [challenge.challenger_user_id, challenge.opponent_user_id]:
+                d = await self.bot.db.guessyear_user_avg_distance(guild.id, uid)
+                if d is not None:
+                    dists.append(d)
+            if dists:
+                avg = sum(dists) / len(dists)
+                if avg < 20:
+                    duel_min_diff = 4
+                elif avg < 50:
+                    duel_min_diff = 3
+                elif avg < 100:
+                    duel_min_diff = 2
+        except Exception:
+            pass
+        evt = self._pick_duel_event(guild.id, channel.id, min_difficulty=duel_min_diff)
         if not evt:
             self._duel_challenges.pop(key, None)
             self._duel_challenge_views.pop(key, None)
@@ -1937,15 +2024,16 @@ class GuessYearCog(commands.Cog):
             # Record duel W/L stats, matchup, + XP
             challenger_score = int(state.scores.get(state.challenger_user_id, 0))
             opponent_score = int(state.scores.get(state.opponent_user_id, 0))
+            duel_xp = XP_DUEL_WIN * (2 if guild_id in self._double_xp_guilds else 1)
             try:
                 if challenger_score > opponent_score:
                     await self.bot.db.guessyear_stats_record_duel_result(guild_id, state.challenger_user_id, state.opponent_user_id)
                     await self.bot.db.guessyear_record_duel_matchup(guild_id, state.challenger_user_id, state.opponent_user_id)
-                    await self.bot.db.guessyear_stats_add_xp(guild_id, state.challenger_user_id, XP_DUEL_WIN)
+                    await self.bot.db.guessyear_stats_add_xp(guild_id, state.challenger_user_id, duel_xp)
                 elif opponent_score > challenger_score:
                     await self.bot.db.guessyear_stats_record_duel_result(guild_id, state.opponent_user_id, state.challenger_user_id)
                     await self.bot.db.guessyear_record_duel_matchup(guild_id, state.opponent_user_id, state.challenger_user_id)
-                    await self.bot.db.guessyear_stats_add_xp(guild_id, state.opponent_user_id, XP_DUEL_WIN)
+                    await self.bot.db.guessyear_stats_add_xp(guild_id, state.opponent_user_id, duel_xp)
             except Exception:
                 pass
 
@@ -1974,6 +2062,10 @@ class GuessYearCog(commands.Cog):
                     await channel.send(
                         f"🎁 <@{result.winner_user_id}> unlocked a bonus round for the final duel question. Start it with {modes_text}."
                     )
+
+                gg_view = DuelGGView(self, guild_id, state.challenger_user_id, state.opponent_user_id)
+                gg_msg = await channel.send("Show some sportsmanship!", view=gg_view)
+                gg_view.message = gg_msg
 
                 if not forced:
                     rematch_view = DuelRematchView(
@@ -2045,6 +2137,8 @@ class GuessYearCog(commands.Cog):
         evt = self._events_by_id.get(state.event_id)
         diff = event_difficulty(evt) if evt else 1
         xp_mult = DIFFICULTY_XP_MULTIPLIER.get(diff, 1.0)
+        if guild_id in self._double_xp_guilds:
+            xp_mult *= 2.0
         try:
             await self.bot.db.guessyear_stats_record_play(guild_id, all_player_ids)
             for uid in all_player_ids:
@@ -3220,6 +3314,12 @@ class GuessYearCog(commands.Cog):
         embed.add_field(name="Best streak", value=f"**{best_streak}**", inline=True)
         if duel_wins or duel_losses:
             embed.add_field(name="⚔️ Duels", value=f"**{duel_wins}W – {duel_losses}L**", inline=True)
+        try:
+            gg_count = await self.bot.db.guessyear_gg_count(ctx.guild.id, ctx.author.id)
+            if gg_count:
+                embed.add_field(name="🤝 GGs Received", value=f"**{gg_count}**", inline=True)
+        except Exception:
+            pass
         embed.add_field(name="Last played", value=when, inline=False)
         await ctx.send(embed=embed)
 
@@ -3602,6 +3702,134 @@ class GuessYearCog(commands.Cog):
 
         member = ctx.guild.get_member(bonus_state.winner_user_id)
         await ctx.send(embed=self._build_bonus_embed(bonus_state, ctx.guild, member))
+
+    # ---------- double XP, wall of fame, compare ----------
+
+    @guessyear.command(name="doublexp")
+    async def guessyear_doublexp(self, ctx: commands.Context, toggle: Optional[str] = None):
+        """Toggle double XP for this server (mod only)."""
+        if not ctx.guild:
+            return
+        member = ctx.author if isinstance(ctx.author, discord.Member) else None
+        cfg = getattr(self.bot, "cfg", None)
+        mod_role_id = int(getattr(cfg, "MOD_ROLE_ID", 0) or 0)
+        is_mod = bool(member and (mod_role_id and any(r.id == mod_role_id for r in member.roles) or member.guild_permissions.manage_messages))
+        if not is_mod:
+            return await ctx.send("Only moderators can toggle double XP.", delete_after=10)
+
+        if toggle and toggle.lower() in ("on", "enable", "yes"):
+            self._double_xp_guilds.add(ctx.guild.id)
+            embed = discord.Embed(title="⚡ Double XP Activated!", description="All XP rewards are now **2x** until turned off.", color=discord.Color.gold())
+            await ctx.send(embed=embed)
+        elif toggle and toggle.lower() in ("off", "disable", "no"):
+            self._double_xp_guilds.discard(ctx.guild.id)
+            embed = discord.Embed(title="Double XP Ended", description="XP rewards are back to normal.", color=discord.Color.light_grey())
+            await ctx.send(embed=embed)
+        else:
+            is_on = ctx.guild.id in self._double_xp_guilds
+            status = "**ON** ⚡" if is_on else "OFF"
+            await ctx.send(f"Double XP is currently {status}. Use `!guessyear doublexp on` or `!guessyear doublexp off`.", delete_after=15)
+
+    @guessyear.command(name="fame")
+    async def guessyear_fame(self, ctx: commands.Context):
+        """Show the server's wall of fame — all-time records."""
+        if not ctx.guild:
+            return
+        try:
+            records = await self.bot.db.guessyear_wall_of_fame(ctx.guild.id)
+        except Exception:
+            return await ctx.send("Could not fetch records.", delete_after=10)
+
+        embed = discord.Embed(
+            title="🏛️ Wall of Fame",
+            description="Server all-time records",
+            color=discord.Color.gold(),
+        )
+
+        if records.get("best_streak"):
+            embed.add_field(name="🔥 Longest Win Streak", value=f"<@{records['best_streak']['user_id']}> — **{records['best_streak']['value']}** wins", inline=False)
+        if records.get("most_exact"):
+            embed.add_field(name="🎯 Most Exact Hits", value=f"<@{records['most_exact']['user_id']}> — **{records['most_exact']['value']}**", inline=False)
+        if records.get("best_avg_distance"):
+            embed.add_field(name="📏 Best Avg Distance", value=f"<@{records['best_avg_distance']['user_id']}> — **{records['best_avg_distance']['value']}** years (min 10 plays)", inline=False)
+        if records.get("highest_xp"):
+            embed.add_field(name="⭐ Highest XP", value=f"<@{records['highest_xp']['user_id']}> — **{records['highest_xp']['value']:,}** XP", inline=False)
+        if records.get("most_duel_wins"):
+            embed.add_field(name="⚔️ Most Duel Wins", value=f"<@{records['most_duel_wins']['user_id']}> — **{records['most_duel_wins']['value']}** wins", inline=False)
+
+        if not embed.fields:
+            embed.description = "No records yet — start playing!"
+
+        embed.set_footer(text="Think you can claim a spot? Keep playing!")
+        await ctx.send(embed=embed)
+
+    @guessyear.command(name="compare")
+    async def guessyear_compare(self, ctx: commands.Context, user: discord.Member = None):
+        """Compare your stats head-to-head with another player."""
+        if not ctx.guild or not user:
+            return await ctx.send("Usage: `!guessyear compare @user`", delete_after=10)
+        if user.id == ctx.author.id:
+            return await ctx.send("You can't compare with yourself!", delete_after=10)
+
+        try:
+            stats = await self.bot.db.guessyear_compare_users(ctx.guild.id, ctx.author.id, user.id)
+            matchup = await self.bot.db.guessyear_get_duel_matchup(ctx.guild.id, ctx.author.id, user.id)
+        except Exception:
+            return await ctx.send("Could not fetch comparison data.", delete_after=10)
+
+        s1 = stats.get("user1")
+        s2 = stats.get("user2")
+        if not s1 and not s2:
+            return await ctx.send("Neither player has stats yet.", delete_after=10)
+
+        embed = discord.Embed(
+            title=f"⚔️ {ctx.author.display_name} vs {user.display_name}",
+            color=discord.Color.blurple(),
+        )
+
+        def fmt(val, default="—"):
+            return str(val) if val is not None else default
+
+        rows = [
+            ("Wins", s1["wins"] if s1 else 0, s2["wins"] if s2 else 0),
+            ("Plays", s1["plays"] if s1 else 0, s2["plays"] if s2 else 0),
+            ("Exact Hits", s1["exact_hits"] if s1 else 0, s2["exact_hits"] if s2 else 0),
+            ("Best Streak", s1["best_streak"] if s1 else 0, s2["best_streak"] if s2 else 0),
+            ("Avg Distance", f"{s1['avg_distance']:.1f}" if s1 else "—", f"{s2['avg_distance']:.1f}" if s2 else "—"),
+            ("XP", f"{s1['xp']:,}" if s1 else "0", f"{s2['xp']:,}" if s2 else "0"),
+            ("Duel W/L", f"{s1['duel_wins']}/{s1['duel_losses']}" if s1 else "0/0", f"{s2['duel_wins']}/{s2['duel_losses']}" if s2 else "0/0"),
+        ]
+
+        lines = []
+        for label, v1, v2 in rows:
+            marker = ""
+            try:
+                n1 = float(str(v1).replace(",", ""))
+                n2 = float(str(v2).replace(",", ""))
+                if "Distance" in label:
+                    marker = " ◄" if n1 < n2 else (" ►" if n2 < n1 else "")
+                else:
+                    marker = " ◄" if n1 > n2 else (" ►" if n2 > n1 else "")
+            except (ValueError, TypeError):
+                pass
+            lines.append(f"{label:>14}  {str(v1):>8}  vs  {str(v2):<8}{marker}")
+
+        embed.description = f"```\n" + "\n".join(lines) + "\n```"
+
+        w1, w2 = matchup
+        if w1 + w2 > 0:
+            embed.add_field(name="⚔️ Duel Record", value=f"**{ctx.author.display_name}** {w1} – {w2} **{user.display_name}**", inline=False)
+        else:
+            embed.add_field(name="⚔️ Duel Record", value="No duels between these two yet!", inline=False)
+
+        try:
+            gg1 = await self.bot.db.guessyear_gg_count(ctx.guild.id, ctx.author.id)
+            gg2 = await self.bot.db.guessyear_gg_count(ctx.guild.id, user.id)
+            embed.add_field(name="🤝 GGs Received", value=f"**{ctx.author.display_name}**: {gg1}  •  **{user.display_name}**: {gg2}", inline=False)
+        except Exception:
+            pass
+
+        await ctx.send(embed=embed)
 
     # ---------- message listener (guesses) ----------
 

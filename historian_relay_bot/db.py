@@ -1179,3 +1179,115 @@ class Database:
             "best_distance": int(agg[0]) if agg and agg[0] is not None else None,
             "lifetime_exact": int(agg[1]) if agg else 0,
         }
+
+    async def guessyear_wall_of_fame(self, guild_id: int) -> dict[str, Any]:
+        results: dict[str, Any] = {}
+        cur = await self.conn.execute(
+            "SELECT user_id, best_streak FROM guessyear_stats WHERE guild_id=? ORDER BY best_streak DESC LIMIT 1",
+            (str(guild_id),),
+        )
+        row = await cur.fetchone()
+        results["best_streak"] = {"user_id": str(row[0]), "value": int(row[1])} if row and row[1] else None
+
+        cur = await self.conn.execute(
+            "SELECT user_id, exact_hits FROM guessyear_stats WHERE guild_id=? ORDER BY exact_hits DESC LIMIT 1",
+            (str(guild_id),),
+        )
+        row = await cur.fetchone()
+        results["most_exact"] = {"user_id": str(row[0]), "value": int(row[1])} if row and row[1] else None
+
+        cur = await self.conn.execute(
+            "SELECT user_id, CAST(total_distance AS REAL) / MAX(plays, 1) AS avg_dist FROM guessyear_stats WHERE guild_id=? AND plays >= 10 ORDER BY avg_dist ASC LIMIT 1",
+            (str(guild_id),),
+        )
+        row = await cur.fetchone()
+        results["best_avg_distance"] = {"user_id": str(row[0]), "value": round(float(row[1]), 1)} if row else None
+
+        cur = await self.conn.execute(
+            "SELECT user_id, xp FROM guessyear_stats WHERE guild_id=? ORDER BY xp DESC LIMIT 1",
+            (str(guild_id),),
+        )
+        row = await cur.fetchone()
+        results["highest_xp"] = {"user_id": str(row[0]), "value": int(row[1])} if row and row[1] else None
+
+        cur = await self.conn.execute(
+            "SELECT user_id, duel_wins FROM guessyear_stats WHERE guild_id=? ORDER BY duel_wins DESC LIMIT 1",
+            (str(guild_id),),
+        )
+        row = await cur.fetchone()
+        results["most_duel_wins"] = {"user_id": str(row[0]), "value": int(row[1])} if row and row[1] else None
+
+        return results
+
+    async def guessyear_add_gg(self, guild_id: int, from_user_id: int, to_user_id: int) -> bool:
+        try:
+            await self.conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS guessyear_gg (
+                  guild_id TEXT NOT NULL,
+                  from_user_id TEXT NOT NULL,
+                  to_user_id TEXT NOT NULL,
+                  given_at INTEGER NOT NULL,
+                  PRIMARY KEY (guild_id, from_user_id, to_user_id, given_at)
+                )
+                """,
+            )
+            await self.conn.execute(
+                "INSERT INTO guessyear_gg (guild_id, from_user_id, to_user_id, given_at) VALUES (?, ?, ?, ?)",
+                (str(guild_id), str(from_user_id), str(to_user_id), int(__import__("time").time())),
+            )
+            await self.conn.commit()
+            return True
+        except Exception:
+            return False
+
+    async def guessyear_gg_count(self, guild_id: int, user_id: int) -> int:
+        try:
+            await self.conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS guessyear_gg (
+                  guild_id TEXT NOT NULL,
+                  from_user_id TEXT NOT NULL,
+                  to_user_id TEXT NOT NULL,
+                  given_at INTEGER NOT NULL,
+                  PRIMARY KEY (guild_id, from_user_id, to_user_id, given_at)
+                )
+                """,
+            )
+            cur = await self.conn.execute(
+                "SELECT COUNT(*) FROM guessyear_gg WHERE guild_id=? AND to_user_id=?",
+                (str(guild_id), str(user_id)),
+            )
+            row = await cur.fetchone()
+            return int(row[0]) if row else 0
+        except Exception:
+            return 0
+
+    async def guessyear_compare_users(self, guild_id: int, user1_id: int, user2_id: int) -> dict[str, Any]:
+        stats: dict[str, Any] = {}
+        for label, uid in [("user1", user1_id), ("user2", user2_id)]:
+            cur = await self.conn.execute(
+                "SELECT wins, plays, exact_hits, best_streak, total_distance, xp, duel_wins, duel_losses FROM guessyear_stats WHERE guild_id=? AND user_id=?",
+                (str(guild_id), str(uid)),
+            )
+            row = await cur.fetchone()
+            if row:
+                stats[label] = {
+                    "wins": int(row[0]), "plays": int(row[1]), "exact_hits": int(row[2]),
+                    "best_streak": int(row[3]), "total_distance": int(row[4]), "xp": int(row[5]),
+                    "duel_wins": int(row[6]), "duel_losses": int(row[7]),
+                    "avg_distance": round(float(row[4]) / max(int(row[1]), 1), 1),
+                }
+            else:
+                stats[label] = None
+        return stats
+
+    async def guessyear_user_avg_distance(self, guild_id: int, user_id: int) -> float | None:
+        cur = await self.conn.execute(
+            "SELECT total_distance, plays FROM guessyear_stats WHERE guild_id=? AND user_id=?",
+            (str(guild_id), str(user_id)),
+        )
+        row = await cur.fetchone()
+        if row and int(row[1]) >= 5:
+            return float(int(row[0])) / max(int(row[1]), 1)
+        return None

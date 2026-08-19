@@ -110,6 +110,14 @@ class TournamentMatchState:
 
 MATCH_MESSAGE_TTL_SECONDS = 0
 
+ROUND_THEMES = [
+    {"key": "ancient", "label": "Ancient World", "filter": lambda tags: any(t.lower() in {"ancient", "rome", "roman", "greece", "greek", "egypt", "mesopotamia", "persia"} for t in tags)},
+    {"key": "wars", "label": "Wars & Conflicts", "filter": lambda tags: any(t.lower() in {"war", "military", "battle", "conflict", "revolution", "siege", "invasion"} for t in tags)},
+    {"key": "science", "label": "Science & Discovery", "filter": lambda tags: any(t.lower() in {"science", "technology", "discovery", "invention", "medicine", "astronomy", "mathematics"} for t in tags)},
+    {"key": "culture", "label": "Culture & Society", "filter": lambda tags: any(t.lower() in {"culture", "art", "religion", "society", "politics", "philosophy", "literature", "music"} for t in tags)},
+    {"key": "wildcard", "label": "Wildcard", "filter": lambda tags: True},
+]
+
 
 @dataclass(slots=True)
 class TournamentState:
@@ -131,6 +139,8 @@ class TournamentState:
     round_pairings: dict[int, list[tuple[int, int | None]]] = field(default_factory=dict)
     round_winners: dict[int, dict[int, int | None]] = field(default_factory=dict)
     pending_matchups: list[tuple[int, int, int, bool]] = field(default_factory=list)
+    round_themes: dict[int, str] = field(default_factory=dict)
+    spectators: set[int] = field(default_factory=set)
 
 
 class TournamentGuessModal(discord.ui.Modal, title="Submit your tournament answer"):
@@ -176,6 +186,10 @@ class TournamentSignupView(discord.ui.View):
             await interaction.response.send_message("Only moderators can start the tournament.", ephemeral=True)
             return
         await self.cog._start_signup_tournament(interaction, self.state)
+
+    @discord.ui.button(label="Watch", style=discord.ButtonStyle.secondary, emoji="👁️")
+    async def watch_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        await self.cog._watch_signup(interaction, self.state)
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger)
     async def cancel_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
@@ -963,7 +977,7 @@ class DuelTournamentCog(commands.Cog):
         allowed = list(getattr(self.bot.cfg, "GUESSYEAR_ALLOWED_CHANNEL_IDS", []) or [])
         return not allowed or channel_id in allowed
 
-    def _pick_event(self) -> dict[str, Any] | None:
+    def _pick_event(self, *, theme_filter=None, min_difficulty: int = 0) -> dict[str, Any] | None:
         if not self._events:
             return None
         min_year = int(getattr(self.bot.cfg, "GUESSYEAR_MIN_YEAR", 1) or 1)
@@ -974,7 +988,46 @@ class DuelTournamentCog(commands.Cog):
             evt for evt in self._events
             if min_year <= int(evt.get("year", 0)) <= max_year
         ]
-        return random.choice(pool or self._events)
+        if not pool:
+            pool = list(self._events)
+        if theme_filter is not None:
+            themed = [evt for evt in pool if theme_filter(evt.get("tags", []))]
+            if themed:
+                pool = themed
+        if min_difficulty >= 2:
+            from historian_relay_bot.cogs.guessyear import event_difficulty
+            hard = [evt for evt in pool if event_difficulty(evt) >= min_difficulty]
+            if hard:
+                pool = hard
+        return random.choice(pool)
+
+    async def _pick_event_for_match(self, tournament: TournamentState, p1_id: int, p2_id: int) -> dict[str, Any] | None:
+        theme_filter = None
+        round_num = tournament.round_number
+        if round_num in tournament.round_themes:
+            theme_key = tournament.round_themes[round_num]
+            for t in ROUND_THEMES:
+                if t["key"] == theme_key:
+                    theme_filter = t["filter"]
+                    break
+        min_diff = 0
+        try:
+            dists = []
+            for uid in [p1_id, p2_id]:
+                d = await self.bot.db.guessyear_user_avg_distance(tournament.guild_id, uid)
+                if d is not None:
+                    dists.append(d)
+            if dists:
+                avg = sum(dists) / len(dists)
+                if avg < 20:
+                    min_diff = 4
+                elif avg < 50:
+                    min_diff = 3
+                elif avg < 100:
+                    min_diff = 2
+        except Exception:
+            pass
+        return self._pick_event(theme_filter=theme_filter, min_difficulty=min_diff)
 
     async def _create_tournament_row(
         self,
@@ -1911,6 +1964,9 @@ class DuelTournamentCog(commands.Cog):
 
         embed = discord.Embed(title=title, description=description, color=color)
         embed.add_field(name=field_name, value="\n".join(entrant_lines) if entrant_lines else "*No entrants yet — be the first!*", inline=False)
+        tournament = self._tournaments.get(state.tournament_id)
+        if tournament and tournament.spectators:
+            embed.add_field(name=f"👁️ Spectators ({len(tournament.spectators)})", value=", ".join(f"<@{uid}>" for uid in tournament.spectators), inline=False)
         embed.set_footer(text=footer)
         return embed
 
@@ -1966,7 +2022,15 @@ class DuelTournamentCog(commands.Cog):
             value="Press the button below and enter the year in the popup.",
             inline=False,
         )
-        embed.set_footer(text=f"First to {wins_needed} wins  •  Earliest guess breaks ties  •  60s per question")
+        tournament = self._tournaments.get(match.tournament_id)
+        theme_label = ""
+        if tournament and match.round_number in tournament.round_themes:
+            theme_key = tournament.round_themes[match.round_number]
+            for t in ROUND_THEMES:
+                if t["key"] == theme_key:
+                    theme_label = f"  •  🎲 {t['label']}"
+                    break
+        embed.set_footer(text=f"First to {wins_needed} wins  •  Earliest guess breaks ties  •  60s per question{theme_label}")
         return embed
     def _build_match_view(self, match: TournamentMatchState, *, disabled: bool = False) -> TournamentMatchView:
         view = TournamentMatchView(self, match)
@@ -2358,6 +2422,36 @@ class DuelTournamentCog(commands.Cog):
         await interaction.response.send_message("You left the tournament.", ephemeral=True)
         await self._refresh_signup_message(state)
 
+    async def _watch_signup(self, interaction: discord.Interaction, state: TournamentSignupState) -> None:
+        tournament = self._tournaments.get(state.tournament_id)
+        if interaction.user.id in state.entrants:
+            await interaction.response.send_message("You're already entered as a player! Leave first to switch to spectator.", ephemeral=True)
+            return
+        if tournament and interaction.user.id in tournament.spectators:
+            tournament.spectators.discard(interaction.user.id)
+            await interaction.response.send_message("You are no longer spectating.", ephemeral=True)
+            return
+        if tournament is None:
+            key = (state.guild_id, state.channel_id)
+            for t in self._tournaments.values():
+                if t.tournament_id == state.tournament_id:
+                    tournament = t
+                    break
+        if tournament is None:
+            tournament = TournamentState(
+                tournament_id=state.tournament_id,
+                guild_id=state.guild_id,
+                channel_id=state.channel_id,
+                created_by_user_id=state.created_by_user_id,
+                title=state.title,
+                bracket_size=state.bracket_size,
+                best_of=state.best_of,
+                signup_message_id=state.signup_message_id,
+            )
+            self._tournaments[state.tournament_id] = tournament
+        tournament.spectators.add(interaction.user.id)
+        await interaction.response.send_message("👁️ You're now spectating! You'll be added to match threads as a viewer.", ephemeral=True)
+
     async def _cancel_signup(self, interaction: discord.Interaction, state: TournamentSignupState) -> None:
         self._signups.pop((state.guild_id, state.channel_id), None)
         state.status = "cancelled"
@@ -2454,6 +2548,17 @@ class DuelTournamentCog(commands.Cog):
         tournament.active_match_ids.clear()
         tournament.pending_matchups = []
 
+        if round_number not in tournament.round_themes:
+            theme = random.choice(ROUND_THEMES)
+            tournament.round_themes[round_number] = theme["key"]
+            if isinstance(host_channel, discord.TextChannel):
+                theme_embed = discord.Embed(
+                    title=f"🎲 Round {round_number} Theme: {theme['label']}",
+                    description=f"All questions this round lean toward **{theme['label']}**!",
+                    color=discord.Color.purple(),
+                )
+                await self._send_managed_message(host_channel, embed=theme_embed)
+
         normalized_players = self._dedupe_players(players)
         pairings = self._seed_pairings_with_byes(normalized_players)
 
@@ -2489,7 +2594,7 @@ class DuelTournamentCog(commands.Cog):
         *,
         is_final: bool = False,
     ) -> TournamentMatchState:
-        evt = self._pick_event()
+        evt = await self._pick_event_for_match(tournament, player1_user_id, player2_user_id)
         if evt is None:
             raise RuntimeError("No GuessYear events are available for tournament play.")
 
@@ -2530,6 +2635,10 @@ class DuelTournamentCog(commands.Cog):
                 await thread.add_user(p1)
             if p2:
                 await thread.add_user(p2)
+            for spec_id in tournament.spectators:
+                spec_member = host_channel.guild.get_member(spec_id)
+                if spec_member:
+                    await thread.add_user(spec_member)
         except Exception:
             pass
 
@@ -2593,13 +2702,14 @@ class DuelTournamentCog(commands.Cog):
         except Exception:
             pass
 
-    async def _post_match_question(self, match: TournamentMatchState) -> None:
+    async def _post_match_question(self, match: TournamentMatchState, *, sudden_death: bool = False) -> None:
         thread = await self._ensure_match_thread(match, create_if_missing=True)
         guild = self.bot.get_guild(match.guild_id)
         if not isinstance(thread, discord.Thread) or guild is None:
             return
+        timer = 10 if sudden_death else 60
         match.round_started_at = int(time.time())
-        match.round_ends_at = match.round_started_at + 60
+        match.round_ends_at = match.round_started_at + timer
         match.guesses.clear()
 
         await self._disable_previous_match_prompt(match)
@@ -2767,7 +2877,25 @@ class DuelTournamentCog(commands.Cog):
         score2 = match.scores.get(match.player2_user_id, 0)
         if score1 >= match.wins_needed or score2 >= match.wins_needed or match.current_question >= match.best_of:
             if score1 == score2:
-                # Final fallback after best-of is exhausted.
+                # Sudden death overtime (max 3 attempts, then timestamp tiebreak)
+                sd_attempts = match.current_question - match.best_of
+                if sd_attempts < 3:
+                    tournament = self._tournaments.get(match.tournament_id)
+                    sd_evt = await self._pick_event_for_match(tournament, match.player1_user_id, match.player2_user_id) if tournament else self._pick_event()
+                    if sd_evt:
+                        sudden_embed = discord.Embed(
+                            title="⚡ SUDDEN DEATH" + (" (Again!)" if sd_attempts > 0 else ""),
+                            description="Scores are tied! One question, **10 seconds** — whoever is closer wins the match!",
+                            color=discord.Color.red(),
+                        )
+                        await self._send_managed_message(thread, embed=sudden_embed)
+                        match.current_question += 1
+                        match.event_id = str(sd_evt["id"])
+                        match.correct_year = int(sd_evt["year"])
+                        match.prompt = str(sd_evt["prompt"])
+                        await self._update_match_result(match)
+                        await self._post_match_question(match, sudden_death=True)
+                        return
                 p1_last = p1_guess[1] if p1_guess else 10**18
                 p2_last = p2_guess[1] if p2_guess else 10**18
                 match.winner_user_id = match.player1_user_id if p1_last <= p2_last else match.player2_user_id
@@ -2778,7 +2906,8 @@ class DuelTournamentCog(commands.Cog):
             await self._handle_finished_match(match)
             return
 
-        next_evt = self._pick_event()
+        tournament = self._tournaments.get(match.tournament_id)
+        next_evt = await self._pick_event_for_match(tournament, match.player1_user_id, match.player2_user_id) if tournament else self._pick_event()
         if next_evt is None:
             match.winner_user_id = match.player1_user_id if score1 >= score2 else match.player2_user_id
             match.finished = True
@@ -3554,6 +3683,49 @@ class DuelTournamentCog(commands.Cog):
         )
         embed.set_footer(text="Points: 8 for a title  •  3 per match win  •  2 for reaching the final")
         await ctx.send(embed=embed)
+
+    @dueltourney.command(name="seasonarchive")
+    async def dueltourney_season_archive(self, ctx: commands.Context) -> None:
+        """Archive the current season and start a new one (mod only)."""
+        if not ctx.guild:
+            return
+        if not self._can_manage(ctx.author):
+            await ctx.send("Only moderators can archive a season.", delete_after=10)
+            return
+
+        season, standings = await self._season_standings(ctx.guild.id, limit=50)
+        season_id, season_name, starts_at, ends_at = season
+
+        if not standings:
+            await ctx.send(f"No points in **{season_name}** yet — nothing to archive.", delete_after=10)
+            return
+
+        medals = ["🥇", "🥈", "🥉"]
+        lines = []
+        for idx, (user_id, points, entered, match_wins, titles, finals) in enumerate(standings[:10], start=1):
+            medal = medals[idx - 1] if idx <= 3 else f"`{idx}.`"
+            lines.append(
+                f"{medal} <@{user_id}> — **{points}** pts "
+                f"(🏆{titles} ⚔️{match_wins} 🏅{finals} 📋{entered})"
+            )
+
+        archive_embed = discord.Embed(
+            title=f"📜 Season Archive — {season_name}",
+            description="\n".join(lines),
+            color=discord.Color.gold(),
+        )
+        archive_embed.set_footer(text=f"Archived by {ctx.author.display_name} • Season closed")
+        await ctx.send(embed=archive_embed)
+
+        now_ts = int(time.time())
+        await self.bot.db.conn.execute(
+            "UPDATE guessyear_tournament_seasons SET is_active=0, ends_at=? WHERE season_id=?",
+            (now_ts, season_id),
+        )
+        await self.bot.db.conn.commit()
+
+        new_season = await self._ensure_active_season(ctx.guild.id, created_by_user_id=ctx.author.id)
+        await ctx.send(f"Season **{season_name}** archived! New season **{new_season[1]}** has started. Points are reset.", delete_after=15)
 
     @dueltourney.command(name="leaderboard")
     async def dueltourney_leaderboard(self, ctx: commands.Context) -> None:
