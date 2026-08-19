@@ -2478,6 +2478,16 @@ class GuessYearCog(commands.Cog):
                 value=f"<@{best_streak_player['user_id']}> with a **{best_streak}**-round streak!",
                 inline=False,
             )
+
+        closest = stats.get("closest_guess")
+        if closest:
+            dist = closest["distance"]
+            if dist == 0:
+                closest_text = f"🎯 <@{closest['user_id']}> nailed an **EXACT** guess! (Year: {closest['correct_year']})"
+            else:
+                closest_text = f"<@{closest['user_id']}> was only **{dist}** year(s) off! (Guessed {closest['guess_year']}, answer was {closest['correct_year']})"
+            embed.add_field(name="🏹 Closest Guess of the Week", value=closest_text, inline=False)
+
         embed.add_field(
             name="📝 Feedback",
             value="[Tell us what you think!](https://forms.gle/mptSo1F3auRngRtQ6)",
@@ -3211,6 +3221,42 @@ class GuessYearCog(commands.Cog):
         if duel_wins or duel_losses:
             embed.add_field(name="⚔️ Duels", value=f"**{duel_wins}W – {duel_losses}L**", inline=True)
         embed.add_field(name="Last played", value=when, inline=False)
+        await ctx.send(embed=embed)
+
+    @guessyear.command(name="pb")
+    async def guessyear_pb(self, ctx: commands.Context):
+        """Show your personal bests."""
+        if not ctx.guild:
+            return
+        try:
+            pb = await self.bot.db.guessyear_personal_bests(ctx.guild.id, ctx.author.id)
+        except Exception:
+            log.exception("Failed reading personal bests")
+            return await ctx.send("Could not fetch your personal bests.", delete_after=10)
+
+        if not pb:
+            return await ctx.send("No stats yet — play a round first!", delete_after=10)
+
+        plays = pb["plays"]
+        avg_dist = (pb["total_distance"] / plays) if plays > 0 else 0
+        win_pct = (pb["wins"] / plays * 100) if plays > 0 else 0
+
+        embed = discord.Embed(
+            title=f"🏅 Personal Bests — {ctx.author.display_name}",
+            color=discord.Color.gold(),
+        )
+        embed.set_thumbnail(url=ctx.author.display_avatar.url)
+        embed.add_field(name="🔥 Best Win Streak", value=f"**{pb['best_streak']}** in a row", inline=True)
+        embed.add_field(name="🎯 Lifetime Exact Hits", value=f"**{pb['lifetime_exact']}**", inline=True)
+        if pb["best_distance"] is not None:
+            if pb["best_distance"] == 0:
+                embed.add_field(name="📏 Closest Guess", value="**EXACT** (0 years off)", inline=True)
+            else:
+                embed.add_field(name="📏 Closest Guess", value=f"**{pb['best_distance']}** year(s) off", inline=True)
+        embed.add_field(name="📊 Win Rate", value=f"**{win_pct:.0f}%** ({pb['wins']}/{plays})", inline=True)
+        embed.add_field(name="📏 Avg Distance", value=f"**{avg_dist:.1f}** years", inline=True)
+        embed.add_field(name="⭐ XP", value=f"**{pb['xp']}**", inline=True)
+        embed.set_footer(text="Keep playing to beat your records!")
         await ctx.send(embed=embed)
 
     @commands.group(name="categories", invoke_without_command=True)

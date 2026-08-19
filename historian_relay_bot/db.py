@@ -1113,8 +1113,69 @@ class Database:
         cols = [c[0] for c in cur.description]
         active_players = [dict(zip(cols, r)) for r in await cur.fetchall()]
 
+        cur = await self.conn.execute(
+            """
+            SELECT g.user_id, g.guess_year, r.correct_year,
+                   ABS(g.guess_year - r.correct_year) AS distance,
+                   r.event_id
+            FROM guessyear_guesses g
+            JOIN guessyear_rounds r ON g.round_id = r.round_id
+            WHERE r.guild_id=? AND r.started_at>=? AND r.status='ended'
+            ORDER BY distance ASC, g.guessed_at ASC
+            LIMIT 1
+            """,
+            (str(guild_id), since),
+        )
+        closest_row = await cur.fetchone()
+        closest_guess = None
+        if closest_row:
+            closest_guess = {
+                "user_id": str(closest_row[0]),
+                "guess_year": int(closest_row[1]),
+                "correct_year": int(closest_row[2]),
+                "distance": int(closest_row[3]),
+                "event_id": str(closest_row[4]),
+            }
+
         return {
             "total_rounds": total_rounds,
             "active_players": active_players,
             "participation": participation,
+            "closest_guess": closest_guess,
+        }
+
+    async def guessyear_personal_bests(self, guild_id: int, user_id: int) -> dict[str, Any]:
+        cur = await self.conn.execute(
+            """
+            SELECT wins, plays, exact_hits, best_streak, total_distance, xp
+            FROM guessyear_stats
+            WHERE guild_id=? AND user_id=?
+            """,
+            (str(guild_id), str(user_id)),
+        )
+        row = await cur.fetchone()
+        if not row:
+            return {}
+
+        cur2 = await self.conn.execute(
+            """
+            SELECT MIN(ABS(g.guess_year - r.correct_year)) AS best_distance,
+                   COUNT(CASE WHEN g.guess_year = r.correct_year THEN 1 END) AS lifetime_exact
+            FROM guessyear_guesses g
+            JOIN guessyear_rounds r ON g.round_id = r.round_id
+            WHERE r.guild_id=? AND g.user_id=? AND r.status='ended'
+            """,
+            (str(guild_id), str(user_id)),
+        )
+        agg = await cur2.fetchone()
+
+        return {
+            "wins": int(row[0]),
+            "plays": int(row[1]),
+            "exact_hits": int(row[2]),
+            "best_streak": int(row[3]),
+            "total_distance": int(row[4]),
+            "xp": int(row[5]),
+            "best_distance": int(agg[0]) if agg and agg[0] is not None else None,
+            "lifetime_exact": int(agg[1]) if agg else 0,
         }

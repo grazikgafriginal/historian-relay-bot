@@ -1948,13 +1948,16 @@ class DuelTournamentCog(commands.Cog):
             f"```"
         )
 
+        timer_text = f"⏱️ <t:{match.round_ends_at}:R>" if match.round_ends_at else ""
+
         embed = discord.Embed(
             title=f"⚔️ {round_label} — Question {match.current_question}/{match.best_of}",
             description=(
                 f"📜 *{match.prompt}*\n\n"
                 f"{scoreboard}\n"
                 f"{p1_pips}  **{p1_name[:16]}**\n"
-                f"{p2_pips}  **{p2_name[:16]}**"
+                f"{p2_pips}  **{p2_name[:16]}**\n\n"
+                f"{timer_text}"
             ),
             color=color,
         )
@@ -2551,6 +2554,23 @@ class DuelTournamentCog(commands.Cog):
         self._matches[match.match_id] = match
         await self._update_match_thread(match.match_id, thread.id)
         await self._save_match_runtime(match)
+
+        # Rivalry intro
+        await self._post_rivalry_intro(thread, host_channel.guild, player1_user_id, player2_user_id)
+
+        # DM both players that their match is ready
+        for player, member in [(player1_user_id, p1), (player2_user_id, p2)]:
+            if member is None:
+                continue
+            try:
+                await member.send(
+                    f"⚔️ Your tournament match is live! Head to {thread.mention} in **{host_channel.guild.name}** now."
+                )
+            except discord.Forbidden:
+                pass
+            except Exception:
+                pass
+
         await self._post_match_question(match)
         return match
 
@@ -2711,11 +2731,21 @@ class DuelTournamentCog(commands.Cog):
         s1 = match.scores.get(match.player1_user_id, 0)
         s2 = match.scores.get(match.player2_user_id, 0)
 
+        evt = self._events_by_id.get(result.event_id)
+        tags_text = ""
+        if evt:
+            tags = evt.get("tags") or []
+            if tags:
+                tags_text = " • ".join(str(t) for t in tags[:3])
+
         reveal_embed = discord.Embed(
             title=f"📊 Question {result.question_number} — Results",
             color=discord.Color.green() if winner_user_id else discord.Color.light_grey(),
         )
-        reveal_embed.add_field(name="📅 Correct Year", value=f"**{match.correct_year}**", inline=False)
+        year_line = f"**{match.correct_year}**"
+        if tags_text:
+            year_line += f"\n📚 *{tags_text}*"
+        reveal_embed.add_field(name="📅 Correct Year", value=year_line, inline=False)
 
         p1_text = f"**{p1_guess[0]}** (off by {abs(p1_guess[0] - match.correct_year)})" if p1_guess else "❌ *No guess submitted*"
         p2_text = f"**{p2_guess[0]}** (off by {abs(p2_guess[0] - match.correct_year)})" if p2_guess else "❌ *No guess submitted*"
@@ -2763,6 +2793,103 @@ class DuelTournamentCog(commands.Cog):
         await self._update_match_result(match)
         await self._post_match_question(match)
 
+    async def _post_match_recap(self, thread: discord.Thread, match: TournamentMatchState, guild: discord.Guild) -> None:
+        p1_name = self._bracket_name(guild, match.player1_user_id, max_len=16)
+        p2_name = self._bracket_name(guild, match.player2_user_id, max_len=16)
+        s1 = match.scores.get(match.player1_user_id, 0)
+        s2 = match.scores.get(match.player2_user_id, 0)
+
+        recap_lines: list[str] = []
+        for r in match.history:
+            p1_g = r.guesses.get(match.player1_user_id)
+            p2_g = r.guesses.get(match.player2_user_id)
+            p1_str = str(p1_g) if p1_g is not None else "—"
+            p2_str = str(p2_g) if p2_g is not None else "—"
+            point_marker = ""
+            if r.winner_user_id == match.player1_user_id:
+                point_marker = f" ◄ {p1_name}"
+            elif r.winner_user_id == match.player2_user_id:
+                point_marker = f" ◄ {p2_name}"
+            evt = self._events_by_id.get(r.event_id)
+            tags = ""
+            if evt and evt.get("tags"):
+                tags = f" [{', '.join(str(t) for t in evt['tags'][:2])}]"
+            recap_lines.append(
+                f"Q{r.question_number}: {r.correct_year}{tags}\n"
+                f"  {p1_name}: {p1_str}  |  {p2_name}: {p2_str}{point_marker}"
+            )
+
+        recap_text = "\n".join(recap_lines)
+        recap_embed = discord.Embed(
+            title="📋 Match Recap",
+            description=f"```\n{recap_text}\n```",
+            color=discord.Color.gold() if match.is_final else discord.Color.blurple(),
+        )
+        recap_embed.add_field(
+            name="Final Score",
+            value=f"**{p1_name}** {s1} – {s2} **{p2_name}**",
+            inline=False,
+        )
+        if match.winner_user_id:
+            recap_embed.add_field(
+                name="🏆 Winner",
+                value=f"<@{match.winner_user_id}> advances!",
+                inline=False,
+            )
+        await self._send_managed_message(thread, embed=recap_embed)
+
+    async def _get_match_win_streak(self, guild_id: int, user_id: int) -> int:
+        try:
+            cur = await self.bot.db.conn.execute(
+                """
+                SELECT winner_user_id FROM guessyear_tournament_matches m
+                JOIN guessyear_tournaments t ON t.tournament_id=m.tournament_id
+                WHERE t.guild_id=? AND (m.player1_user_id=? OR m.player2_user_id=?)
+                  AND m.winner_user_id IS NOT NULL
+                ORDER BY m.match_id DESC
+                LIMIT 20
+                """,
+                (str(guild_id), str(user_id), str(user_id)),
+            )
+            rows = await cur.fetchall()
+        except Exception:
+            return 0
+        streak = 0
+        for row in rows:
+            if int(row[0]) == user_id:
+                streak += 1
+            else:
+                break
+        return streak
+
+    async def _post_rivalry_intro(self, thread: discord.Thread, guild: discord.Guild, p1_id: int, p2_id: int) -> None:
+        try:
+            matchup = await self.bot.db.guessyear_get_duel_matchup(guild.id, p1_id, p2_id)
+        except Exception:
+            return
+        w1, w2 = matchup
+        total = w1 + w2
+        if total < 1:
+            return
+        p1_name = self._bracket_name(guild, p1_id)
+        p2_name = self._bracket_name(guild, p2_id)
+        if w1 > w2:
+            leader = f"**{p1_name}** leads"
+        elif w2 > w1:
+            leader = f"**{p2_name}** leads"
+        else:
+            leader = "Tied"
+        rivalry_embed = discord.Embed(
+            title="⚔️ Rivalry Alert",
+            description=(
+                f"These two have met **{total}** time(s) before!\n\n"
+                f"**{p1_name}** {w1} – {w2} **{p2_name}**\n"
+                f"{leader}"
+            ),
+            color=discord.Color.dark_orange(),
+        )
+        await self._send_managed_message(thread, embed=rivalry_embed)
+
     async def _handle_finished_match(self, match: TournamentMatchState) -> None:
         tournament = self._tournaments.get(match.tournament_id)
         if tournament is None:
@@ -2784,6 +2911,10 @@ class DuelTournamentCog(commands.Cog):
         for user_id in flagged_user_ids:
             await self._record_no_show(tournament.guild_id, user_id, match_no_shows=1)
 
+        # Post-match recap in the thread
+        if isinstance(thread, discord.Thread) and match.history:
+            await self._post_match_recap(thread, match, host_channel.guild)
+
         match_embed = discord.Embed(
             title=f"🏁 Match Complete — R{match.round_number} M{match.bracket_position}",
             color=discord.Color.green(),
@@ -2797,6 +2928,13 @@ class DuelTournamentCog(commands.Cog):
             match_embed.add_field(name="Thread", value=thread.mention, inline=True)
         if flagged_user_ids:
             match_embed.add_field(name="⚠️ No-show", value=", ".join(f"<@{uid}>" for uid in flagged_user_ids), inline=False)
+
+        # Streak tracking
+        if match.winner_user_id is not None:
+            streak = await self._get_match_win_streak(tournament.guild_id, match.winner_user_id)
+            if streak >= 3:
+                match_embed.add_field(name="🔥 Hot Streak", value=f"<@{match.winner_user_id}> has won **{streak}** matches in a row!", inline=False)
+
         match_embed.set_footer(text=f"{match.winner_user_id and 'advances to the next round' or ''}")
         await self._send_managed_message(host_channel, embed=match_embed)
         tournament.active_match_ids.discard(match.match_id)
@@ -3733,6 +3871,17 @@ class DuelTournamentCog(commands.Cog):
                 inline=False,
             )
         embed.set_footer(text="Use !dueltourney pause / resume / cancel to manage")
+        await ctx.send(embed=embed)
+
+    @dueltourney.command(name="bracket")
+    async def dueltourney_bracket(self, ctx: commands.Context) -> None:
+        if not ctx.guild:
+            return
+        active = self._get_live_tournament(ctx.guild.id, ctx.channel.id)
+        if not active:
+            await ctx.send("No duel tournament is currently active in this channel.", delete_after=10)
+            return
+        embed = self._build_bracket_embed(active, ctx.guild)
         await ctx.send(embed=embed)
 
     @dueltourney.command(name="cancel")

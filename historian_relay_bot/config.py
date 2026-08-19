@@ -130,7 +130,7 @@ class BotConfig:
     # --------------------
     GUESSYEAR_ENABLED: bool = True
     GUESSYEAR_ALLOWED_CHANNEL_IDS: List[int] = field(default_factory=list)  # empty = allow all
-    GUESSYEAR_ROUND_SECONDS: int = 30
+    GUESSYEAR_ROUND_SECONDS: int = 15
     GUESSYEAR_COOLDOWN_SECONDS: int = 5
     GUESSYEAR_MIN_YEAR: int = 1
     GUESSYEAR_MAX_YEAR: int = 0  # 0 = current year at runtime
