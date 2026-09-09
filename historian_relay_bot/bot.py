@@ -79,7 +79,7 @@ class HistorianRelayBot(commands.Bot):
         intents = discord.Intents.default()
         intents.message_content = True  # not required for slash/buttons
         intents.guilds = True
-        intents.members = False  # role checks
+        intents.members = True  # needed for on_member_join (referral tracking)
         super().__init__(command_prefix="!", intents=intents)
         self.cfg = load_config()
         self.db = Database(self.cfg.DATABASE_PATH)

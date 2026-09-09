@@ -101,6 +101,10 @@ CREATE TABLE IF NOT EXISTS guessyear_stats (
   duel_losses INTEGER NOT NULL DEFAULT 0,
   xp INTEGER NOT NULL DEFAULT 0,
   last_played_at INTEGER NOT NULL DEFAULT 0,
+  daily_streak INTEGER NOT NULL DEFAULT 0,
+  daily_streak_date TEXT NOT NULL DEFAULT '',
+  weekly_xp INTEGER NOT NULL DEFAULT 0,
+  weekly_wins INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (guild_id, user_id)
 );
 
@@ -144,4 +148,19 @@ CREATE TABLE IF NOT EXISTS guessyear_daily_guesses (
   guess_year INTEGER NOT NULL,
   guessed_at INTEGER NOT NULL,
   PRIMARY KEY (guild_id, date_key, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS guessyear_referrals (
+  guild_id TEXT NOT NULL,
+  invited_user_id TEXT NOT NULL,
+  inviter_user_id TEXT NOT NULL,
+  joined_at INTEGER NOT NULL,
+  rewarded INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (guild_id, invited_user_id)
+);
+
+CREATE TABLE IF NOT EXISTS bot_dm_optout (
+  user_id TEXT PRIMARY KEY,
+  opted_out INTEGER NOT NULL DEFAULT 0,
+  updated_at INTEGER NOT NULL
 );

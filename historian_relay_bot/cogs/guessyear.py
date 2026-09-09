@@ -125,6 +125,12 @@ XP_EXACT = 50
 XP_BONUS_CORRECT = 15
 XP_DUEL_WIN = 30
 
+COMEBACK_XP_MULTIPLIER = 1.5
+COMEBACK_THRESHOLD_SECONDS = 7 * 86400
+REFERRAL_XP_REWARD = 50
+MILESTONE_THRESHOLDS = [100, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
+LEAGUE_REWARD_XP = {1: 100, 2: 60, 3: 30}
+
 DIFFICULTY_STARS = {1: "⭐", 2: "⭐⭐", 3: "⭐⭐⭐", 4: "⭐⭐⭐⭐", 5: "⭐⭐⭐⭐⭐"}
 DIFFICULTY_XP_MULTIPLIER = {1: 1.0, 2: 1.0, 3: 1.25, 4: 1.5, 5: 2.0}
 
@@ -778,8 +784,11 @@ class GuessYearCog(commands.Cog):
 
         self._daily_date_key: Optional[str] = None
         self._recap_week_key: Optional[str] = None
+        self._streak_reminder_week_key: Optional[str] = None
 
         self._double_xp_guilds: set = set()
+
+        self._invite_cache: Dict[int, Dict[str, int]] = {}
 
         self._restore_started = False
 
@@ -793,10 +802,178 @@ class GuessYearCog(commands.Cog):
             self._daily_challenge_loop.start()
         if self.bot.cfg.GUESSYEAR_RECAP_CHANNEL_ID and not self._weekly_recap_loop.is_running():
             self._weekly_recap_loop.start()
+        if not self._streak_reminder_loop.is_running():
+            self._streak_reminder_loop.start()
 
     async def cog_unload(self) -> None:
         self._daily_challenge_loop.cancel()
         self._weekly_recap_loop.cancel()
+        self._streak_reminder_loop.cancel()
+
+    # ---------- invite / referral tracking ----------
+
+    async def _refresh_invite_cache(self, guild: discord.Guild) -> None:
+        try:
+            invites = await guild.invites()
+        except (discord.Forbidden, discord.HTTPException):
+            return
+        self._invite_cache[guild.id] = {inv.code: int(inv.uses or 0) for inv in invites}
+
+    @commands.Cog.listener()
+    async def on_ready(self) -> None:
+        for guild in self.bot.guilds:
+            await self._refresh_invite_cache(guild)
+
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild: discord.Guild) -> None:
+        await self._refresh_invite_cache(guild)
+
+    @commands.Cog.listener()
+    async def on_invite_create(self, invite: discord.Invite) -> None:
+        if invite.guild:
+            self._invite_cache.setdefault(invite.guild.id, {})[invite.code] = int(invite.uses or 0)
+
+    @commands.Cog.listener()
+    async def on_invite_delete(self, invite: discord.Invite) -> None:
+        if invite.guild:
+            self._invite_cache.get(invite.guild.id, {}).pop(invite.code, None)
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member) -> None:
+        if member.bot:
+            return
+        guild = member.guild
+        try:
+            invites = await guild.invites()
+        except (discord.Forbidden, discord.HTTPException):
+            return
+
+        before = self._invite_cache.get(guild.id, {})
+        inviter: Optional[discord.User] = None
+        for inv in invites:
+            prev_uses = before.get(inv.code, 0)
+            if int(inv.uses or 0) > prev_uses:
+                inviter = inv.inviter
+                break
+
+        self._invite_cache[guild.id] = {inv.code: int(inv.uses or 0) for inv in invites}
+
+        if inviter is None or inviter.bot or inviter.id == member.id:
+            return
+        try:
+            await self.bot.db.guessyear_referral_record(guild.id, member.id, inviter.id)
+        except Exception:
+            log.debug("Failed to record referral for %s -> %s", inviter.id, member.id)
+
+    async def _dm_opted_out(self, user_id: int) -> bool:
+        try:
+            return await self.bot.db.dm_opted_out(user_id)
+        except Exception:
+            return False
+
+    async def _reward_referral_if_first_play(self, guild_id: int, user_id: int, channel: Optional[discord.abc.Messageable]) -> None:
+        try:
+            inviter_id = await self.bot.db.guessyear_referral_get_unrewarded(guild_id, user_id)
+        except Exception:
+            return
+        if inviter_id is None:
+            return
+        try:
+            await self.bot.db.guessyear_referral_mark_rewarded(guild_id, user_id)
+            await self.bot.db.guessyear_stats_add_xp(guild_id, inviter_id, REFERRAL_XP_REWARD)
+        except Exception:
+            return
+        if channel is not None:
+            try:
+                await channel.send(
+                    f"🎉 <@{inviter_id}> earned **+{REFERRAL_XP_REWARD} XP** — someone they invited just played their first GuessYear round!"
+                )
+            except Exception:
+                pass
+
+    # ---------- comeback bonus / daily streak ----------
+
+    async def _detect_comeback_users(self, guild_id: int, user_ids: List[int]) -> set:
+        if not user_ids:
+            return set()
+        try:
+            last_played = await self.bot.db.guessyear_stats_get_last_played_bulk(guild_id, user_ids)
+        except Exception:
+            return set()
+        now = int(time.time())
+        result = set()
+        for uid in user_ids:
+            lp = last_played.get(uid, 0)
+            if lp > 0 and (now - lp) >= COMEBACK_THRESHOLD_SECONDS:
+                result.add(uid)
+        return result
+
+    async def _touch_daily_streaks(self, guild_id: int, user_ids: List[int]) -> None:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        today_key = now.strftime("%Y-%m-%d")
+        yesterday_key = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        for uid in user_ids:
+            try:
+                await self.bot.db.guessyear_stats_touch_daily_streak(guild_id, uid, today_key, yesterday_key)
+            except Exception:
+                pass
+
+    async def _check_milestone(self, guild_id: int, channel: Optional[discord.abc.Messageable]) -> None:
+        if channel is None:
+            return
+        try:
+            total = await self.bot.db.guessyear_count_ended_rounds(guild_id)
+        except Exception:
+            return
+        if total in MILESTONE_THRESHOLDS:
+            try:
+                await channel.send(
+                    f"🎊 **Milestone!** This server has just played its **{total:,}th** GuessYear round!"
+                )
+            except Exception:
+                pass
+
+    @tasks.loop(seconds=1800)
+    async def _streak_reminder_loop(self) -> None:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        if now.weekday() != self.bot.cfg.GUESSYEAR_STREAK_REMINDER_DAY_UTC:
+            return
+        if now.hour < self.bot.cfg.GUESSYEAR_STREAK_REMINDER_HOUR_UTC:
+            return
+        week_key = now.strftime("%Y-W%W")
+        if self._streak_reminder_week_key == week_key:
+            return
+        self._streak_reminder_week_key = week_key
+        yesterday_key = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+
+        for guild in self.bot.guilds:
+            if not self.bot.cfg.GUESSYEAR_ENABLED:
+                continue
+            try:
+                at_risk = await self.bot.db.guessyear_stats_streak_at_risk(guild.id, yesterday_key)
+            except Exception:
+                continue
+            for row in at_risk:
+                uid = int(row["user_id"])
+                member = guild.get_member(uid)
+                if not member or member.bot:
+                    continue
+                if await self._dm_opted_out(uid):
+                    continue
+                try:
+                    await member.send(
+                        f"🔥 Your **{row['daily_streak']}-day** GuessYear streak on **{guild.name}** is about to end! "
+                        f"Play a round today to keep it alive.\n"
+                        f"-# Don't want these reminders? Run `!guessyear dms off` to turn off bot DMs."
+                    )
+                except discord.Forbidden:
+                    pass
+                except Exception:
+                    log.debug("Failed to send streak reminder to %s", uid)
+
+    @_streak_reminder_loop.before_loop
+    async def _before_streak_reminder_loop(self) -> None:
+        await self.bot.wait_until_ready()
 
     # ---------- dataset / restore ----------
 
@@ -2025,17 +2202,28 @@ class GuessYearCog(commands.Cog):
             challenger_score = int(state.scores.get(state.challenger_user_id, 0))
             opponent_score = int(state.scores.get(state.opponent_user_id, 0))
             duel_xp = XP_DUEL_WIN * (2 if guild_id in self._double_xp_guilds else 1)
+            duel_comeback_users = await self._detect_comeback_users(
+                guild_id, [state.challenger_user_id, state.opponent_user_id]
+            )
             try:
                 if challenger_score > opponent_score:
                     await self.bot.db.guessyear_stats_record_duel_result(guild_id, state.challenger_user_id, state.opponent_user_id)
                     await self.bot.db.guessyear_record_duel_matchup(guild_id, state.challenger_user_id, state.opponent_user_id)
-                    await self.bot.db.guessyear_stats_add_xp(guild_id, state.challenger_user_id, duel_xp)
+                    winner_xp = int(duel_xp * (COMEBACK_XP_MULTIPLIER if state.challenger_user_id in duel_comeback_users else 1.0))
+                    await self.bot.db.guessyear_stats_add_xp(guild_id, state.challenger_user_id, winner_xp)
                 elif opponent_score > challenger_score:
                     await self.bot.db.guessyear_stats_record_duel_result(guild_id, state.opponent_user_id, state.challenger_user_id)
                     await self.bot.db.guessyear_record_duel_matchup(guild_id, state.opponent_user_id, state.challenger_user_id)
-                    await self.bot.db.guessyear_stats_add_xp(guild_id, state.opponent_user_id, duel_xp)
+                    winner_xp = int(duel_xp * (COMEBACK_XP_MULTIPLIER if state.opponent_user_id in duel_comeback_users else 1.0))
+                    await self.bot.db.guessyear_stats_add_xp(guild_id, state.opponent_user_id, winner_xp)
+                await self._touch_daily_streaks(guild_id, [state.challenger_user_id, state.opponent_user_id])
             except Exception:
                 pass
+
+            for uid in (state.challenger_user_id, state.opponent_user_id):
+                user_stats = await self.bot.db.guessyear_stats_get_user(guild_id, uid)
+                if user_stats and int(user_stats.get("duel_wins", 0)) + int(user_stats.get("duel_losses", 0)) == 1:
+                    await self._reward_referral_if_first_play(guild_id, uid, channel if isinstance(channel, (discord.TextChannel, discord.Thread)) else None)
 
             last_evt = self._events_by_id.get(result.event_id)
             if result.winner_user_id is not None and result.winner_diff == 0 and last_evt and self._bonus_modes_for_event(last_evt):
@@ -2051,6 +2239,13 @@ class GuessYearCog(commands.Cog):
 
             if isinstance(channel, (discord.TextChannel, discord.Thread)):
                 match_embed = self._build_duel_match_result_embed(guild, state, forced=forced)
+                if duel_comeback_users:
+                    mentions = ", ".join(f"<@{uid}>" for uid in (state.challenger_user_id, state.opponent_user_id) if uid in duel_comeback_users)
+                    match_embed.add_field(
+                        name="🎉 Welcome Back Bonus",
+                        value=f"{mentions} earned **+{int((COMEBACK_XP_MULTIPLIER - 1) * 100)}% XP** for returning after a break!",
+                        inline=False,
+                    )
                 await channel.send(embed=match_embed)
 
                 if result.winner_user_id is not None and result.winner_diff == 0 and last_evt and self._bonus_modes_for_event(last_evt):
@@ -2139,20 +2334,24 @@ class GuessYearCog(commands.Cog):
         xp_mult = DIFFICULTY_XP_MULTIPLIER.get(diff, 1.0)
         if guild_id in self._double_xp_guilds:
             xp_mult *= 2.0
+        comeback_users = await self._detect_comeback_users(guild_id, all_player_ids)
         try:
             await self.bot.db.guessyear_stats_record_play(guild_id, all_player_ids)
             for uid in all_player_ids:
-                await self.bot.db.guessyear_stats_add_xp(guild_id, uid, int(XP_PLAY * xp_mult))
+                uid_mult = xp_mult * (COMEBACK_XP_MULTIPLIER if uid in comeback_users else 1.0)
+                await self.bot.db.guessyear_stats_add_xp(guild_id, uid, int(XP_PLAY * uid_mult))
             if winner_user_id is not None:
+                winner_mult = xp_mult * (COMEBACK_XP_MULTIPLIER if int(winner_user_id) in comeback_users else 1.0)
                 await self.bot.db.guessyear_stats_record_win(guild_id, int(winner_user_id))
-                await self.bot.db.guessyear_stats_add_xp(guild_id, int(winner_user_id), int(XP_WIN * xp_mult))
+                await self.bot.db.guessyear_stats_add_xp(guild_id, int(winner_user_id), int(XP_WIN * winner_mult))
                 if winner_diff == 0:
                     await self.bot.db.guessyear_stats_record_exact_hit(guild_id, int(winner_user_id))
-                    await self.bot.db.guessyear_stats_add_xp(guild_id, int(winner_user_id), int(XP_EXACT * xp_mult))
+                    await self.bot.db.guessyear_stats_add_xp(guild_id, int(winner_user_id), int(XP_EXACT * winner_mult))
             for diff_val, _ts, uid, _gy in scored:
                 await self.bot.db.guessyear_stats_record_distance(guild_id, uid, diff_val)
             for uid in all_player_ids:
                 await self.bot.db.guessyear_stats_update_streak(guild_id, uid, uid == winner_user_id)
+            await self._touch_daily_streaks(guild_id, all_player_ids)
         except Exception:
             pass
 
@@ -2169,11 +2368,14 @@ class GuessYearCog(commands.Cog):
 
         # Check achievements for all players
         new_achievements: List[Tuple[int, Dict[str, Any]]] = []
+        first_play_uids: List[int] = []
         try:
             for uid in all_player_ids:
                 user_stats = await self.bot.db.guessyear_stats_get_user(guild_id, uid)
                 if not user_stats:
                     continue
+                if int(user_stats.get("plays", 0)) == 1:
+                    first_play_uids.append(uid)
                 earned = await self.bot.db.guessyear_get_achievements(guild_id, uid)
                 unlocked = check_achievements(user_stats, earned)
                 for ach in unlocked:
@@ -2190,6 +2392,10 @@ class GuessYearCog(commands.Cog):
                 channel = await self.bot.fetch_channel(channel_id)
             except Exception:
                 channel = None
+
+        for uid in first_play_uids:
+            await self._reward_referral_if_first_play(guild_id, uid, channel)
+        await self._check_milestone(guild_id, channel)
 
         if isinstance(channel, (discord.TextChannel, discord.Thread)):
             unique_players = {int(g["user_id"]) for g in guesses}
@@ -2242,6 +2448,15 @@ class GuessYearCog(commands.Cog):
                         )
                 except Exception:
                     pass
+
+            if comeback_users:
+                mentions = ", ".join(f"<@{uid}>" for uid in all_player_ids if uid in comeback_users)
+                if mentions:
+                    embed.add_field(
+                        name="🎉 Welcome Back Bonus",
+                        value=f"{mentions} earned **+{int((COMEBACK_XP_MULTIPLIER - 1) * 100)}% XP** for returning after a break!",
+                        inline=False,
+                    )
 
             result_msg = await channel.send(embed=embed)
 
@@ -2589,11 +2804,46 @@ class GuessYearCog(commands.Cog):
         )
         await channel.send(embed=embed)
 
+        # Weekly league: crown last week's top 3, reward them, then start a fresh league.
+        try:
+            league_top = await self.bot.db.guessyear_weekly_league_top(guild.id, limit=3)
+        except Exception:
+            league_top = []
+
+        if league_top:
+            medals = {1: "🥇", 2: "🥈", 3: "🥉"}
+            league_lines = []
+            for i, p in enumerate(league_top, start=1):
+                reward = LEAGUE_REWARD_XP.get(i, 0)
+                if reward:
+                    try:
+                        await self.bot.db.guessyear_stats_add_xp(guild.id, int(p["user_id"]), reward)
+                    except Exception:
+                        pass
+                league_lines.append(
+                    f"{medals.get(i, f'#{i}')} <@{p['user_id']}> — **{p['weekly_xp']}** XP"
+                    + (f" (+{reward} bonus XP)" if reward else "")
+                )
+            league_embed = discord.Embed(
+                title="🏆 League Results — Last Week's Champions",
+                description="\n".join(league_lines),
+                color=discord.Color.orange(),
+            )
+            league_embed.set_footer(text="A fresh league starts now — first place after next Monday takes the crown!")
+            await channel.send(embed=league_embed)
+
+        try:
+            await self.bot.db.guessyear_weekly_league_reset(guild.id)
+        except Exception:
+            log.exception("Failed to reset weekly league for guild %s", guild.id)
+
         # Send personal DM recaps to active players
         for p in active_players:
             uid = int(p["user_id"])
             member = guild.get_member(uid)
             if not member or member.bot:
+                continue
+            if await self._dm_opted_out(uid):
                 continue
             try:
                 user_stats = await self.bot.db.guessyear_stats_get_user(guild.id, uid)
@@ -2624,7 +2874,7 @@ class GuessYearCog(commands.Cog):
                 total_wins_all = int(user_stats.get("wins", 0))
                 total_plays_all = int(user_stats.get("plays", 0))
                 dm_embed.add_field(name="All-time record", value=f"**{total_wins_all}W** / **{total_plays_all}** rounds", inline=False)
-                dm_embed.set_footer(text=f"Keep it up! Play more at #{channel.name}")
+                dm_embed.set_footer(text=f"Keep it up! Play more at #{channel.name} • !guessyear dms off to stop these DMs")
                 await member.send(embed=dm_embed)
             except discord.Forbidden:
                 pass
@@ -2804,8 +3054,22 @@ class GuessYearCog(commands.Cog):
                 value=(
                     "`!guessyear top [n]` — Leaderboard\n"
                     "`!guessyear me` — Your stats & XP title\n"
+                    "`!guessyear pb` — Your personal bests\n"
+                    "`!guessyear fame` — Server wall of fame\n"
+                    "`!guessyear compare @user` — Head-to-head comparison\n"
                     "`!categories` — Set categories for this channel\n"
                     "`!categories reset` — Reset to all categories"
+                ),
+                inline=False,
+            )
+            embed.add_field(
+                name="🔥 Retention & Extras",
+                value=(
+                    "`!guessyear onthisday` — Flashback to an old guess of yours\n"
+                    "`!guessyear invite` — Get a referral link; earn XP when friends join & play\n"
+                    "`!guessyear dms on/off` — Turn the bot's proactive DMs on or off for yourself\n"
+                    "Play at least once a day to build a **daily streak** — the bot checks in weekly if it's at risk\n"
+                    "Every Monday, the weekly XP league resets — top 3 earn bonus XP"
                 ),
                 inline=False,
             )
@@ -3281,6 +3545,8 @@ class GuessYearCog(commands.Cog):
         duel_wins = int(row.get("duel_wins") or 0)
         duel_losses = int(row.get("duel_losses") or 0)
         xp = int(row.get("xp") or 0)
+        daily_streak = int(row.get("daily_streak") or 0)
+        weekly_xp = int(row.get("weekly_xp") or 0)
         rate = (wins / plays * 100.0) if plays > 0 else 0.0
         avg_distance = (total_distance / plays) if plays > 0 else 0.0
         rank = int(row["rank"]) if row.get("rank") is not None else None
@@ -3312,6 +3578,10 @@ class GuessYearCog(commands.Cog):
             streak_text = f"🔥 **{current_streak}**"
         embed.add_field(name="Current streak", value=streak_text, inline=True)
         embed.add_field(name="Best streak", value=f"**{best_streak}**", inline=True)
+        if daily_streak >= 2:
+            embed.add_field(name="📅 Daily streak", value=f"🔥 **{daily_streak}** day{'s' if daily_streak != 1 else ''}", inline=True)
+        if weekly_xp:
+            embed.add_field(name="🏆 This week's league", value=f"**{weekly_xp}** XP", inline=True)
         if duel_wins or duel_losses:
             embed.add_field(name="⚔️ Duels", value=f"**{duel_wins}W – {duel_losses}L**", inline=True)
         try:
@@ -3762,6 +4032,93 @@ class GuessYearCog(commands.Cog):
 
         embed.set_footer(text="Think you can claim a spot? Keep playing!")
         await ctx.send(embed=embed)
+
+    @guessyear.command(name="onthisday", aliases=["flashback"])
+    async def guessyear_onthisday(self, ctx: commands.Context):
+        """Resurface one of your own guesses from a previous year, on this day."""
+        if not ctx.guild:
+            return
+        today = datetime.datetime.now(datetime.timezone.utc)
+        month_day = today.strftime("%m-%d")
+        try:
+            flash = await self.bot.db.guessyear_onthisday_guess(ctx.guild.id, ctx.author.id, month_day)
+        except Exception:
+            return await ctx.send("Could not fetch your history.", delete_after=10)
+
+        if not flash:
+            return await ctx.send("No guesses found from a previous year on this day. Check back another time!", delete_after=12)
+
+        evt = self._events_by_id.get(flash["event_id"])
+        prompt = evt["prompt"] if evt else "*(event no longer available)*"
+        years_ago = today.year - datetime.datetime.fromtimestamp(flash["guessed_at"], tz=datetime.timezone.utc).year
+        diff = abs(flash["guess_year"] - flash["correct_year"])
+        result_text = "🎯 an **EXACT** guess!" if diff == 0 else f"off by **{diff}** year(s)"
+
+        embed = discord.Embed(
+            title="📅 On This Day...",
+            description=f"{years_ago} year{'s' if years_ago != 1 else ''} ago, you took a swing at:\n> {prompt}",
+            color=discord.Color.blurple(),
+        )
+        embed.add_field(name="Your guess", value=f"**{flash['guess_year']}**", inline=True)
+        embed.add_field(name="Correct year", value=f"**{flash['correct_year']}**", inline=True)
+        embed.add_field(name="Result", value=result_text, inline=True)
+        await ctx.send(embed=embed)
+
+    @guessyear.command(name="invite")
+    async def guessyear_invite(self, ctx: commands.Context):
+        """Get a personal invite link — earn bonus XP when someone you invite plays their first round."""
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+        try:
+            invite = await ctx.channel.create_invite(
+                max_age=0, max_uses=0, unique=True, reason=f"GuessYear referral link for {ctx.author}"
+            )
+        except discord.Forbidden:
+            return await ctx.send("I don't have permission to create invites here.", delete_after=10)
+        except Exception:
+            return await ctx.send("Failed to create an invite link.", delete_after=10)
+
+        self._invite_cache.setdefault(ctx.guild.id, {})[invite.code] = int(invite.uses or 0)
+
+        embed = discord.Embed(
+            title="🔗 Your GuessYear Invite Link",
+            description=(
+                f"{invite.url}\n\n"
+                f"Share it with friends! When someone you invited plays their **first** GuessYear round, "
+                f"you'll earn **+{REFERRAL_XP_REWARD} XP**."
+            ),
+            color=discord.Color.green(),
+        )
+        try:
+            await ctx.author.send(embed=embed)
+            await ctx.send("📬 Sent your invite link to your DMs!", delete_after=10)
+        except discord.Forbidden:
+            await ctx.send(embed=embed)
+
+    @guessyear.command(name="dms")
+    async def guessyear_dms(self, ctx: commands.Context, toggle: Optional[str] = None):
+        """Turn the bot's proactive DMs (streak reminders, weekly recaps, tournament pings) on or off for yourself."""
+        if toggle is None:
+            opted_out = await self._dm_opted_out(ctx.author.id)
+            status = "**off**" if opted_out else "**on**"
+            return await ctx.send(
+                f"Your bot DMs are currently {status}. Use `!guessyear dms off` or `!guessyear dms on` to change this.",
+                delete_after=15,
+            )
+
+        toggle = toggle.strip().lower()
+        if toggle in ("off", "disable", "stop", "no"):
+            await self.bot.db.set_dm_optout(ctx.author.id, True)
+            return await ctx.send(
+                "🔕 Bot DMs turned **off**. You won't get streak reminders, weekly recaps, or tournament match pings in your DMs. "
+                "This applies everywhere, not just this server.",
+                delete_after=15,
+            )
+        elif toggle in ("on", "enable", "start", "yes"):
+            await self.bot.db.set_dm_optout(ctx.author.id, False)
+            return await ctx.send("🔔 Bot DMs turned **on**.", delete_after=15)
+        else:
+            return await ctx.send("Usage: `!guessyear dms on` or `!guessyear dms off`", delete_after=10)
 
     @guessyear.command(name="compare")
     async def guessyear_compare(self, ctx: commands.Context, user: discord.Member = None):

@@ -269,6 +269,10 @@ class Database:
                 "duel_wins": "INTEGER NOT NULL DEFAULT 0",
                 "duel_losses": "INTEGER NOT NULL DEFAULT 0",
                 "xp": "INTEGER NOT NULL DEFAULT 0",
+                "daily_streak": "INTEGER NOT NULL DEFAULT 0",
+                "daily_streak_date": "TEXT NOT NULL DEFAULT ''",
+                "weekly_xp": "INTEGER NOT NULL DEFAULT 0",
+                "weekly_wins": "INTEGER NOT NULL DEFAULT 0",
             }
             for col_name, col_def in new_cols.items():
                 if col_name not in stats_cols:
@@ -335,6 +339,31 @@ class Database:
               guess_year INTEGER NOT NULL,
               guessed_at INTEGER NOT NULL,
               PRIMARY KEY (guild_id, date_key, user_id)
+            )
+            """
+        )
+
+        # Create referral tracking table if missing.
+        await self._conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS guessyear_referrals (
+              guild_id TEXT NOT NULL,
+              invited_user_id TEXT NOT NULL,
+              inviter_user_id TEXT NOT NULL,
+              joined_at INTEGER NOT NULL,
+              rewarded INTEGER NOT NULL DEFAULT 0,
+              PRIMARY KEY (guild_id, invited_user_id)
+            )
+            """
+        )
+
+        # Create bot-wide DM opt-out table if missing (applies across all cogs/guilds).
+        await self._conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS bot_dm_optout (
+              user_id TEXT PRIMARY KEY,
+              opted_out INTEGER NOT NULL DEFAULT 0,
+              updated_at INTEGER NOT NULL
             )
             """
         )
@@ -791,10 +820,11 @@ class Database:
         await self.conn.execute(
             """
             INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, exact_hits, current_streak,
-                best_streak, total_distance, duel_wins, duel_losses, xp, last_played_at)
-            VALUES (?, ?, 1, 0, 0, 1, 1, 0, 0, 0, 0, ?)
+                best_streak, total_distance, duel_wins, duel_losses, xp, last_played_at, weekly_wins)
+            VALUES (?, ?, 1, 0, 0, 1, 1, 0, 0, 0, 0, ?, 1)
             ON CONFLICT(guild_id, user_id) DO UPDATE SET
               wins = wins + 1,
+              weekly_wins = weekly_wins + 1,
               last_played_at = excluded.last_played_at
             """,
             (str(guild_id), str(user_id), now),
@@ -838,13 +868,17 @@ class Database:
             duel_losses,
             xp,
             last_played_at,
+            daily_streak,
+            weekly_xp,
+            weekly_wins,
             RANK() OVER (ORDER BY wins DESC, plays DESC, last_played_at DESC) AS rank,
             COUNT(*) OVER () AS total
           FROM guessyear_stats
           WHERE guild_id=?
         )
         SELECT user_id, wins, plays, exact_hits, current_streak, best_streak,
-               total_distance, duel_wins, duel_losses, xp, last_played_at, rank, total
+               total_distance, duel_wins, duel_losses, xp, last_played_at,
+               daily_streak, weekly_xp, weekly_wins, rank, total
         FROM ranked
         WHERE user_id=?
         """
@@ -968,13 +1002,14 @@ class Database:
         await self.conn.execute(
             """
             INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, exact_hits, current_streak,
-                best_streak, total_distance, duel_wins, duel_losses, xp, last_played_at)
-            VALUES (?, ?, 0, 0, 0, 0, 0, 0, 0, 0, ?, ?)
+                best_streak, total_distance, duel_wins, duel_losses, xp, last_played_at, weekly_xp)
+            VALUES (?, ?, 0, 0, 0, 0, 0, 0, 0, 0, ?, ?, ?)
             ON CONFLICT(guild_id, user_id) DO UPDATE SET
               xp = xp + ?,
+              weekly_xp = weekly_xp + ?,
               last_played_at = excluded.last_played_at
             """,
-            (str(guild_id), str(user_id), int(amount), now, int(amount)),
+            (str(guild_id), str(user_id), int(amount), now, int(amount), int(amount), int(amount)),
         )
         await self.conn.commit()
         cur = await self.conn.execute(
@@ -983,6 +1018,153 @@ class Database:
         )
         row = await cur.fetchone()
         return int(row[0]) if row else 0
+
+    async def guessyear_stats_get_last_played_bulk(self, guild_id: int, user_ids: list[int]) -> dict[int, int]:
+        if not user_ids:
+            return {}
+        placeholders = ",".join("?" for _ in user_ids)
+        q = f"SELECT user_id, last_played_at FROM guessyear_stats WHERE guild_id=? AND user_id IN ({placeholders})"
+        cur = await self.conn.execute(q, (str(guild_id), *[str(u) for u in user_ids]))
+        rows = await cur.fetchall()
+        return {int(r[0]): int(r[1]) for r in rows}
+
+    async def guessyear_stats_touch_daily_streak(self, guild_id: int, user_id: int, today_key: str, yesterday_key: str) -> int:
+        """Advance (or reset) a user's daily-play streak. Returns the streak after this call."""
+        cur = await self.conn.execute(
+            "SELECT daily_streak, daily_streak_date FROM guessyear_stats WHERE guild_id=? AND user_id=?",
+            (str(guild_id), str(user_id)),
+        )
+        row = await cur.fetchone()
+        prev_streak = int(row[0]) if row else 0
+        prev_date = str(row[1]) if row else ""
+
+        if prev_date == today_key:
+            return prev_streak
+        new_streak = prev_streak + 1 if prev_date == yesterday_key else 1
+
+        await self.conn.execute(
+            """
+            INSERT INTO guessyear_stats (guild_id, user_id, wins, plays, exact_hits, current_streak,
+                best_streak, total_distance, duel_wins, duel_losses, xp, last_played_at, daily_streak, daily_streak_date)
+            VALUES (?, ?, 0, 0, 0, 0, 0, 0, 0, 0, 0, ?, ?, ?)
+            ON CONFLICT(guild_id, user_id) DO UPDATE SET
+              daily_streak = ?,
+              daily_streak_date = ?
+            """,
+            (str(guild_id), str(user_id), int(time.time()), new_streak, today_key, new_streak, today_key),
+        )
+        await self.conn.commit()
+        return new_streak
+
+    async def guessyear_stats_streak_at_risk(self, guild_id: int, yesterday_key: str) -> list[dict[str, Any]]:
+        """Users whose daily streak is still alive (last played yesterday) but who haven't played today yet."""
+        cur = await self.conn.execute(
+            """
+            SELECT user_id, daily_streak FROM guessyear_stats
+            WHERE guild_id=? AND daily_streak_date=? AND daily_streak >= 2
+            """,
+            (str(guild_id), yesterday_key),
+        )
+        rows = await cur.fetchall()
+        return [{"user_id": str(r[0]), "daily_streak": int(r[1])} for r in rows]
+
+    async def guessyear_weekly_league_top(self, guild_id: int, limit: int = 3) -> list[dict[str, Any]]:
+        cur = await self.conn.execute(
+            """
+            SELECT user_id, weekly_xp, weekly_wins FROM guessyear_stats
+            WHERE guild_id=? AND weekly_xp > 0
+            ORDER BY weekly_xp DESC
+            LIMIT ?
+            """,
+            (str(guild_id), int(limit)),
+        )
+        rows = await cur.fetchall()
+        return [{"user_id": str(r[0]), "weekly_xp": int(r[1]), "weekly_wins": int(r[2])} for r in rows]
+
+    async def guessyear_weekly_league_reset(self, guild_id: int) -> None:
+        await self.conn.execute(
+            "UPDATE guessyear_stats SET weekly_xp=0, weekly_wins=0 WHERE guild_id=?",
+            (str(guild_id),),
+        )
+        await self.conn.commit()
+
+    async def guessyear_count_ended_rounds(self, guild_id: int) -> int:
+        cur = await self.conn.execute(
+            "SELECT COUNT(*) FROM guessyear_rounds WHERE guild_id=? AND status='ended'",
+            (str(guild_id),),
+        )
+        row = await cur.fetchone()
+        return int(row[0]) if row else 0
+
+    async def guessyear_onthisday_guess(self, guild_id: int, user_id: int, month_day: str) -> Optional[dict[str, Any]]:
+        cur = await self.conn.execute(
+            """
+            SELECT g.guess_year, g.guessed_at, r.correct_year, r.event_id
+            FROM guessyear_guesses g
+            JOIN guessyear_rounds r ON g.round_id = r.round_id
+            WHERE r.guild_id=? AND g.user_id=? AND strftime('%m-%d', g.guessed_at, 'unixepoch') = ?
+            ORDER BY g.guessed_at ASC
+            LIMIT 1
+            """,
+            (str(guild_id), str(user_id), month_day),
+        )
+        row = await cur.fetchone()
+        if not row:
+            return None
+        return {
+            "guess_year": int(row[0]),
+            "guessed_at": int(row[1]),
+            "correct_year": int(row[2]),
+            "event_id": str(row[3]),
+        }
+
+    # --- referrals ---
+
+    async def guessyear_referral_record(self, guild_id: int, invited_user_id: int, inviter_user_id: int) -> bool:
+        cur = await self.conn.execute(
+            """
+            INSERT OR IGNORE INTO guessyear_referrals (guild_id, invited_user_id, inviter_user_id, joined_at, rewarded)
+            VALUES (?, ?, ?, ?, 0)
+            """,
+            (str(guild_id), str(invited_user_id), str(inviter_user_id), int(time.time())),
+        )
+        await self.conn.commit()
+        return (cur.rowcount or 0) > 0
+
+    async def guessyear_referral_get_unrewarded(self, guild_id: int, invited_user_id: int) -> Optional[int]:
+        cur = await self.conn.execute(
+            "SELECT inviter_user_id FROM guessyear_referrals WHERE guild_id=? AND invited_user_id=? AND rewarded=0",
+            (str(guild_id), str(invited_user_id)),
+        )
+        row = await cur.fetchone()
+        return int(row[0]) if row else None
+
+    async def guessyear_referral_mark_rewarded(self, guild_id: int, invited_user_id: int) -> None:
+        await self.conn.execute(
+            "UPDATE guessyear_referrals SET rewarded=1 WHERE guild_id=? AND invited_user_id=?",
+            (str(guild_id), str(invited_user_id)),
+        )
+        await self.conn.commit()
+
+    # --- bot-wide DM opt-out (applies to any cog's proactive DMs) ---
+
+    async def dm_opted_out(self, user_id: int) -> bool:
+        cur = await self.conn.execute(
+            "SELECT opted_out FROM bot_dm_optout WHERE user_id=?",
+            (str(user_id),),
+        )
+        row = await cur.fetchone()
+        return bool(row and int(row[0]) == 1)
+
+    async def set_dm_optout(self, user_id: int, opted_out: bool) -> None:
+        await self.conn.execute(
+            """
+            INSERT INTO bot_dm_optout (user_id, opted_out, updated_at) VALUES (?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET opted_out=excluded.opted_out, updated_at=excluded.updated_at
+            """,
+            (str(user_id), 1 if opted_out else 0, int(time.time())),
+        )
+        await self.conn.commit()
 
     async def guessyear_record_duel_matchup(self, guild_id: int, winner_id: int, loser_id: int) -> None:
         a, b = sorted([str(winner_id), str(loser_id)])

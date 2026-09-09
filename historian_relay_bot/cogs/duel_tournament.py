@@ -1736,6 +1736,11 @@ class DuelTournamentCog(commands.Cog):
         )
 
     async def _send_ready_dm(self, state: TournamentSignupState, user_id: int, *, recovered: bool = False) -> None:
+        try:
+            if await self.bot.db.dm_opted_out(user_id):
+                return
+        except Exception:
+            pass
         user = self.bot.get_user(user_id)
         if user is None:
             try:
@@ -2672,8 +2677,14 @@ class DuelTournamentCog(commands.Cog):
             if member is None:
                 continue
             try:
+                if await self.bot.db.dm_opted_out(player):
+                    continue
+            except Exception:
+                pass
+            try:
                 await member.send(
-                    f"⚔️ Your tournament match is live! Head to {thread.mention} in **{host_channel.guild.name}** now."
+                    f"⚔️ Your tournament match is live! Head to {thread.mention} in **{host_channel.guild.name}** now.\n"
+                    f"-# Don't want these DMs? Run `!guessyear dms off`."
                 )
             except discord.Forbidden:
                 pass
