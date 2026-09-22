@@ -287,3 +287,97 @@ class QueueView(discord.ui.View):
             await modal_interaction.followup.send(f"Denied Question #{self.qid}.", delete_after=20)
 
         await interaction.response.send_modal(DenyModal(on_deny_submit))
+
+
+class AskHistoriansReminderView(discord.ui.View):
+    """Attached to the "Still need help?" reminder — both the in-channel reply
+    and the DM copy use this same view/custom_id, so either surface can
+    trigger the shared Historian Request flow on `bot`.
+    """
+
+    def __init__(self, bot, watch_id: int):
+        super().__init__(timeout=None)
+        self.bot = bot
+        self.watch_id = watch_id
+
+    def disable_all(self) -> None:
+        for item in self.children:
+            item.disabled = True
+
+    @discord.ui.button(label="📚 Ask Historians", style=discord.ButtonStyle.primary, custom_id="askhist_watch:ask")
+    async def ask_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        row = await self.bot.db.askhist_watch_get_by_id(self.watch_id)
+        if not row:
+            return await interaction.response.send_message("This question could not be found anymore.", ephemeral=True)
+
+        author_id = int(row["author_id"])
+        is_mod = False
+        if interaction.guild is not None and isinstance(interaction.user, discord.Member):
+            is_mod = has_role(interaction.user, self.bot.cfg.MOD_ROLE_ID)
+
+        if row["status"] in ("escalated", "resolved"):
+            self.disable_all()
+            try:
+                await interaction.response.edit_message(view=self)
+            except Exception:
+                pass
+            text = (
+                "This question has already been answered by a Historian. ✅"
+                if row["status"] == "resolved"
+                else "Historians of the House have already been notified about this question. 📚"
+            )
+            try:
+                await interaction.followup.send(text, ephemeral=True)
+            except Exception:
+                pass
+            return
+
+        if interaction.user.id != author_id and not is_mod:
+            return await interaction.response.send_message(
+                "Only the person who asked (or a moderator) can request the Historians for this question.",
+                ephemeral=True,
+            )
+
+        await interaction.response.defer(ephemeral=True)
+        ok, msg = await self.bot.escalate_to_historians(
+            int(row["guild_id"]),
+            self.watch_id,
+            triggered_by_user_id=interaction.user.id,
+            is_mod_override=is_mod,
+        )
+        await interaction.followup.send(msg, ephemeral=True)
+
+
+class HistorianRequestView(discord.ui.View):
+    """Attached to the posted Historian Request. Lets a Historian/mod manually
+    mark the request resolved, as a safety net alongside automatic reply detection.
+    """
+
+    def __init__(self, bot, watch_id: int):
+        super().__init__(timeout=None)
+        self.bot = bot
+        self.watch_id = watch_id
+
+    @discord.ui.button(label="✅ Mark Resolved", style=discord.ButtonStyle.success, custom_id="askhist_watch:resolve")
+    async def resolve_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not interaction.guild or not isinstance(interaction.user, discord.Member):
+            return
+        cfg = self.bot.cfg
+        if not (has_role(interaction.user, cfg.MOD_ROLE_ID) or has_role(interaction.user, cfg.VERIFIED_HISTORIAN_ROLE_ID)):
+            return await interaction.response.send_message("Only Historians or moderators can mark this resolved.", ephemeral=True)
+
+        row = await self.bot.db.askhist_watch_get_by_id(self.watch_id)
+        if not row:
+            return await interaction.response.send_message("This request could not be found.", ephemeral=True)
+        if row["status"] == "resolved":
+            return await interaction.response.send_message("Already marked resolved.", ephemeral=True)
+
+        await interaction.response.defer(ephemeral=True)
+        await self.bot.resolve_askhist_watch(
+            int(row["guild_id"]),
+            self.watch_id,
+            resolved_by_user_id=interaction.user.id,
+            response_message_id=None,
+            after_official_request=True,
+        )
+        await interaction.followup.send("Marked resolved. ✅", ephemeral=True)

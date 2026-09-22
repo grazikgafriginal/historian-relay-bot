@@ -71,3 +71,53 @@ def build_answer_embed(
     e.add_field(name="Answered by", value=f"{answered_by.mention}\n`{answered_by.id}`", inline=False)
     e.set_footer(text="Historians of the House Team")
     return e
+
+
+def build_watch_reminder_embed(question_text: str, jump_url: str) -> discord.Embed:
+    e = discord.Embed(
+        title="Still need help?",
+        description="Your question hasn't received an answer yet. Would you like to ask the Historians of the House?",
+        color=discord.Color.gold(),
+    )
+    e.add_field(name="Your question", value=shorten_title(question_text, 200), inline=False)
+    e.set_footer(text="Only you (or a moderator) can use the button below.")
+    return e
+
+
+def build_watch_dm_embed(question_text: str, channel_mention: str, jump_url: str) -> discord.Embed:
+    e = discord.Embed(
+        title="Still need help?",
+        description=(
+            f"Your question in {channel_mention} hasn't received an answer yet.\n"
+            "Would you like to notify the Historians of the House?"
+        ),
+        color=discord.Color.gold(),
+    )
+    e.add_field(name="Your question", value=shorten_title(question_text, 200), inline=False)
+    e.add_field(name="Jump to your question", value=f"[Click here]({jump_url})", inline=False)
+    return e
+
+
+def build_historian_request_embed(
+    *,
+    question_text: str,
+    asker: discord.abc.User | None,
+    jump_url: str,
+    resolved_by_text: str | None = None,
+) -> discord.Embed:
+    asker_text = asker.mention if asker else "A community member"
+    e = discord.Embed(
+        title="📚 Historian Request",
+        description=(
+            f"{asker_text} is looking for help with the following historical question:\n\n"
+            f"> {shorten_title(question_text, 500)}"
+        ),
+        color=discord.Color.green() if resolved_by_text else discord.Color.blurple(),
+    )
+    e.add_field(name="Jump to original message", value=f"[Click here]({jump_url})", inline=False)
+    if resolved_by_text:
+        e.add_field(name="Status", value=f"✅ Resolved by {resolved_by_text}", inline=False)
+        e.set_footer(text="Historians of the House — this request has been resolved.")
+    else:
+        e.set_footer(text="Historians of the House — reply here or under the original question to respond.")
+    return e

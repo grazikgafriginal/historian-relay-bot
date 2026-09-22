@@ -164,3 +164,70 @@ CREATE TABLE IF NOT EXISTS bot_dm_optout (
   opted_out INTEGER NOT NULL DEFAULT 0,
   updated_at INTEGER NOT NULL
 );
+
+-- -------------------------
+-- Proactive Ask Historians (passive question watch)
+-- -------------------------
+
+CREATE TABLE IF NOT EXISTS askhist_watch (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+  guild_id TEXT NOT NULL,
+  channel_id TEXT NOT NULL,
+  message_id TEXT NOT NULL,
+  author_id TEXT NOT NULL,
+  question_text TEXT NOT NULL,
+
+  created_at INTEGER NOT NULL,
+  remind_at INTEGER NOT NULL,
+
+  -- watching, answered, reminded, escalated, resolved, cancelled
+  status TEXT NOT NULL DEFAULT 'watching',
+  has_reply INTEGER NOT NULL DEFAULT 0,
+
+  reminder_channel_message_id TEXT,
+  reminder_dm_message_id TEXT,
+  reminder_dm_sent INTEGER NOT NULL DEFAULT 0,
+  reminder_sent_at INTEGER,
+
+  escalated INTEGER NOT NULL DEFAULT 0,
+  escalated_by_user_id TEXT,
+  escalated_at INTEGER,
+  historian_request_message_id TEXT,
+
+  resolved INTEGER NOT NULL DEFAULT 0,
+  resolved_by_user_id TEXT,
+  resolved_at INTEGER,
+
+  updated_at INTEGER NOT NULL,
+
+  UNIQUE (guild_id, message_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_askhist_watch_guild_status ON askhist_watch(guild_id, status);
+CREATE INDEX IF NOT EXISTS idx_askhist_watch_request_msg ON askhist_watch(guild_id, historian_request_message_id);
+
+CREATE TABLE IF NOT EXISTS historian_ping_cooldowns (
+  guild_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  last_ping_at INTEGER NOT NULL DEFAULT 0,
+  daily_count INTEGER NOT NULL DEFAULT 0,
+  daily_reset_at INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (guild_id, user_id)
+);
+
+-- Internal KPI tracking: one row per Historian response to a watched/escalated question.
+CREATE TABLE IF NOT EXISTS historian_responses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guild_id TEXT NOT NULL,
+  watch_id INTEGER,
+  question_message_id TEXT NOT NULL,
+  historian_user_id TEXT NOT NULL,
+  response_message_id TEXT NOT NULL,
+  responded_at INTEGER NOT NULL,
+  after_official_request INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (guild_id, watch_id, historian_user_id, response_message_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_historian_responses_guild_user ON historian_responses(guild_id, historian_user_id);
+CREATE INDEX IF NOT EXISTS idx_historian_responses_watch ON historian_responses(guild_id, watch_id);

@@ -145,6 +145,16 @@ class BotConfig:
     GUESSYEAR_STREAK_REMINDER_HOUR_UTC: int = 21
     GUESSYEAR_STREAK_REMINDER_DAY_UTC: int = 3  # 0=Monday ... 3=Thursday
 
+    # --------------------
+    # Proactive Ask Historians (passive question watch + discoverability)
+    # --------------------
+    ASKHIST_WATCH_ENABLED: bool = True
+    ASKHIST_WATCH_CHANNEL_IDS: List[int] = field(default_factory=list)  # e.g. #history-general
+    ASKHIST_WATCH_MIN_WORDS: int = 4  # lightweight question detector: "?" + at least this many words
+    ASKHIST_WATCH_DELAY_SECONDS: int = 7200  # ~2 hours before reminding an unanswered question
+    ASKHIST_WATCH_PING_COOLDOWN_MINUTES: int = 60  # per-user cooldown for triggering "Ask Historians"
+    ASKHIST_WATCH_PING_MAX_PER_DAY: int = 3  # per-user daily cap for triggering "Ask Historians"
+
 
 def load_config() -> BotConfig:
     """
@@ -214,4 +224,11 @@ def load_config() -> BotConfig:
         GUESSYEAR_RECAP_HOUR_UTC=_get_int("GUESSYEAR_RECAP_HOUR_UTC", int(data.get("GUESSYEAR_RECAP_HOUR_UTC", 18))),
         GUESSYEAR_STREAK_REMINDER_HOUR_UTC=_get_int("GUESSYEAR_STREAK_REMINDER_HOUR_UTC", int(data.get("GUESSYEAR_STREAK_REMINDER_HOUR_UTC", 21))),
         GUESSYEAR_STREAK_REMINDER_DAY_UTC=_get_int("GUESSYEAR_STREAK_REMINDER_DAY_UTC", int(data.get("GUESSYEAR_STREAK_REMINDER_DAY_UTC", 3))),
+
+        ASKHIST_WATCH_ENABLED=_get_bool("ASKHIST_WATCH_ENABLED", bool(data.get("ASKHIST_WATCH_ENABLED", True))),
+        ASKHIST_WATCH_CHANNEL_IDS=_get_int_list("ASKHIST_WATCH_CHANNEL_IDS") or list(map(int, data.get("ASKHIST_WATCH_CHANNEL_IDS", []) or [])),
+        ASKHIST_WATCH_MIN_WORDS=_get_int("ASKHIST_WATCH_MIN_WORDS", int(data.get("ASKHIST_WATCH_MIN_WORDS", 4))),
+        ASKHIST_WATCH_DELAY_SECONDS=_get_int("ASKHIST_WATCH_DELAY_SECONDS", int(data.get("ASKHIST_WATCH_DELAY_SECONDS", 7200))),
+        ASKHIST_WATCH_PING_COOLDOWN_MINUTES=_get_int("ASKHIST_WATCH_PING_COOLDOWN_MINUTES", int(data.get("ASKHIST_WATCH_PING_COOLDOWN_MINUTES", 60))),
+        ASKHIST_WATCH_PING_MAX_PER_DAY=_get_int("ASKHIST_WATCH_PING_MAX_PER_DAY", int(data.get("ASKHIST_WATCH_PING_MAX_PER_DAY", 3))),
     )

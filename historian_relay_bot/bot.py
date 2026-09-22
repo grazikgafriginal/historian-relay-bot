@@ -12,8 +12,20 @@ from discord.ext import commands
 
 from historian_relay_bot.config import load_config
 from historian_relay_bot.db import Database
-from historian_relay_bot.ui.views import HistorianView, QueueView
-from historian_relay_bot.utils.formatting import build_forward_embed, build_answer_embed
+from historian_relay_bot.ui.views import (
+    HistorianView,
+    QueueView,
+    AskHistoriansReminderView,
+    HistorianRequestView,
+)
+from historian_relay_bot.utils.formatting import (
+    build_forward_embed,
+    build_answer_embed,
+    build_watch_reminder_embed,
+    build_watch_dm_embed,
+    build_historian_request_embed,
+)
+from historian_relay_bot.utils.checks import spam_check, next_utc_midnight_ts
 
 logging.basicConfig(
     level=logging.INFO,
@@ -96,6 +108,9 @@ class HistorianRelayBot(commands.Bot):
         await self.load_extension("historian_relay_bot.cogs.askhist")
         await self.load_extension("historian_relay_bot.cogs.moderation")
         await self.load_extension("historian_relay_bot.cogs.suggest")
+
+        if self.cfg.ASKHIST_WATCH_ENABLED:
+            await self.load_extension("historian_relay_bot.cogs.askhist_watch")
 
         # Sync commands (global sync can take time; for a single server consider guild-specific sync)
         await self.tree.sync()
@@ -416,6 +431,286 @@ class HistorianRelayBot(commands.Bot):
             await user.send(text)
         except Exception:
             pass
+
+    # --------------------------
+    # Proactive Ask Historians (passive question watch)
+    #
+    # These methods are the single implementation responsible for pinging and
+    # tracking Historian Requests. They're called from both triggers described
+    # in the feature design: the asker/mod pressing "Ask Historians" on a
+    # reminder (AskHistoriansReminderView, in ui/views.py) and the moderator
+    # "Ask Historians" context-menu command (cogs/askhist_watch.py).
+    # --------------------------
+
+    async def send_watch_reminder(self, guild_id: int, watch_id: int) -> None:
+        """Fired when a watched question's unanswered-timer elapses.
+
+        Re-checks for a reply (in case one arrived while the bot was offline
+        and the live listener missed it), and if still unanswered, posts the
+        in-channel reminder + DM exactly once.
+        """
+        row = await self.db.askhist_watch_get(guild_id, watch_id)
+        if not row or row["status"] != "watching":
+            return
+
+        channel_id = int(row["channel_id"])
+        message_id = int(row["message_id"])
+        author_id = int(row["author_id"])
+
+        channel = None
+        origin_msg = None
+        try:
+            channel = await self.fetch_channel(channel_id)
+            origin_msg = await channel.fetch_message(message_id)
+        except (discord.NotFound, discord.Forbidden):
+            await self.db.askhist_watch_mark_cancelled(guild_id, watch_id)
+            return
+        except Exception as e:
+            log.warning("Could not fetch origin message for watch #%s: %s", watch_id, e)
+
+        # Defensive re-check for a missed reply (best-effort, bounded scan).
+        if channel is not None:
+            try:
+                async for msg in channel.history(after=discord.Object(id=message_id), limit=200, oldest_first=True):
+                    if msg.author.bot:
+                        continue
+                    if msg.reference and msg.reference.message_id == message_id and msg.author.id != author_id:
+                        await self.db.askhist_watch_mark_answered(guild_id, watch_id)
+                        return
+            except Exception:
+                pass
+
+        question_text = str(row["question_text"])
+        jump_url = origin_msg.jump_url if origin_msg else f"https://discord.com/channels/{guild_id}/{channel_id}/{message_id}"
+
+        reminder_channel_message_id: Optional[int] = None
+        if origin_msg is not None:
+            try:
+                embed = build_watch_reminder_embed(question_text, jump_url)
+                view = AskHistoriansReminderView(self, watch_id)
+                reminder_msg = await origin_msg.reply(embed=embed, view=view, mention_author=True)
+                reminder_channel_message_id = reminder_msg.id
+            except Exception as e:
+                log.warning("Failed to post watch reminder for watch #%s: %s", watch_id, e)
+
+        reminder_dm_message_id: Optional[int] = None
+        dm_sent = False
+        try:
+            opted_out = await self.db.dm_opted_out(author_id)
+        except Exception:
+            opted_out = False
+
+        if not opted_out:
+            try:
+                user = await self.fetch_user(author_id)
+                dm_embed = build_watch_dm_embed(question_text, f"<#{channel_id}>", jump_url)
+                dm_view = AskHistoriansReminderView(self, watch_id)
+                dm_msg = await user.send(embed=dm_embed, view=dm_view)
+                reminder_dm_message_id = dm_msg.id
+                dm_sent = True
+            except (discord.Forbidden, discord.HTTPException):
+                # DMs disabled or blocked — fail silently, channel button still works.
+                pass
+            except Exception as e:
+                log.warning("Failed to DM watch reminder for watch #%s: %s", watch_id, e)
+
+        await self.db.askhist_watch_mark_reminded(
+            guild_id, watch_id,
+            reminder_channel_message_id=reminder_channel_message_id,
+            reminder_dm_message_id=reminder_dm_message_id,
+            reminder_dm_sent=dm_sent,
+        )
+
+    async def _disable_watch_reminder_views(self, row, text: str) -> None:
+        """Best-effort: update the reminder message(s) so the button stops working."""
+        watch_id = int(row["id"])
+
+        if row["reminder_channel_message_id"]:
+            try:
+                ch = await self.fetch_channel(int(row["channel_id"]))
+                msg = await ch.fetch_message(int(row["reminder_channel_message_id"]))
+                view = AskHistoriansReminderView(self, watch_id)
+                view.disable_all()
+                await msg.edit(content=text, view=view)
+            except Exception:
+                pass
+
+        if row["reminder_dm_message_id"]:
+            try:
+                user = await self.fetch_user(int(row["author_id"]))
+                dm = await user.create_dm()
+                msg = await dm.fetch_message(int(row["reminder_dm_message_id"]))
+                view = AskHistoriansReminderView(self, watch_id)
+                view.disable_all()
+                await msg.edit(content=text, view=view)
+            except Exception:
+                pass
+
+    async def escalate_to_historians(
+        self,
+        guild_id: int,
+        watch_id: int,
+        *,
+        triggered_by_user_id: int,
+        is_mod_override: bool = False,
+    ) -> tuple[bool, str]:
+        """Create the Historian Request and ping the Historian role.
+
+        This is the single function responsible for pinging + tracking a
+        Historian Request — both the reminder button and the moderator
+        context-menu command call this.
+        """
+        row = await self.db.askhist_watch_get(guild_id, watch_id)
+        if not row:
+            return False, "This question could not be found."
+
+        if row["status"] in ("escalated", "resolved", "cancelled"):
+            return False, "This question has already been sent to the Historians of the House."
+
+        now_ts = int(discord.utils.utcnow().timestamp())
+        daily_count = 0
+        daily_reset_at = next_utc_midnight_ts(now_ts)
+
+        if not is_mod_override:
+            cd = await self.db.historian_ping_cooldown_get(guild_id, triggered_by_user_id)
+            last_ping_at = int(cd["last_ping_at"]) if cd else None
+            daily_count = int(cd["daily_count"]) if cd else 0
+            daily_reset_at = int(cd["daily_reset_at"]) if cd else next_utc_midnight_ts(now_ts)
+
+            spam_res = spam_check(
+                now_ts=now_ts,
+                last_asked_at=last_ping_at,
+                daily_count=daily_count,
+                daily_reset_at=daily_reset_at,
+                cooldown_minutes=self.cfg.ASKHIST_WATCH_PING_COOLDOWN_MINUTES,
+                max_per_day=self.cfg.ASKHIST_WATCH_PING_MAX_PER_DAY,
+            )
+            if not spam_res.ok:
+                reason = spam_res.reason.replace("submitting another question", "requesting the Historians again")
+                return False, reason
+
+        ok = await self.db.askhist_watch_try_escalate(guild_id, watch_id, triggered_by_user_id)
+        if not ok:
+            return False, "This question has already been sent to the Historians of the House."
+
+        row = await self.db.askhist_watch_get(guild_id, watch_id)  # refreshed after escalation
+
+        origin_jump = f"https://discord.com/channels/{guild_id}/{row['channel_id']}/{row['message_id']}"
+        try:
+            origin_ch = await self.fetch_channel(int(row["channel_id"]))
+            origin_msg = await origin_ch.fetch_message(int(row["message_id"]))
+            origin_jump = origin_msg.jump_url
+        except Exception:
+            pass
+
+        asker = None
+        try:
+            asker = await self.fetch_user(int(row["author_id"]))
+        except Exception:
+            pass
+
+        embed = build_historian_request_embed(
+            question_text=str(row["question_text"]),
+            asker=asker,
+            jump_url=origin_jump,
+        )
+
+        try:
+            hist_ch = await self.fetch_channel(self.cfg.HISTORIANS_CHANNEL_ID)
+            content = (
+                f"<@&{self.cfg.VERIFIED_HISTORIAN_ROLE_ID}>\n"
+                "If this falls within your area of knowledge, please take a look."
+            )
+            req_view = HistorianRequestView(self, watch_id)
+            req_msg = await hist_ch.send(
+                content=content,
+                embed=embed,
+                view=req_view,
+                allowed_mentions=discord.AllowedMentions(roles=True, users=False, everyone=False),
+            )
+            await self.db.askhist_watch_set_request_message(guild_id, watch_id, req_msg.id)
+        except Exception as e:
+            log.warning("Failed to post Historian Request for watch #%s: %s", watch_id, e)
+            return True, "Historians could not be notified automatically — please contact a moderator."
+
+        if not is_mod_override:
+            if now_ts >= daily_reset_at:
+                daily_count = 0
+                daily_reset_at = next_utc_midnight_ts(now_ts)
+            daily_count += 1
+            await self.db.historian_ping_cooldown_upsert(
+                guild_id, triggered_by_user_id,
+                last_ping_at=now_ts, daily_count=daily_count, daily_reset_at=daily_reset_at,
+            )
+
+        await self._disable_watch_reminder_views(
+            row, "✅ Historians of the House have been notified about this question."
+        )
+
+        return True, "📚 Historians of the House have been notified about this question!"
+
+    async def resolve_askhist_watch(
+        self,
+        guild_id: int,
+        watch_id: int,
+        *,
+        resolved_by_user_id: int,
+        response_message_id: Optional[int],
+        after_official_request: bool,
+        response_channel_id: Optional[int] = None,
+    ) -> bool:
+        """Mark a watched question resolved: stop reminders/pings and record it for KPI tracking."""
+        ok = await self.db.askhist_watch_try_resolve(guild_id, watch_id, resolved_by_user_id)
+        if not ok:
+            return False
+
+        row = await self.db.askhist_watch_get(guild_id, watch_id)
+        if not row:
+            return True
+
+        await self._disable_watch_reminder_views(
+            row, "✅ This question has been answered by a Historian."
+        )
+
+        if row["historian_request_message_id"]:
+            try:
+                ch = await self.fetch_channel(self.cfg.HISTORIANS_CHANNEL_ID)
+                msg = await ch.fetch_message(int(row["historian_request_message_id"]))
+
+                try:
+                    resolver = await self.fetch_user(resolved_by_user_id)
+                    resolver_text = resolver.mention
+                except Exception:
+                    resolver_text = f"<@{resolved_by_user_id}>"
+
+                origin_jump = f"https://discord.com/channels/{guild_id}/{row['channel_id']}/{row['message_id']}"
+                try:
+                    origin_ch = await self.fetch_channel(int(row["channel_id"]))
+                    origin_msg = await origin_ch.fetch_message(int(row["message_id"]))
+                    origin_jump = origin_msg.jump_url
+                except Exception:
+                    pass
+
+                asker = None
+                try:
+                    asker = await self.fetch_user(int(row["author_id"]))
+                except Exception:
+                    pass
+
+                embed = build_historian_request_embed(
+                    question_text=str(row["question_text"]),
+                    asker=asker,
+                    jump_url=origin_jump,
+                    resolved_by_text=resolver_text,
+                )
+                if response_message_id and response_channel_id:
+                    response_jump = f"https://discord.com/channels/{guild_id}/{response_channel_id}/{response_message_id}"
+                    embed.add_field(name="Response", value=f"[Jump to response]({response_jump})", inline=False)
+                await msg.edit(embed=embed, view=None)
+            except Exception as e:
+                log.warning("Failed to refresh Historian Request for watch #%s: %s", watch_id, e)
+
+        return True
 
     # --------------------------
     # Restart recovery

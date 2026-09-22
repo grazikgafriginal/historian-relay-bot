@@ -16,6 +16,21 @@ class CheckResult:
 def word_count(text: str) -> int:
     return len([w for w in re.split(r"\s+", text.strip()) if w])
 
+def is_probable_question(text: str, min_words: int = 4) -> bool:
+    """Lightweight, non-AI detector for "this message is probably a question".
+
+    Used to decide whether a chat message in a watched channel should start
+    an unanswered-question timer. Intentionally simple: a question mark plus
+    a minimum amount of content, so short reactions like "really?" don't
+    trigger the flow.
+    """
+    t = (text or "").strip()
+    if "?" not in t:
+        return False
+    if t.startswith(("!", "/")):
+        return False
+    return word_count(t) >= max(1, min_words)
+
 def quality_check(
     question: str,
     *,

@@ -47,6 +47,12 @@ class ModerationCog(commands.Cog):
             f"**Submission channels:** {', '.join(str(x) for x in cfg.SUBMISSION_CHANNEL_IDS)}\n"
             f"**Historians channel:** {cfg.HISTORIANS_CHANNEL_ID}\n"
             f"**Queue channel:** {cfg.QUEUE_CHANNEL_ID}\n"
+            f"\n**Proactive Ask Historians:**\n"
+            f"**Enabled:** {cfg.ASKHIST_WATCH_ENABLED}\n"
+            f"**Watched channels:** {', '.join(str(x) for x in cfg.ASKHIST_WATCH_CHANNEL_IDS) or '—'}\n"
+            f"**Unanswered delay:** {cfg.ASKHIST_WATCH_DELAY_SECONDS}s\n"
+            f"**Ping cooldown:** {cfg.ASKHIST_WATCH_PING_COOLDOWN_MINUTES} min\n"
+            f"**Ping daily cap:** {cfg.ASKHIST_WATCH_PING_MAX_PER_DAY}\n"
         )
         await interaction.response.send_message(text, delete_after=20)
 
