@@ -80,3 +80,17 @@ Config (env or `CONFIG_JSON`):
 Moderators (`MOD_ROLE_ID`) bypass the cooldown/cap and can escalate any
 message immediately via the **Ask Historians** message context-menu action,
 without waiting for the timer.
+
+## Topic of the Day
+Posts an open-ended historical discussion prompt on a schedule — no correct
+answer, just a reason for #history-general to talk. Topics are curated in
+`historian_relay_bot/data/topics.json` (id/prompt/tag/era) and won't repeat
+until the whole set has cycled through.
+
+Config (env or `CONFIG_JSON`):
+- `TOPIC_OF_DAY_ENABLED` (default `true`).
+- `TOPIC_OF_DAY_CHANNEL_ID` (default unset = feature inert) — the channel to post in.
+- `TOPIC_OF_DAY_HOUR_UTC` (default `14`) — the UTC hour after which the day's topic is posted.
+
+Moderators can also post one immediately with `/topic_now [channel]`,
+regardless of the schedule — handy for testing or for an impromptu topic.

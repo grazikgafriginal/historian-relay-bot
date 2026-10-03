@@ -1,0 +1,146 @@
+[
+  {
+    "id": "top_0001",
+    "prompt": "Was Julius Caesar's crossing of the Rubicon the moment that killed the Roman Republic, or just the final blow to a system that was already dying?",
+    "tag": "politics",
+    "era": "ancient"
+  },
+  {
+    "id": "top_0002",
+    "prompt": "Did Alexander the Great's conquests leave a lasting legacy of cultural exchange, or mostly just destruction and a short-lived empire?",
+    "tag": "military",
+    "era": "ancient"
+  },
+  {
+    "id": "top_0003",
+    "prompt": "How much of what we call 'Western philosophy' really originated in Greece, versus being absorbed from Egypt, Persia, and the wider Near East?",
+    "tag": "culture",
+    "era": "ancient"
+  },
+  {
+    "id": "top_0004",
+    "prompt": "Why do you think polytheistic religions were gradually displaced by monotheistic ones across much of the ancient world?",
+    "tag": "religion",
+    "era": "ancient"
+  },
+  {
+    "id": "top_0005",
+    "prompt": "Could Rome have avoided its 3rd-century economic crisis with different fiscal policy, or were the pressures simply too structural?",
+    "tag": "economy",
+    "era": "ancient"
+  },
+  {
+    "id": "top_0006",
+    "prompt": "Was Athenian democracy actually 'democratic' by any meaningful modern standard, given who was excluded from voting?",
+    "tag": "politics",
+    "era": "ancient"
+  },
+  {
+    "id": "top_0007",
+    "prompt": "Was feudalism a stable system of mutual obligation, or fundamentally an engine of exploitation dressed up in loyalty and honor?",
+    "tag": "politics",
+    "era": "medieval"
+  },
+  {
+    "id": "top_0008",
+    "prompt": "Did the Crusades do more to connect Europe to the wider world, or mostly just entrench centuries of mistrust?",
+    "tag": "military",
+    "era": "medieval"
+  },
+  {
+    "id": "top_0009",
+    "prompt": "Was the 'Dark Ages' label ever fair, or is it mostly a later myth invented by Renaissance thinkers to flatter themselves?",
+    "tag": "culture",
+    "era": "medieval"
+  },
+  {
+    "id": "top_0010",
+    "prompt": "How much real power did the medieval Church hold over kings and emperors, versus how much was mostly symbolic?",
+    "tag": "religion",
+    "era": "medieval"
+  },
+  {
+    "id": "top_0011",
+    "prompt": "Did the Black Death ultimately help or hurt the long-term economic position of the peasantry in Europe?",
+    "tag": "economy",
+    "era": "medieval"
+  },
+  {
+    "id": "top_0012",
+    "prompt": "Did Genghis Khan's Mongol Empire do more to connect Eurasia through trade, or to depopulate and terrorize it?",
+    "tag": "military",
+    "era": "medieval"
+  },
+  {
+    "id": "top_0013",
+    "prompt": "Was absolute monarchy, like Louis XIV's France, a rational response to the chaos of the Wars of Religion, or just naked power-grabbing?",
+    "tag": "politics",
+    "era": "early_modern"
+  },
+  {
+    "id": "top_0014",
+    "prompt": "Could the Spanish Armada's defeat have gone differently with better planning, or was English naval advantage simply decisive?",
+    "tag": "military",
+    "era": "early_modern"
+  },
+  {
+    "id": "top_0015",
+    "prompt": "Did the printing press do more to spread knowledge, or to spread propaganda and religious conflict, in its first century?",
+    "tag": "culture",
+    "era": "early_modern"
+  },
+  {
+    "id": "top_0016",
+    "prompt": "Was the Reformation primarily a religious movement, or was theology mostly a vehicle for political and economic grievances?",
+    "tag": "religion",
+    "era": "early_modern"
+  },
+  {
+    "id": "top_0017",
+    "prompt": "Did mercantilism actually benefit the average person in European empires, or mostly just enrich crowns and trading companies?",
+    "tag": "economy",
+    "era": "early_modern"
+  },
+  {
+    "id": "top_0018",
+    "prompt": "Would the Scientific Revolution have happened without the political fragmentation of Europe letting new ideas escape censorship in one state by fleeing to another?",
+    "tag": "culture",
+    "era": "early_modern"
+  },
+  {
+    "id": "top_0019",
+    "prompt": "Was the Congress of Vienna a triumph of diplomatic stability, or did it just delay inevitable nationalist conflicts in Europe?",
+    "tag": "politics",
+    "era": "modern"
+  },
+  {
+    "id": "top_0020",
+    "prompt": "Could World War I have been avoided with different diplomacy in the summer of 1914, or were the alliance systems always going to collide?",
+    "tag": "military",
+    "era": "modern"
+  },
+  {
+    "id": "top_0021",
+    "prompt": "Did industrialization improve quality of life faster than it damaged it for the working class of the 19th century?",
+    "tag": "culture",
+    "era": "modern"
+  },
+  {
+    "id": "top_0022",
+    "prompt": "Why did secularization take hold so unevenly across different industrializing nations in the 19th and 20th centuries?",
+    "tag": "religion",
+    "era": "modern"
+  },
+  {
+    "id": "top_0023",
+    "prompt": "Was the Marshall Plan primarily humanitarian generosity, or a calculated Cold War strategy — and does it even matter which, given the outcome?",
+    "tag": "economy",
+    "era": "modern"
+  },
+  {
+    "id": "top_0024",
+    "prompt": "Did colonial education systems mostly erase local histories, or did they also leave behind tools that colonized peoples later used against their rulers?",
+    "tag": "culture",
+    "era": "modern"
+  }
+]

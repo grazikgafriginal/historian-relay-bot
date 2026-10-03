@@ -112,6 +112,9 @@ class HistorianRelayBot(commands.Bot):
         if self.cfg.ASKHIST_WATCH_ENABLED:
             await self.load_extension("historian_relay_bot.cogs.askhist_watch")
 
+        if self.cfg.TOPIC_OF_DAY_ENABLED:
+            await self.load_extension("historian_relay_bot.cogs.topic_of_day")
+
         # Sync commands (global sync can take time; for a single server consider guild-specific sync)
         await self.tree.sync()
 

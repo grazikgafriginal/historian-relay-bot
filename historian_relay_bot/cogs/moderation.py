@@ -156,6 +156,10 @@ class ModerationCog(commands.Cog):
             f"**Unanswered delay:** {cfg.ASKHIST_WATCH_DELAY_SECONDS}s\n"
             f"**Ping cooldown:** {cfg.ASKHIST_WATCH_PING_COOLDOWN_MINUTES} min\n"
             f"**Ping daily cap:** {cfg.ASKHIST_WATCH_PING_MAX_PER_DAY}\n"
+            f"\n**Topic of the Day:**\n"
+            f"**Enabled:** {cfg.TOPIC_OF_DAY_ENABLED}\n"
+            f"**Channel:** {cfg.TOPIC_OF_DAY_CHANNEL_ID or '—'}\n"
+            f"**Post hour (UTC):** {cfg.TOPIC_OF_DAY_HOUR_UTC}\n"
         )
         await interaction.response.send_message(text, delete_after=20)
 

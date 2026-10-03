@@ -231,3 +231,23 @@ CREATE TABLE IF NOT EXISTS historian_responses (
 
 CREATE INDEX IF NOT EXISTS idx_historian_responses_guild_user ON historian_responses(guild_id, historian_user_id);
 CREATE INDEX IF NOT EXISTS idx_historian_responses_watch ON historian_responses(guild_id, watch_id);
+
+-- -------------------------
+-- Topic of the Day
+-- -------------------------
+
+-- Append-only log: doubles as the "already posted automatically today" guard
+-- (auto=1 rows) and the no-repeat-until-the-pool-cycles history for topic selection.
+CREATE TABLE IF NOT EXISTS topic_of_day_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guild_id TEXT NOT NULL,
+  channel_id TEXT NOT NULL,
+  topic_id TEXT NOT NULL,
+  message_id TEXT,
+  posted_at INTEGER NOT NULL,
+  date_key TEXT NOT NULL,
+  auto INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX IF NOT EXISTS idx_topic_of_day_log_guild_date ON topic_of_day_log(guild_id, date_key);
+CREATE INDEX IF NOT EXISTS idx_topic_of_day_log_guild_posted ON topic_of_day_log(guild_id, posted_at);

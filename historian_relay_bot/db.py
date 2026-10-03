@@ -954,6 +954,52 @@ class Database:
             (str(guild_id), since_ts),
         )
 
+    # --------------------------
+    # Topic of the Day
+    # --------------------------
+
+    async def topic_log_record(
+        self,
+        *,
+        guild_id: int,
+        channel_id: int,
+        topic_id: str,
+        message_id: Optional[int],
+        date_key: str,
+        auto: bool,
+    ) -> int:
+        ts = now_ts()
+        async with self._lock:
+            cur = await self._conn.execute(
+                """
+                INSERT INTO topic_of_day_log(guild_id, channel_id, topic_id, message_id, posted_at, date_key, auto)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(guild_id), str(channel_id), str(topic_id),
+                    str(message_id) if message_id else None, ts, date_key, 1 if auto else 0,
+                ),
+            )
+            await self._conn.commit()
+            return int(cur.lastrowid)
+
+    async def topic_log_already_posted_today(self, guild_id: int, date_key: str) -> bool:
+        row = await self.fetchone(
+            "SELECT 1 FROM topic_of_day_log WHERE guild_id=? AND date_key=? AND auto=1 LIMIT 1",
+            (str(guild_id), date_key),
+        )
+        return row is not None
+
+    async def topic_log_recent_topic_ids(self, guild_id: int, limit: int) -> list[str]:
+        """Most recently posted topic ids, newest first — used to avoid repeats until the pool cycles."""
+        if limit <= 0:
+            return []
+        rows = await self.fetchall(
+            "SELECT topic_id FROM topic_of_day_log WHERE guild_id=? ORDER BY posted_at DESC LIMIT ?",
+            (str(guild_id), limit),
+        )
+        return [str(r["topic_id"]) for r in rows]
+
         ### GUESS THE YEAR BOT
 
     async def guessyear_create_round(self, guild_id: int, channel_id: int, started_by_user_id: int,

@@ -98,6 +98,25 @@ def build_watch_dm_embed(question_text: str, channel_mention: str, jump_url: str
     return e
 
 
+def build_topic_of_day_embed(topic: dict, date_key: str) -> discord.Embed:
+    e = discord.Embed(
+        title=f"🗓️ Topic of the Day — {date_key}",
+        description=topic.get("prompt", ""),
+        color=discord.Color.teal(),
+    )
+    meta = []
+    era = topic.get("era")
+    tag = topic.get("tag")
+    if era:
+        meta.append(str(era).replace("_", " ").title())
+    if tag:
+        meta.append(str(tag).title())
+    if meta:
+        e.add_field(name="Theme", value=" • ".join(meta), inline=False)
+    e.set_footer(text="Share your take below — there's no right answer, just good discussion.")
+    return e
+
+
 def build_historian_request_embed(
     *,
     question_text: str,

@@ -155,6 +155,13 @@ class BotConfig:
     ASKHIST_WATCH_PING_COOLDOWN_MINUTES: int = 60  # per-user cooldown for triggering "Ask Historians"
     ASKHIST_WATCH_PING_MAX_PER_DAY: int = 3  # per-user daily cap for triggering "Ask Historians"
 
+    # --------------------
+    # Topic of the Day
+    # --------------------
+    TOPIC_OF_DAY_ENABLED: bool = True
+    TOPIC_OF_DAY_CHANNEL_ID: Optional[int] = None  # unset = feature inert
+    TOPIC_OF_DAY_HOUR_UTC: int = 14
+
 
 def load_config() -> BotConfig:
     """
@@ -231,4 +238,8 @@ def load_config() -> BotConfig:
         ASKHIST_WATCH_DELAY_SECONDS=_get_int("ASKHIST_WATCH_DELAY_SECONDS", int(data.get("ASKHIST_WATCH_DELAY_SECONDS", 7200))),
         ASKHIST_WATCH_PING_COOLDOWN_MINUTES=_get_int("ASKHIST_WATCH_PING_COOLDOWN_MINUTES", int(data.get("ASKHIST_WATCH_PING_COOLDOWN_MINUTES", 60))),
         ASKHIST_WATCH_PING_MAX_PER_DAY=_get_int("ASKHIST_WATCH_PING_MAX_PER_DAY", int(data.get("ASKHIST_WATCH_PING_MAX_PER_DAY", 3))),
+
+        TOPIC_OF_DAY_ENABLED=_get_bool("TOPIC_OF_DAY_ENABLED", bool(data.get("TOPIC_OF_DAY_ENABLED", True))),
+        TOPIC_OF_DAY_CHANNEL_ID=_get_optional_int("TOPIC_OF_DAY_CHANNEL_ID") or (int(data["TOPIC_OF_DAY_CHANNEL_ID"]) if data.get("TOPIC_OF_DAY_CHANNEL_ID") else None),
+        TOPIC_OF_DAY_HOUR_UTC=_get_int("TOPIC_OF_DAY_HOUR_UTC", int(data.get("TOPIC_OF_DAY_HOUR_UTC", 14))),
     )
