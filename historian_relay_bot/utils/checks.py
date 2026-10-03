@@ -7,6 +7,7 @@ from typing import Iterable, Optional
 
 YEAR_RE = re.compile(r"\b(1[0-9]{3}|20[0-9]{2})\b")
 CENTURY_RE = re.compile(r"\b\d{1,2}(st|nd|rd|th)\s+century\b", re.IGNORECASE)
+URL_RE = re.compile(r"https?://\S+")
 
 @dataclass(slots=True)
 class CheckResult:
@@ -22,10 +23,13 @@ def is_probable_question(text: str, min_words: int = 4) -> bool:
     Used to decide whether a chat message in a watched channel should start
     an unanswered-question timer. Intentionally simple: a question mark plus
     a minimum amount of content, so short reactions like "really?" don't
-    trigger the flow.
+    trigger the flow. URLs are stripped before looking for "?" so a query
+    string like "...image.jpg?utm_source=..." doesn't get mistaken for one.
     """
     t = (text or "").strip()
-    if "?" not in t:
+    if not t:
+        return False
+    if "?" not in URL_RE.sub("", t):
         return False
     if t.startswith(("!", "/")):
         return False
