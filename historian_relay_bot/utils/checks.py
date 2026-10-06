@@ -9,6 +9,28 @@ YEAR_RE = re.compile(r"\b(1[0-9]{3}|20[0-9]{2})\b")
 CENTURY_RE = re.compile(r"\b\d{1,2}(st|nd|rd|th)\s+century\b", re.IGNORECASE)
 URL_RE = re.compile(r"https?://\S+")
 
+# Words/contractions that mark a sentence as actually interrogative, as opposed
+# to a declarative statement (an offer, a callout, banter) that merely ends in
+# "?". Checked against the text with apostrophes stripped, so both "doesn't"
+# and "doesnt" are covered by the single "doesnt" entry.
+_QUESTION_WORDS = (
+    "why", "what", "whats", "when", "whens", "where", "wheres",
+    "who", "whos", "whom", "whose", "which", "how", "hows",
+    "is", "isnt", "are", "arent", "was", "wasnt", "were", "werent",
+    "do", "dont", "does", "doesnt", "did", "didnt",
+    "can", "cant", "could", "couldnt",
+    "would", "wouldnt", "should", "shouldnt",
+    "will", "wont", "have", "havent", "has", "hasnt", "had", "hadnt",
+)
+QUESTION_WORD_RE = re.compile(r"\b(" + "|".join(_QUESTION_WORDS) + r")\b", re.IGNORECASE)
+
+# Each match is the text of one "?"-terminated clause (up to but not past any
+# earlier ./!/?). Scoping the question-word search to just that clause (rather
+# than the whole message) matters: in "Agrippa? ...I wouldn't count him...",
+# the real question-ish word ("wouldn't") sits in a later clause that never
+# gets a "?", so it must not count toward whether "Agrippa?" is a question.
+QUESTION_CLAUSE_RE = re.compile(r"[^.!?]*\?")
+
 @dataclass(slots=True)
 class CheckResult:
     ok: bool
@@ -21,18 +43,30 @@ def is_probable_question(text: str, min_words: int = 4) -> bool:
     """Lightweight, non-AI detector for "this message is probably a question".
 
     Used to decide whether a chat message in a watched channel should start
-    an unanswered-question timer. Intentionally simple: a question mark plus
-    a minimum amount of content, so short reactions like "really?" don't
-    trigger the flow. URLs are stripped before looking for "?" so a query
-    string like "...image.jpg?utm_source=..." doesn't get mistaken for one.
+    an unanswered-question timer. Intentionally simple — no AI classification —
+    but a bare "?" isn't enough on its own: "Wanna see my list of generals?"
+    and "You know that painting?" both end in "?" without actually asking
+    anything the bot should chase an answer for. So, in order:
+      1. URLs are stripped before looking for "?" (a query string like
+         "...image.jpg?utm_source=..." isn't a question mark).
+      2. The remaining text must contain an actual interrogative word
+         (why/what/how/is/does/can/...), not just end in "?".
+      3. A minimum word count, so short reactions like "really?" don't count.
     """
     t = (text or "").strip()
     if not t:
         return False
-    if "?" not in URL_RE.sub("", t):
+    stripped = URL_RE.sub("", t)
+    if "?" not in stripped:
         return False
     if t.startswith(("!", "/")):
         return False
+
+    normalized = stripped.replace("'", "")
+    question_clauses = QUESTION_CLAUSE_RE.findall(normalized)
+    if not any(QUESTION_WORD_RE.search(c) for c in question_clauses):
+        return False
+
     return word_count(t) >= max(1, min_words)
 
 def quality_check(
