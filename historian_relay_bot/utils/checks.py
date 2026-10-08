@@ -69,6 +69,28 @@ def is_probable_question(text: str, min_words: int = 4) -> bool:
 
     return word_count(t) >= max(1, min_words)
 
+def has_historical_signal(text: str, keywords: Iterable[str]) -> bool:
+    """Lightweight, non-AI check for "this text is plausibly about history".
+
+    Mirrors the anchor check quality_check() already applies to a manually
+    submitted /askhist question — a year, a century, or a topic keyword —
+    so a passively-detected question is held to the same bar. Without this,
+    any grammatically real question ("What was your major in college?",
+    "Can I have an icecream?") gets treated as a historical one just because
+    it's a question at all.
+
+    Known limitation: a question about a specific person or event that
+    doesn't also mention a year/century/region/era keyword (e.g. just
+    "Was Napoleon a tyrant?") won't match. That's the same tradeoff
+    quality_check() already makes for manual submissions; moderators can
+    still escalate anything the heuristic misses via the message context menu.
+    """
+    t = text or ""
+    if YEAR_RE.search(t) or CENTURY_RE.search(t):
+        return True
+    t_lower = t.lower()
+    return any(str(k).lower() in t_lower for k in keywords)
+
 def quality_check(
     question: str,
     *,

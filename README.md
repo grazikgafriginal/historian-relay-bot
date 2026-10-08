@@ -69,17 +69,37 @@ replies (to the question or to the request), the request is marked resolved
 and the response is logged for future KPI reporting — nothing is ever shown
 publicly.
 
+A message must pass three lightweight (non-AI) checks to start a watch:
+1. **Grammatically a question** — a "?" outside of any URL, in a clause that
+   also contains an actual interrogative word (why/what/how/is/does/can/...).
+   Filters out offers and banter that merely end in "?"
+   (e.g. "Wanna see my list of generals?").
+2. **About history** — contains a year, a century (e.g. "5th century"), or one
+   of `ASKHIST_WATCH_TOPIC_KEYWORDS` (regions, empires, eras, general
+   historical vocabulary). Filters out off-topic questions
+   (e.g. "Can I have an icecream?").
+3. **Not itself a reply** — a message that replies to something is treated as
+   continuing an existing exchange, not dropping a fresh standalone question
+   (e.g. "So you are more into prehistory?" replying to a prior message).
+
+Known limitation: a question about a specific person/event with no year,
+century, region, or era keyword (e.g. just "Was Napoleon a tyrant?") won't be
+picked up automatically — moderators can still escalate it manually via the
+**Ask Historians** message context-menu action.
+
 Config (env or `CONFIG_JSON`):
 - `ASKHIST_WATCH_ENABLED` (default `true`) — feature on/off switch.
 - `ASKHIST_WATCH_CHANNEL_IDS` (default empty = disabled until set) — CSV of channel IDs to watch, e.g. the `#history-general` channel ID.
 - `ASKHIST_WATCH_MIN_WORDS` (default `4`) — a message needs a `?` and at least this many words to be tracked.
+- `ASKHIST_WATCH_TOPIC_KEYWORDS` (JSON config only, has a broad built-in default) — topic words that count as a historical signal.
 - `ASKHIST_WATCH_DELAY_SECONDS` (default `7200`, ~2 hours) — how long to wait before reminding.
 - `ASKHIST_WATCH_PING_COOLDOWN_MINUTES` (default `60`) — per-user cooldown between "Ask Historians" triggers.
 - `ASKHIST_WATCH_PING_MAX_PER_DAY` (default `3`) — per-user daily cap on "Ask Historians" triggers.
 
 Moderators (`MOD_ROLE_ID`) bypass the cooldown/cap and can escalate any
 message immediately via the **Ask Historians** message context-menu action,
-without waiting for the timer.
+without waiting for the timer — this is also the fallback for anything the
+three checks above miss.
 
 ## Topic of the Day
 Posts an open-ended historical discussion prompt on a schedule — no correct

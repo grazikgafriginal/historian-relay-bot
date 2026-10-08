@@ -8,7 +8,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from historian_relay_bot.utils.checks import is_probable_question
+from historian_relay_bot.utils.checks import is_probable_question, has_historical_signal
 from historian_relay_bot.ui.views import AskHistoriansReminderView, HistorianRequestView, has_role
 
 log = logging.getLogger("historian_relay.askhist_watch")
@@ -147,9 +147,15 @@ class AskHistorianWatchCog(commands.Cog):
 
         if message.reference and message.reference.message_id:
             await self._handle_possible_reply(message)
+            # A message that's itself a reply is continuing an existing
+            # exchange ("So you are more into prehistory?"), not dropping a
+            # fresh standalone question — don't start a new watch for it.
+            return
 
-        if self._watched_channel(message.channel.id) and is_probable_question(
-            message.content or "", self.bot.cfg.ASKHIST_WATCH_MIN_WORDS
+        if (
+            self._watched_channel(message.channel.id)
+            and is_probable_question(message.content or "", self.bot.cfg.ASKHIST_WATCH_MIN_WORDS)
+            and has_historical_signal(message.content or "", self.bot.cfg.ASKHIST_WATCH_TOPIC_KEYWORDS)
         ):
             await self._track_new_question(message)
 

@@ -154,6 +154,30 @@ class BotConfig:
     ASKHIST_WATCH_DELAY_SECONDS: int = 7200  # ~2 hours before reminding an unanswered question
     ASKHIST_WATCH_PING_COOLDOWN_MINUTES: int = 60  # per-user cooldown for triggering "Ask Historians"
     ASKHIST_WATCH_PING_MAX_PER_DAY: int = 3  # per-user daily cap for triggering "Ask Historians"
+    # A detected question must also contain one of these (or a year/century) to
+    # be tracked — otherwise any grammatically real question ("what was your
+    # major in college?") would get treated as a historical one.
+    ASKHIST_WATCH_TOPIC_KEYWORDS: List[str] = field(default_factory=lambda: [
+        # regions / civilizations / empires
+        "rome", "roman", "china", "chinese", "europe", "european", "ottoman",
+        "byzantine", "byzantium", "persia", "persian", "egypt", "egyptian",
+        "india", "indian", "mughal", "mongol", "america", "american",
+        "mesopotamia", "greece", "greek", "britain", "british", "france",
+        "french", "germany", "german", "spain", "spanish", "austria",
+        "russia", "russian", "japan", "japanese", "korea", "korean",
+        "carthage", "carthaginian", "constantinople", "babylon", "babylonian",
+        "assyria", "assyrian", "sumer", "sumerian", "phoenicia", "phoenician",
+        "celtic", "gaul", "iraq", "iran", "aztec", "maya", "mayan", "inca",
+        "viking", "norman", "anglo-saxon", "soviet", "ussr", "prussia", "prussian",
+        # periods / general historical vocabulary
+        "ancient", "medieval", "prehistory", "prehistoric", "renaissance",
+        "reformation", "enlightenment", "industrial revolution", "crusade",
+        "crusades", "dynasty", "empire", "kingdom", "pharaoh", "emperor",
+        "empress", "monarchy", "colonial", "colonialism", "imperialism",
+        "war", "battle", "revolution", "invasion", "conquest", "treaty",
+        "independence", "civilization", "archaeology", "historian", "history",
+        "historical", "feudal", "feudalism",
+    ])
 
     # --------------------
     # Topic of the Day
@@ -238,6 +262,7 @@ def load_config() -> BotConfig:
         ASKHIST_WATCH_DELAY_SECONDS=_get_int("ASKHIST_WATCH_DELAY_SECONDS", int(data.get("ASKHIST_WATCH_DELAY_SECONDS", 7200))),
         ASKHIST_WATCH_PING_COOLDOWN_MINUTES=_get_int("ASKHIST_WATCH_PING_COOLDOWN_MINUTES", int(data.get("ASKHIST_WATCH_PING_COOLDOWN_MINUTES", 60))),
         ASKHIST_WATCH_PING_MAX_PER_DAY=_get_int("ASKHIST_WATCH_PING_MAX_PER_DAY", int(data.get("ASKHIST_WATCH_PING_MAX_PER_DAY", 3))),
+        ASKHIST_WATCH_TOPIC_KEYWORDS=list(data.get("ASKHIST_WATCH_TOPIC_KEYWORDS", BotConfig.__dataclass_fields__["ASKHIST_WATCH_TOPIC_KEYWORDS"].default_factory())),
 
         TOPIC_OF_DAY_ENABLED=_get_bool("TOPIC_OF_DAY_ENABLED", bool(data.get("TOPIC_OF_DAY_ENABLED", True))),
         TOPIC_OF_DAY_CHANNEL_ID=_get_optional_int("TOPIC_OF_DAY_CHANNEL_ID") or (int(data["TOPIC_OF_DAY_CHANNEL_ID"]) if data.get("TOPIC_OF_DAY_CHANNEL_ID") else None),
