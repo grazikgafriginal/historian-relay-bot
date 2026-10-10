@@ -7,29 +7,6 @@ from typing import Iterable, Optional
 
 YEAR_RE = re.compile(r"\b(1[0-9]{3}|20[0-9]{2})\b")
 CENTURY_RE = re.compile(r"\b\d{1,2}(st|nd|rd|th)\s+century\b", re.IGNORECASE)
-URL_RE = re.compile(r"https?://\S+")
-
-# Words/contractions that mark a sentence as actually interrogative, as opposed
-# to a declarative statement (an offer, a callout, banter) that merely ends in
-# "?". Checked against the text with apostrophes stripped, so both "doesn't"
-# and "doesnt" are covered by the single "doesnt" entry.
-_QUESTION_WORDS = (
-    "why", "what", "whats", "when", "whens", "where", "wheres",
-    "who", "whos", "whom", "whose", "which", "how", "hows",
-    "is", "isnt", "are", "arent", "was", "wasnt", "were", "werent",
-    "do", "dont", "does", "doesnt", "did", "didnt",
-    "can", "cant", "could", "couldnt",
-    "would", "wouldnt", "should", "shouldnt",
-    "will", "wont", "have", "havent", "has", "hasnt", "had", "hadnt",
-)
-QUESTION_WORD_RE = re.compile(r"\b(" + "|".join(_QUESTION_WORDS) + r")\b", re.IGNORECASE)
-
-# Each match is the text of one "?"-terminated clause (up to but not past any
-# earlier ./!/?). Scoping the question-word search to just that clause (rather
-# than the whole message) matters: in "Agrippa? ...I wouldn't count him...",
-# the real question-ish word ("wouldn't") sits in a later clause that never
-# gets a "?", so it must not count toward whether "Agrippa?" is a question.
-QUESTION_CLAUSE_RE = re.compile(r"[^.!?]*\?")
 
 @dataclass(slots=True)
 class CheckResult:
@@ -38,58 +15,6 @@ class CheckResult:
 
 def word_count(text: str) -> int:
     return len([w for w in re.split(r"\s+", text.strip()) if w])
-
-def is_probable_question(text: str, min_words: int = 4) -> bool:
-    """Lightweight, non-AI detector for "this message is probably a question".
-
-    Used to decide whether a chat message in a watched channel should start
-    an unanswered-question timer. Intentionally simple — no AI classification —
-    but a bare "?" isn't enough on its own: "Wanna see my list of generals?"
-    and "You know that painting?" both end in "?" without actually asking
-    anything the bot should chase an answer for. So, in order:
-      1. URLs are stripped before looking for "?" (a query string like
-         "...image.jpg?utm_source=..." isn't a question mark).
-      2. The remaining text must contain an actual interrogative word
-         (why/what/how/is/does/can/...), not just end in "?".
-      3. A minimum word count, so short reactions like "really?" don't count.
-    """
-    t = (text or "").strip()
-    if not t:
-        return False
-    stripped = URL_RE.sub("", t)
-    if "?" not in stripped:
-        return False
-    if t.startswith(("!", "/")):
-        return False
-
-    normalized = stripped.replace("'", "")
-    question_clauses = QUESTION_CLAUSE_RE.findall(normalized)
-    if not any(QUESTION_WORD_RE.search(c) for c in question_clauses):
-        return False
-
-    return word_count(t) >= max(1, min_words)
-
-def has_historical_signal(text: str, keywords: Iterable[str]) -> bool:
-    """Lightweight, non-AI check for "this text is plausibly about history".
-
-    Mirrors the anchor check quality_check() already applies to a manually
-    submitted /askhist question — a year, a century, or a topic keyword —
-    so a passively-detected question is held to the same bar. Without this,
-    any grammatically real question ("What was your major in college?",
-    "Can I have an icecream?") gets treated as a historical one just because
-    it's a question at all.
-
-    Known limitation: a question about a specific person or event that
-    doesn't also mention a year/century/region/era keyword (e.g. just
-    "Was Napoleon a tyrant?") won't match. That's the same tradeoff
-    quality_check() already makes for manual submissions; moderators can
-    still escalate anything the heuristic misses via the message context menu.
-    """
-    t = text or ""
-    if YEAR_RE.search(t) or CENTURY_RE.search(t):
-        return True
-    t_lower = t.lower()
-    return any(str(k).lower() in t_lower for k in keywords)
 
 def quality_check(
     question: str,

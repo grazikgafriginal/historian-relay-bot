@@ -166,10 +166,18 @@ CREATE TABLE IF NOT EXISTS bot_dm_optout (
 );
 
 -- -------------------------
--- Proactive Ask Historians (passive question watch)
+-- Ask Historians forwarding (triggered by @mentioning the bot, or by a
+-- moderator's "Ask Historians" context-menu action — no more passive
+-- channel-watching/timer/reminder flow).
 -- -------------------------
 
-CREATE TABLE IF NOT EXISTS askhist_watch (
+-- Replaces the old askhist_watch table (dropped below): that table's
+-- watching/reminded states and reminder_* columns no longer apply now that
+-- forwarding happens immediately on an explicit trigger instead of after an
+-- unanswered-question timer.
+DROP TABLE IF EXISTS askhist_watch;
+
+CREATE TABLE IF NOT EXISTS askhist_forward (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
 
   guild_id TEXT NOT NULL,
@@ -179,16 +187,9 @@ CREATE TABLE IF NOT EXISTS askhist_watch (
   question_text TEXT NOT NULL,
 
   created_at INTEGER NOT NULL,
-  remind_at INTEGER NOT NULL,
 
-  -- watching, answered, reminded, escalated, resolved, cancelled
-  status TEXT NOT NULL DEFAULT 'watching',
-  has_reply INTEGER NOT NULL DEFAULT 0,
-
-  reminder_channel_message_id TEXT,
-  reminder_dm_message_id TEXT,
-  reminder_dm_sent INTEGER NOT NULL DEFAULT 0,
-  reminder_sent_at INTEGER,
+  -- new, escalated, resolved
+  status TEXT NOT NULL DEFAULT 'new',
 
   escalated INTEGER NOT NULL DEFAULT 0,
   escalated_by_user_id TEXT,
@@ -204,9 +205,11 @@ CREATE TABLE IF NOT EXISTS askhist_watch (
   UNIQUE (guild_id, message_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_askhist_watch_guild_status ON askhist_watch(guild_id, status);
-CREATE INDEX IF NOT EXISTS idx_askhist_watch_request_msg ON askhist_watch(guild_id, historian_request_message_id);
+CREATE INDEX IF NOT EXISTS idx_askhist_forward_guild_status ON askhist_forward(guild_id, status);
+CREATE INDEX IF NOT EXISTS idx_askhist_forward_request_msg ON askhist_forward(guild_id, historian_request_message_id);
 
+-- Anti-spam cooldown for triggering an "Ask Historians" forward (by mention
+-- or by pressing a button); shared across trigger types.
 CREATE TABLE IF NOT EXISTS historian_ping_cooldowns (
   guild_id TEXT NOT NULL,
   user_id TEXT NOT NULL,
@@ -216,7 +219,7 @@ CREATE TABLE IF NOT EXISTS historian_ping_cooldowns (
   PRIMARY KEY (guild_id, user_id)
 );
 
--- Internal KPI tracking: one row per Historian response to a watched/escalated question.
+-- Internal KPI tracking: one row per Historian response to a forwarded/escalated question.
 CREATE TABLE IF NOT EXISTS historian_responses (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   guild_id TEXT NOT NULL,

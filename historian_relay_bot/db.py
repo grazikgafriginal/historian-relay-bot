@@ -691,10 +691,11 @@ class Database:
         await self.commit()
 
     # --------------------------
-    # Proactive Ask Historians (passive question watch)
+    # Ask Historians forwarding (triggered by @mentioning the bot, or by a
+    # moderator's "Ask Historians" context-menu action)
     # --------------------------
 
-    async def askhist_watch_create(
+    async def askhist_forward_create(
         self,
         *,
         guild_id: int,
@@ -703,129 +704,76 @@ class Database:
         author_id: int,
         question_text: str,
         created_at: int,
-        remind_at: int,
     ) -> int:
         ts = now_ts()
         async with self._lock:
             await self._conn.execute(
                 """
-                INSERT OR IGNORE INTO askhist_watch(
+                INSERT OR IGNORE INTO askhist_forward(
                   guild_id, channel_id, message_id, author_id, question_text,
-                  created_at, remind_at, status, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 'watching', ?)
+                  created_at, status, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, 'new', ?)
                 """,
                 (
                     str(guild_id), str(channel_id), str(message_id), str(author_id),
-                    question_text, int(created_at), int(remind_at), ts,
+                    question_text, int(created_at), ts,
                 ),
             )
             await self._conn.commit()
         row = await self.fetchone(
-            "SELECT id FROM askhist_watch WHERE guild_id=? AND message_id=?",
+            "SELECT id FROM askhist_forward WHERE guild_id=? AND message_id=?",
             (str(guild_id), str(message_id)),
         )
         return int(row["id"]) if row else 0
 
-    async def askhist_watch_get(self, guild_id: int, watch_id: int) -> Optional[aiosqlite.Row]:
+    async def askhist_forward_get(self, guild_id: int, forward_id: int) -> Optional[aiosqlite.Row]:
         return await self.fetchone(
-            "SELECT * FROM askhist_watch WHERE guild_id=? AND id=?",
-            (str(guild_id), watch_id),
+            "SELECT * FROM askhist_forward WHERE guild_id=? AND id=?",
+            (str(guild_id), forward_id),
         )
 
-    async def askhist_watch_get_by_id(self, watch_id: int) -> Optional[aiosqlite.Row]:
-        """Look up a watch row by its globally-unique id alone.
+    async def askhist_forward_get_by_id(self, forward_id: int) -> Optional[aiosqlite.Row]:
+        """Look up a forward row by its globally-unique id alone.
 
-        Needed for view callbacks fired from a DM, where the interaction has
-        no guild_id to scope the lookup with.
+        Needed for view callbacks where the interaction has no guild_id handy.
         """
-        return await self.fetchone("SELECT * FROM askhist_watch WHERE id=?", (watch_id,))
+        return await self.fetchone("SELECT * FROM askhist_forward WHERE id=?", (forward_id,))
 
-    async def askhist_watch_get_by_message(self, guild_id: int, message_id: int) -> Optional[aiosqlite.Row]:
+    async def askhist_forward_get_by_message(self, guild_id: int, message_id: int) -> Optional[aiosqlite.Row]:
         return await self.fetchone(
-            "SELECT * FROM askhist_watch WHERE guild_id=? AND message_id=?",
+            "SELECT * FROM askhist_forward WHERE guild_id=? AND message_id=?",
             (str(guild_id), str(message_id)),
         )
 
-    async def askhist_watch_find_by_ref(
+    async def askhist_forward_find_by_ref(
         self, guild_id: int, ref_message_id: int
     ) -> Optional[Tuple[aiosqlite.Row, str]]:
-        """Find a watch row referenced by a reply, either to the original question
+        """Find a forward row referenced by a reply, either to the original question
         or to the Historian Request message. Returns (row, "original"|"request")."""
         row = await self.fetchone(
-            "SELECT * FROM askhist_watch WHERE guild_id=? AND message_id=?",
+            "SELECT * FROM askhist_forward WHERE guild_id=? AND message_id=?",
             (str(guild_id), str(ref_message_id)),
         )
         if row:
             return row, "original"
         row = await self.fetchone(
-            "SELECT * FROM askhist_watch WHERE guild_id=? AND historian_request_message_id=?",
+            "SELECT * FROM askhist_forward WHERE guild_id=? AND historian_request_message_id=?",
             (str(guild_id), str(ref_message_id)),
         )
         if row:
             return row, "request"
         return None
 
-    async def askhist_watch_mark_answered(self, guild_id: int, watch_id: int) -> None:
-        """Any (non-author) reply to the original question suppresses the reminder."""
+    async def askhist_forward_set_request_message(self, guild_id: int, forward_id: int, message_id: int) -> None:
         ts = now_ts()
         await self.execute(
-            """
-            UPDATE askhist_watch
-            SET status='answered', has_reply=1, updated_at=?
-            WHERE guild_id=? AND id=? AND status='watching'
-            """,
-            (ts, str(guild_id), watch_id),
+            "UPDATE askhist_forward SET historian_request_message_id=?, updated_at=? WHERE guild_id=? AND id=?",
+            (str(message_id), ts, str(guild_id), forward_id),
         )
         await self.commit()
 
-    async def askhist_watch_mark_cancelled(self, guild_id: int, watch_id: int) -> None:
-        ts = now_ts()
-        await self.execute(
-            "UPDATE askhist_watch SET status='cancelled', updated_at=? WHERE guild_id=? AND id=?",
-            (ts, str(guild_id), watch_id),
-        )
-        await self.commit()
-
-    async def askhist_watch_mark_reminded(
-        self,
-        guild_id: int,
-        watch_id: int,
-        *,
-        reminder_channel_message_id: Optional[int],
-        reminder_dm_message_id: Optional[int],
-        reminder_dm_sent: bool,
-    ) -> None:
-        ts = now_ts()
-        await self.execute(
-            """
-            UPDATE askhist_watch
-            SET status='reminded',
-                reminder_channel_message_id=COALESCE(?, reminder_channel_message_id),
-                reminder_dm_message_id=COALESCE(?, reminder_dm_message_id),
-                reminder_dm_sent=?,
-                reminder_sent_at=?,
-                updated_at=?
-            WHERE guild_id=? AND id=?
-            """,
-            (
-                str(reminder_channel_message_id) if reminder_channel_message_id else None,
-                str(reminder_dm_message_id) if reminder_dm_message_id else None,
-                1 if reminder_dm_sent else 0,
-                ts, ts, str(guild_id), watch_id,
-            ),
-        )
-        await self.commit()
-
-    async def askhist_watch_set_request_message(self, guild_id: int, watch_id: int, message_id: int) -> None:
-        ts = now_ts()
-        await self.execute(
-            "UPDATE askhist_watch SET historian_request_message_id=?, updated_at=? WHERE guild_id=? AND id=?",
-            (str(message_id), ts, str(guild_id), watch_id),
-        )
-        await self.commit()
-
-    async def askhist_watch_try_escalate(self, guild_id: int, watch_id: int, user_id: int) -> bool:
-        """Atomically transition watching/answered/reminded -> escalated.
+    async def askhist_forward_try_escalate(self, guild_id: int, forward_id: int, user_id: int) -> bool:
+        """Atomically transition new -> escalated.
 
         Returns False if the question was already escalated/resolved/cancelled
         (guards against double-pinging the Historian role).
@@ -834,8 +782,8 @@ class Database:
         async with self._lock:
             await self._conn.execute("BEGIN IMMEDIATE;")
             row = await self.fetchone(
-                "SELECT status FROM askhist_watch WHERE guild_id=? AND id=?",
-                (str(guild_id), watch_id),
+                "SELECT status FROM askhist_forward WHERE guild_id=? AND id=?",
+                (str(guild_id), forward_id),
             )
             if not row or row["status"] in ("escalated", "resolved", "cancelled"):
                 await self._conn.execute("ROLLBACK;")
@@ -844,23 +792,23 @@ class Database:
             ts = now_ts()
             await self._conn.execute(
                 """
-                UPDATE askhist_watch
+                UPDATE askhist_forward
                 SET status='escalated', escalated=1, escalated_by_user_id=?, escalated_at=?, updated_at=?
                 WHERE guild_id=? AND id=?
                 """,
-                (str(user_id), ts, ts, str(guild_id), watch_id),
+                (str(user_id), ts, ts, str(guild_id), forward_id),
             )
             await self._conn.commit()
             return True
 
-    async def askhist_watch_try_resolve(self, guild_id: int, watch_id: int, resolved_by_user_id: int) -> bool:
+    async def askhist_forward_try_resolve(self, guild_id: int, forward_id: int, resolved_by_user_id: int) -> bool:
         """Atomically mark a question resolved. Returns False if already resolved/cancelled."""
         assert self._conn
         async with self._lock:
             await self._conn.execute("BEGIN IMMEDIATE;")
             row = await self.fetchone(
-                "SELECT status FROM askhist_watch WHERE guild_id=? AND id=?",
-                (str(guild_id), watch_id),
+                "SELECT status FROM askhist_forward WHERE guild_id=? AND id=?",
+                (str(guild_id), forward_id),
             )
             if not row or row["status"] in ("resolved", "cancelled"):
                 await self._conn.execute("ROLLBACK;")
@@ -869,23 +817,17 @@ class Database:
             ts = now_ts()
             await self._conn.execute(
                 """
-                UPDATE askhist_watch
+                UPDATE askhist_forward
                 SET status='resolved', resolved=1, resolved_by_user_id=?, resolved_at=?, updated_at=?
                 WHERE guild_id=? AND id=?
                 """,
-                (str(resolved_by_user_id), ts, ts, str(guild_id), watch_id),
+                (str(resolved_by_user_id), ts, ts, str(guild_id), forward_id),
             )
             await self._conn.commit()
             return True
 
-    async def askhist_watch_list_pending(self) -> list[aiosqlite.Row]:
-        return await self.fetchall("SELECT * FROM askhist_watch WHERE status='watching'")
-
-    async def askhist_watch_list_reminded(self) -> list[aiosqlite.Row]:
-        return await self.fetchall("SELECT * FROM askhist_watch WHERE status='reminded'")
-
-    async def askhist_watch_list_escalated(self) -> list[aiosqlite.Row]:
-        return await self.fetchall("SELECT * FROM askhist_watch WHERE status='escalated'")
+    async def askhist_forward_list_escalated(self) -> list[aiosqlite.Row]:
+        return await self.fetchall("SELECT * FROM askhist_forward WHERE status='escalated'")
 
     # --------------------------
     # Historian ping cooldowns (anti-spam for the "Ask Historians" trigger)

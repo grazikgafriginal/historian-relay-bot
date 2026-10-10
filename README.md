@@ -7,7 +7,7 @@ A Discord bot for history servers:
 - Verified historians/mods can Claim / Unclaim / Needs Context / Close / Publish Answer (reply-based or modal)
 - Approved answers are reposted to the original thread (preferred) or origin channel
 - SQLite persistence + restart recovery (views reattached)
-- Proactively surfaces `/askhist` for unanswered questions asked as plain chat (see below)
+- Forwards a message to the Historians when the bot is @-mentioned (see below)
 
 ## Setup
 
@@ -58,48 +58,41 @@ guess by typing 1066 etc
 - Reply-based publish: post your answer as a reply to the forwarded embed in the historians channel, then press “Publish Answer”.
 - Restart recovery: bot re-edits tracked queue/hist messages to reattach views.
 
-## Proactive Ask Historians (passive question watch)
-Watches configured channels (e.g. `#history-general`) for question-shaped chat
-messages. If a question goes unanswered for a while, the bot posts an
-in-channel reminder (reply) and DMs the asker, each with an **Ask Historians**
-button. Pressing it (or a moderator using the **Ask Historians** message
-context-menu action) posts a Historian Request pinging
-`VERIFIED_HISTORIAN_ROLE_ID` in `HISTORIANS_CHANNEL_ID`. When a Historian
-replies (to the question or to the request), the request is marked resolved
-and the response is logged for future KPI reporting — nothing is ever shown
-publicly.
+## Ask Historians via mention
+@-mention the bot together with a question anywhere in the server and it's
+forwarded to the Historians immediately — no waiting, no in-channel reminder,
+no DM. The mention itself is the explicit signal; there's no passive
+channel-watching or heuristic question-detection to get wrong.
 
-A message must pass three lightweight (non-AI) checks to start a watch:
-1. **Grammatically a question** — a "?" outside of any URL, in a clause that
-   also contains an actual interrogative word (why/what/how/is/does/can/...).
-   Filters out offers and banter that merely end in "?"
-   (e.g. "Wanna see my list of generals?").
-2. **About history** — contains a year, a century (e.g. "5th century"), or one
-   of `ASKHIST_WATCH_TOPIC_KEYWORDS` (regions, empires, eras, general
-   historical vocabulary). Filters out off-topic questions
-   (e.g. "Can I have an icecream?").
-3. **Not itself a reply** — a message that replies to something is treated as
-   continuing an existing exchange, not dropping a fresh standalone question
-   (e.g. "So you are more into prehistory?" replying to a prior message).
+```
+@HistorianBot why did the Western Roman Empire fall when it did?
+```
 
-Known limitation: a question about a specific person/event with no year,
-century, region, or era keyword (e.g. just "Was Napoleon a tyrant?") won't be
-picked up automatically — moderators can still escalate it manually via the
-**Ask Historians** message context-menu action.
+The bot strips its own mention from the text, creates a tracking record, and
+posts a Historian Request pinging `VERIFIED_HISTORIAN_ROLE_ID` in
+`HISTORIANS_CHANNEL_ID` — then replies to confirm. Mentioning the bot with no
+question text just gets a short "mention me together with your question"
+nudge; nothing is forwarded.
+
+When a Historian replies (to the original message or to the Historian
+Request), the request is marked resolved and the response is logged for
+future KPI reporting — nothing is ever shown publicly. A "✅ Mark Resolved"
+button on the request itself is a manual fallback.
+
+Moderators (`MOD_ROLE_ID`) can also forward *any* message via the
+**Ask Historians** message context-menu action (right-click a message →
+Apps → Ask Historians) — useful for a question that wasn't addressed to the
+bot, or where the asker forgot to mention it. Moderators bypass the
+cooldown/cap below.
+
+Anti-spam, so the Historian role can't be repeatedly pinged:
+- A given question can only be forwarded once (further mentions/escalation attempts on an already-escalated question are rejected).
+- Per-user cooldown + daily cap on triggering a forward.
 
 Config (env or `CONFIG_JSON`):
-- `ASKHIST_WATCH_ENABLED` (default `true`) — feature on/off switch.
-- `ASKHIST_WATCH_CHANNEL_IDS` (default empty = disabled until set) — CSV of channel IDs to watch, e.g. the `#history-general` channel ID.
-- `ASKHIST_WATCH_MIN_WORDS` (default `4`) — a message needs a `?` and at least this many words to be tracked.
-- `ASKHIST_WATCH_TOPIC_KEYWORDS` (JSON config only, has a broad built-in default) — topic words that count as a historical signal.
-- `ASKHIST_WATCH_DELAY_SECONDS` (default `7200`, ~2 hours) — how long to wait before reminding.
-- `ASKHIST_WATCH_PING_COOLDOWN_MINUTES` (default `60`) — per-user cooldown between "Ask Historians" triggers.
-- `ASKHIST_WATCH_PING_MAX_PER_DAY` (default `3`) — per-user daily cap on "Ask Historians" triggers.
-
-Moderators (`MOD_ROLE_ID`) bypass the cooldown/cap and can escalate any
-message immediately via the **Ask Historians** message context-menu action,
-without waiting for the timer — this is also the fallback for anything the
-three checks above miss.
+- `ASKHIST_MENTION_ENABLED` (default `true`) — feature on/off switch.
+- `ASKHIST_MENTION_COOLDOWN_MINUTES` (default `60`) — per-user cooldown between forwards triggered by mention.
+- `ASKHIST_MENTION_MAX_PER_DAY` (default `3`) — per-user daily cap on forwards triggered by mention.
 
 ## Topic of the Day
 Posts an open-ended historical discussion prompt on a schedule — no correct

@@ -73,31 +73,6 @@ def build_answer_embed(
     return e
 
 
-def build_watch_reminder_embed(question_text: str, jump_url: str) -> discord.Embed:
-    e = discord.Embed(
-        title="Still need help?",
-        description="Your question hasn't received an answer yet. Would you like to ask the Historians of the House?",
-        color=discord.Color.gold(),
-    )
-    e.add_field(name="Your question", value=shorten_title(question_text, 200), inline=False)
-    e.set_footer(text="Only you (or a moderator) can use the button below.")
-    return e
-
-
-def build_watch_dm_embed(question_text: str, channel_mention: str, jump_url: str) -> discord.Embed:
-    e = discord.Embed(
-        title="Still need help?",
-        description=(
-            f"Your question in {channel_mention} hasn't received an answer yet.\n"
-            "Would you like to notify the Historians of the House?"
-        ),
-        color=discord.Color.gold(),
-    )
-    e.add_field(name="Your question", value=shorten_title(question_text, 200), inline=False)
-    e.add_field(name="Jump to your question", value=f"[Click here]({jump_url})", inline=False)
-    return e
-
-
 def build_topic_of_day_embed(topic: dict, date_key: str) -> discord.Embed:
     e = discord.Embed(
         title=f"🗓️ Topic of the Day — {date_key}",
