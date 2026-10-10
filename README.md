@@ -70,9 +70,26 @@ channel-watching or heuristic question-detection to get wrong.
 
 The bot strips its own mention from the text, creates a tracking record, and
 posts a Historian Request pinging `VERIFIED_HISTORIAN_ROLE_ID` in
-`HISTORIANS_CHANNEL_ID` — then replies to confirm. Mentioning the bot with no
-question text just gets a short "mention me together with your question"
-nudge; nothing is forwarded.
+`HISTORIANS_CHANNEL_ID` — then replies to confirm.
+
+You can also ask the question first, then come back later and just **reply to
+your own message with a mention** instead of retyping it:
+
+```
+[earlier] why did the Western Roman Empire fall when it did?
+[later, as a reply to the above] @HistorianBot
+```
+
+The *original* message is what gets forwarded (with its own jump link), not
+the reply — so a bare "@HistorianBot" works fine. Adding extra text in the
+reply (e.g. "@HistorianBot can you also cover the economic angle?") carries
+that through as additional context alongside the original question. This
+only applies to replying to your *own* message — replying to someone else's
+message and mentioning the bot forwards your own reply text instead (to
+forward someone else's message, a moderator can use the context-menu action
+below). Mentioning the bot with nothing to forward (no text in the mention,
+and no resolvable original question) just gets a short nudge; nothing is
+forwarded.
 
 When a Historian replies (to the original message or to the Historian
 Request), the request is marked resolved and the response is logged for

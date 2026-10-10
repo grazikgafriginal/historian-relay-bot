@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import time
 
 import discord
 from discord import app_commands
@@ -87,16 +86,61 @@ class AskHistorianMentionCog(commands.Cog):
         if self.bot.user in message.mentions:
             await self._forward_on_mention(message)
 
-    async def _forward_on_mention(self, message: discord.Message) -> None:
-        content = message.content or ""
+    def _strip_mention(self, content: str) -> str:
         for pattern in (f"<@{self.bot.user.id}>", f"<@!{self.bot.user.id}>"):
             content = content.replace(pattern, "")
-        content = content.strip()
+        return content.strip()
 
-        if not content:
+    async def _resolve_own_original(self, message: discord.Message) -> discord.Message | None:
+        """If `message` is a reply to the author's own earlier message, return it.
+
+        Lets someone ask a question, then later just reply "@bot" to it (no
+        need to retype the question) once nobody's answered — instead of
+        forwarding the reply itself (which may have no real question text),
+        the original message is what gets forwarded. Returns None if this
+        isn't a reply, the original can't be fetched, or it belongs to
+        someone else (forwarding someone else's message without their own
+        words is left to the moderator context-menu action).
+        """
+        ref = message.reference
+        if not ref or not ref.message_id:
+            return None
+
+        original = ref.resolved
+        if isinstance(original, discord.DeletedReferencedMessage):
+            return None
+        if original is None:
+            try:
+                original = await message.channel.fetch_message(ref.message_id)
+            except Exception:
+                return None
+
+        if original.author.id != message.author.id:
+            return None
+        return original
+
+    async def _forward_on_mention(self, message: discord.Message) -> None:
+        reply_extra = self._strip_mention(message.content or "")
+
+        anchor = message
+        question_text = reply_extra
+
+        original = await self._resolve_own_original(message)
+        if original is not None:
+            original_text = (original.content or "").strip()
+            if original_text:
+                anchor = original
+                question_text = (
+                    f"{original_text}\n\n(Additional context from asker: {reply_extra})"
+                    if reply_extra
+                    else original_text
+                )
+
+        if not question_text:
             try:
                 await message.reply(
-                    "Mention me together with your question and I'll forward it to the Historians of the House.",
+                    "Mention me together with your question (or reply to your own question and mention "
+                    "me there) and I'll forward it to the Historians of the House.",
                     mention_author=True,
                 )
             except Exception:
@@ -105,15 +149,15 @@ class AskHistorianMentionCog(commands.Cog):
 
         try:
             forward_id = await self.bot.db.askhist_forward_create(
-                guild_id=message.guild.id,
-                channel_id=message.channel.id,
-                message_id=message.id,
-                author_id=message.author.id,
-                question_text=content,
-                created_at=int(time.time()),
+                guild_id=anchor.guild.id,
+                channel_id=anchor.channel.id,
+                message_id=anchor.id,
+                author_id=anchor.author.id,
+                question_text=question_text,
+                created_at=int(anchor.created_at.timestamp()),
             )
         except Exception:
-            log.exception("Failed to record forwarded question for message %s", message.id)
+            log.exception("Failed to record forwarded question for message %s", anchor.id)
             return
 
         if not forward_id:
