@@ -4353,7 +4353,7 @@
     "learn_explanation": "Lehman's collapse turned a housing and credit crisis into a global financial panic. The shift came when older institutions could no longer contain elite rivalry, military pressure, or regional fragmentation. Even when the new order remained contested, it changed the terms on which future rivals had to compete."
   },
   {
-    "id": "evt_0160",
+    "id": "evt_1251",
     "prompt": "An empire-shaking clash in Anatolia ends with an Ottoman sultan captured by Timur.",
     "year": 1402,
     "hints": [
@@ -18715,7 +18715,7 @@
       }
     },
     "learn_explanation": "In -307, Ptolemy I founded the Museum and Library of Alexandria with the help of Demetrius Phalereus. Moments like this mattered because control of the center determined who could make law, raise troops, and claim legitimacy. Once authority was reorganized, later politics tended to revolve around institutions created or strengthened in this moment."
-  }, 
+  },
   {
     "id": "evt_0960",
     "prompt": "The last emperor of the Western Roman Empire is deposed by a Germanic chieftain, conventionally marking the end of ancient Rome in the West.",
@@ -26823,5 +26823,392 @@
       }
     },
     "learn_explanation": "The Hundred Days' Reform tried to modernize Qing institutions, education, administration, and the military after China's humiliating defeats. Conservative resistance, court politics, and fear of losing power led Empress Dowager Cixi to halt the movement and confine the Guangxu Emperor. The failed reform deepened the crisis of the Qing state and pushed some reformers toward more radical change."
+  },
+  {
+    "id": "evt_1252",
+    "prompt": "A Kushite king from Napata completes his conquest of Egypt, founding a new ruling dynasty over both lands.",
+    "year": -727,
+    "hints": [
+      "One nearby event: The traditional founding of the city of Rome. That was 26 years before this event.",
+      "One nearby event: Sargon II becomes king of Assyria. That was 5 years after this event.",
+      "One nearby event: Phoenician settlers found the city of Carthage on the North African coast. That was 87 years before this event."
+    ],
+    "tags": [
+      "Africa",
+      "Conquest",
+      "Ancient"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Kushite king who conquered Egypt and founded the 25th Dynasty.",
+        "answers": [
+          "piye",
+          "piankhi",
+          "piankhy"
+        ]
+      }
+    },
+    "learn_explanation": "Piye, king of Kush, marched north from Napata and defeated a coalition of Egyptian rulers, completing his conquest of Egypt around 727 BCE and founding the 25th Dynasty. For the first time, Egypt and Nubia were ruled as one kingdom from the south. The Kushite pharaohs styled themselves as restorers of traditional Egyptian religion and building projects, and their rule lasted roughly a century before Assyrian invasions pushed them back toward Napata and Meroe."
+  },
+  {
+    "id": "evt_1253",
+    "prompt": "Phoenician settlers from Tyre, led by the legendary queen Dido, found a new city on the North African coast.",
+    "year": -814,
+    "hints": [
+      "One nearby event: Shalmaneser III becomes king of Assyria. That was 45 years before this event.",
+      "One nearby event: The traditional founding of the city of Rome. That was 61 years after this event.",
+      "One nearby event: The traditional date of the first Olympic Games in Greece. That was 38 years after this event."
+    ],
+    "tags": [
+      "Africa",
+      "Ancient"
+    ],
+    "learn_explanation": "Ancient tradition dates the founding of Carthage to 814 BCE, when Phoenician settlers from Tyre, led by the legendary queen Dido (Elissa), established a colony on the coast of modern Tunisia. Carthage grew from a trading outpost into the dominant power of the western Mediterranean, eventually rivaling and fighting Rome in the three Punic Wars before its destruction in 146 BCE."
+  },
+  {
+    "id": "evt_1254",
+    "prompt": "A Vietnamese commander lures an invading fleet onto iron-tipped stakes hidden in a tidal river, ending a millennium of foreign rule.",
+    "year": 938,
+    "hints": [
+      "One nearby event: Yelü Abaoji proclaims the Liao dynasty in the north. That was 22 years before this event.",
+      "One nearby event: Otto I is crowned King of East Francia (Germany). That was 2 years before this event.",
+      "One nearby event: Abd al-Rahman III proclaims himself Caliph of Córdoba. That was 9 years before this event."
+    ],
+    "tags": [
+      "Southeast Asia",
+      "War",
+      "Independence"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the Vietnamese commander who won the Battle of Bach Dang River.",
+        "answers": [
+          "ngo quyen"
+        ]
+      }
+    },
+    "learn_explanation": "At the Bach Dang River in 938, Ngo Quyen planted iron-tipped stakes beneath the tidal waters and drew a Southern Han fleet onto them as the tide fell, destroying the invading force. The victory ended roughly a thousand years of on-and-off Chinese rule over Vietnam and let Ngo Quyen found an independent Vietnamese state, beginning a long line of dynasties that would repeatedly use the same river to repel later invasions."
+  },
+  {
+    "id": "evt_1255",
+    "prompt": "An exiled Sumatran prince founds a trading port on the Malay Peninsula that grows into a major Islamic sultanate controlling a vital strait.",
+    "year": 1400,
+    "hints": [
+      "One nearby event: An Ottoman army crushes a European crusader coalition at the Battle of Nicopolis. That was 4 years before this event.",
+      "One nearby event: Timur sacks Delhi, devastating the Delhi Sultanate. That was 2 years before this event.",
+      "One nearby event: Henry Bolingbroke deposes King Richard II to become Henry IV of England. That was 1 year before this event."
+    ],
+    "tags": [
+      "Southeast Asia",
+      "Economy",
+      "Empire"
+    ],
+    "learn_explanation": "Around 1400, the exiled Sumatran prince Parameswara founded a settlement at Malacca on the Malay Peninsula. Its position on the strait linking the Indian Ocean to the South China Sea made it a natural hub for spice and textile trade, and after converting to Islam the ruling house turned Malacca into a sultanate that dominated Southeast Asian commerce until the Portuguese captured it in 1511."
+  },
+  {
+    "id": "evt_1256",
+    "prompt": "A Javanese prince defeats a Mongol invasion fleet and founds an empire that becomes the dominant power in the Indonesian archipelago.",
+    "year": 1293,
+    "hints": [
+      "One nearby event: The fall of Acre ends the last Crusader stronghold in the Holy Land. That was 2 years before this event.",
+      "One nearby event: Marco Polo returns to Venice after decades traveling in Asia. That was 2 years after this event.",
+      "One nearby event: The traditional founding date of the Ottoman beylik under Osman I. That was 6 years after this event."
+    ],
+    "tags": [
+      "Southeast Asia",
+      "Empire"
+    ],
+    "learn_explanation": "In 1293, Raden Wijaya turned the retreat of a Yuan Mongol invasion fleet to his advantage, defeating both the Mongols and a rival Javanese kingdom, and founded the Majapahit Empire. At its height in the 14th century, Majapahit's influence extended across much of what is now Indonesia, Malaysia, and the southern Philippines, making it one of the largest and most influential empires in Southeast Asian history."
+  },
+  {
+    "id": "evt_1257",
+    "prompt": "An Italian artist completes four years of work on a monumental ceiling fresco inside the pope's private chapel in Rome.",
+    "year": 1512,
+    "hints": [
+      "One nearby event: Columbus departs on his fourth and final voyage to the Americas. That was 10 years before this event.",
+      "One nearby event: Niccolò Machiavelli completes 'The Prince.' That was 1 year after this event.",
+      "One nearby event: Martin Luther posts his Ninety-Five Theses, sparking the Reformation. That was 5 years after this event."
+    ],
+    "tags": [
+      "Italy",
+      "Culture"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the artist who painted the Sistine Chapel ceiling.",
+        "answers": [
+          "michelangelo",
+          "michelangelo buonarroti"
+        ]
+      }
+    },
+    "learn_explanation": "Michelangelo completed the ceiling of the Sistine Chapel in 1512, after four years of painting scenes from the Book of Genesis, including the famous 'Creation of Adam.' Commissioned by Pope Julius II, the work became one of the defining achievements of the High Renaissance and cemented Michelangelo's reputation as one of history's greatest artists."
+  },
+  {
+    "id": "evt_1258",
+    "prompt": "Shares in a British trading company collapse after months of frenzied speculation, wiping out fortunes across the country.",
+    "year": 1720,
+    "hints": [
+      "One nearby event: The Treaty of Utrecht ends the War of the Spanish Succession. That was 7 years before this event.",
+      "One nearby event: George I becomes King of Great Britain, beginning the Hanoverian line. That was 6 years before this event.",
+      "One nearby event: Johann Sebastian Bach completes his Brandenburg Concertos. That was 1 year after this event."
+    ],
+    "tags": [
+      "Britain",
+      "Economy",
+      "Disaster"
+    ],
+    "learn_explanation": "The South Sea Company's stock price soared through 1720 on wildly inflated expectations about its trade monopoly, then collapsed within months, ruining investors across Britain (reportedly including Isaac Newton). The crash, one of the first great speculative bubbles, led Parliament to pass the Bubble Act restricting the formation of joint-stock companies."
+  },
+  {
+    "id": "evt_1259",
+    "prompt": "A British naval expedition makes its first landfall on the eastern coast of Australia, charting the coastline for Europe.",
+    "year": 1770,
+    "hints": [
+      "One nearby event: James Watt patents his improved steam engine design. That was 1 year before this event.",
+      "One nearby event: Napoleon Bonaparte is born in Corsica. That was 1 year before this event.",
+      "One nearby event: The first partition of Poland begins among neighboring powers. That was 2 years after this event."
+    ],
+    "tags": [
+      "Exploration",
+      "Britain"
+    ],
+    "learn_explanation": "In April 1770, Lieutenant James Cook's HMS Endeavour reached Botany Bay, the first recorded European landing on the eastern coast of Australia. Cook charted thousands of miles of coastline and claimed the territory for Britain, laying the groundwork for colonization that began with the First Fleet in 1788."
+  },
+  {
+    "id": "evt_1260",
+    "prompt": "A British naturalist publishes a book proposing that species change over time through natural selection, triggering fierce debate.",
+    "year": 1859,
+    "hints": [
+      "One nearby event: The Indian Rebellion of 1857 breaks out against East India Company rule. That was 2 years before this event.",
+      "One nearby event: The Crimean War ends with the Treaty of Paris. That was 3 years before this event.",
+      "One nearby event: The American Civil War begins at Fort Sumter. That was 2 years after this event."
+    ],
+    "tags": [
+      "Science",
+      "Britain"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the naturalist who published 'On the Origin of Species.'",
+        "answers": [
+          "charles darwin",
+          "darwin"
+        ]
+      }
+    },
+    "learn_explanation": "Charles Darwin published 'On the Origin of Species' in 1859, laying out two decades of evidence for evolution by natural selection. The book reshaped biology and challenged prevailing religious and scientific views of the fixity of species, sparking debate that continues in some circles to this day."
+  },
+  {
+    "id": "evt_1261",
+    "prompt": "A German-born physicist presents a new theory of gravity describing it as the curvature of space and time.",
+    "year": 1915,
+    "hints": [
+      "One nearby event: The RMS Titanic sinks on its maiden voyage. That was 3 years before this event.",
+      "One nearby event: The First World War begins in Europe. That was 1 year before this event.",
+      "One nearby event: The Easter Rising breaks out in Dublin. That was 1 year after this event."
+    ],
+    "tags": [
+      "Science",
+      "Physics"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the physicist who presented the theory of general relativity.",
+        "answers": [
+          "einstein",
+          "albert einstein"
+        ]
+      }
+    },
+    "learn_explanation": "Albert Einstein presented his general theory of relativity in November 1915, describing gravity not as a force but as the curvature of space and time caused by mass and energy. The theory's predictions were confirmed in 1919 when Arthur Eddington observed starlight bending during a solar eclipse, making Einstein internationally famous almost overnight."
+  },
+  {
+    "id": "evt_1262",
+    "prompt": "Surgeons in Boston perform the first organ transplant between living humans to succeed long-term, using identical twins.",
+    "year": 1954,
+    "hints": [
+      "One nearby event: The Korean War ends with an armistice. That was 1 year before this event.",
+      "One nearby event: Watson and Crick describe the double-helix structure of DNA. That was 1 year before this event.",
+      "One nearby event: Rosa Parks refuses to give up her bus seat in Montgomery, Alabama. That was 1 year after this event."
+    ],
+    "tags": [
+      "Science",
+      "Medicine"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the surgeon who led the first successful kidney transplant.",
+        "answers": [
+          "joseph murray",
+          "murray"
+        ]
+      }
+    },
+    "learn_explanation": "In 1954, surgeon Joseph Murray led a team at Brigham Hospital in Boston that transplanted a kidney from Ronald Herrick into his identical twin Richard, who was dying of kidney disease. Because the twins were genetically identical, the organ wasn't rejected, proving organ transplantation could work and launching the field of transplant medicine. Murray later won the 1990 Nobel Prize in Physiology or Medicine for the achievement."
+  },
+  {
+    "id": "evt_1263",
+    "prompt": "An Anglo-Egyptian army armed with machine guns crushes a much larger Sudanese force, reconquering Sudan for Britain and Egypt.",
+    "year": 1898,
+    "hints": [
+      "One nearby event: Wilhelm Röntgen discovers X-rays. That was 3 years before this event.",
+      "One nearby event: Ethiopian forces defeat Italy at the Battle of Adwa. That was 2 years before this event.",
+      "One nearby event: The Second Boer War begins in South Africa. That was 1 year after this event."
+    ],
+    "tags": [
+      "Africa",
+      "War",
+      "Colonial"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the British general who commanded at the Battle of Omdurman.",
+        "answers": [
+          "kitchener",
+          "herbert kitchener",
+          "lord kitchener"
+        ]
+      }
+    },
+    "learn_explanation": "At Omdurman in September 1898, an Anglo-Egyptian army under Herbert Kitchener used Maxim guns and modern rifles to shatter a far larger Mahdist Sudanese force, suffering only a fraction of the casualties it inflicted. The battle completed the British reconquest of Sudan and became a stark symbol of the technological gap that defined much of the era's colonial warfare; a young Winston Churchill rode in one of the last major cavalry charges of the British Army."
+  },
+  {
+    "id": "evt_1264",
+    "prompt": "A small group of Boer settlers repels a massive Zulu attack in South Africa without losing a single man, after vowing to commemorate the day if victorious.",
+    "year": 1838,
+    "hints": [
+      "One nearby event: Boer settlers begin the Great Trek away from the Cape Colony. That was 3 years before this event.",
+      "One nearby event: Texian forces win independence from Mexico at the Battle of San Jacinto. That was 2 years before this event.",
+      "One nearby event: Samuel Morse develops an early version of Morse code. That was 1 year before this event."
+    ],
+    "tags": [
+      "Africa",
+      "War"
+    ],
+    "learn_explanation": "On December 16, 1838, a force of Voortrekker Boers under Andries Pretorius defeated a much larger Zulu army at the Ncome River, having vowed beforehand to commemorate the day if God granted them victory. Not a single Boer died in the fighting, and so many Zulu warriors fell that the river ran red, giving the battle its name: Blood River. The battle became a foundational myth in Afrikaner nationalism, long commemorated as the Day of the Vow."
+  },
+  {
+    "id": "evt_1265",
+    "prompt": "British officials and Maori chiefs sign a founding treaty establishing British sovereignty over a Pacific colony, with lasting and disputed consequences.",
+    "year": 1840,
+    "hints": [
+      "One nearby event: The First Opium War begins between Britain and Qing China. That was 1 year before this event.",
+      "One nearby event: The US Supreme Court rules in the Amistad case. That was 1 year after this event.",
+      "One nearby event: The Treaty of Nanking cedes Hong Kong Island to Britain. That was 2 years after this event."
+    ],
+    "tags": [
+      "Colonial",
+      "Indigenous"
+    ],
+    "learn_explanation": "The Treaty of Waitangi, signed on February 6, 1840, between the British Crown and more than 500 Maori chiefs, became the founding document of New Zealand as a British colony. The English and Maori versions of the text differ on key points, especially around sovereignty versus governance, and disputes over the treaty's meaning and its breaches have shaped New Zealand politics and law ever since. Waitangi Day is now New Zealand's national day."
+  },
+  {
+    "id": "evt_1266",
+    "prompt": "A British naval force destroys a West African royal palace city in reprisal for an earlier ambush, looting thousands of royal bronze artworks.",
+    "year": 1897,
+    "hints": [
+      "One nearby event: Gold is discovered in the Klondike, triggering a massive gold rush. That was 1 year before this event.",
+      "One nearby event: The first modern Olympic marathon is run in Athens. That was 1 year before this event.",
+      "One nearby event: The Spanish-American War begins. That was 1 year after this event."
+    ],
+    "tags": [
+      "Africa",
+      "War",
+      "Colonial"
+    ],
+    "learn_explanation": "In February 1897, a British naval force stormed and burned Benin City in present-day Nigeria in reprisal for an earlier ambush of a British delegation, deposing the Oba (king) and exiling him. The expedition looted thousands of brass and ivory artworks — the Benin Bronzes — which were sold off to museums and collectors across Europe. Their ownership remains contested, with ongoing restitution claims and some returns by Western museums in recent years."
+  },
+  {
+    "id": "evt_1267",
+    "prompt": "A physicist and chemist becomes the first person ever to win a Nobel Prize in two different scientific fields.",
+    "year": 1911,
+    "hints": [
+      "One nearby event: The Mexican Revolution begins against President Porfirio Díaz. That was 1 year before this event.",
+      "One nearby event: A revolution overthrows the Portuguese monarchy, establishing a republic. That was 1 year before this event.",
+      "One nearby event: The RMS Titanic sinks on its maiden voyage. That was 1 year after this event."
+    ],
+    "tags": [
+      "Science"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the scientist who won Nobel Prizes in both Physics and Chemistry.",
+        "answers": [
+          "marie curie",
+          "curie"
+        ]
+      }
+    },
+    "learn_explanation": "Marie Curie won the 1911 Nobel Prize in Chemistry for discovering the elements radium and polonium and isolating pure radium, eight years after sharing the 1903 Nobel Prize in Physics for her work on radioactivity. She remains the only person ever to win Nobel Prizes in two different sciences, and her research laid the groundwork for later work in nuclear physics and cancer treatment — though it also cost her her health, as the dangers of radiation exposure were not yet understood."
+  },
+  {
+    "id": "evt_1268",
+    "prompt": "The United States agrees to buy a vast stretch of French territory in North America, roughly doubling its size overnight.",
+    "year": 1803,
+    "hints": [
+      "One nearby event: The Act of Union creates the United Kingdom of Great Britain and Ireland. That was 2 years before this event.",
+      "One nearby event: The Haitian Revolution concludes, creating the first Black-led republic in the Americas. That was 1 year after this event.",
+      "One nearby event: Napoleon crowns himself Emperor of the French. That was 1 year after this event."
+    ],
+    "tags": [
+      "Americas",
+      "Diplomacy"
+    ],
+    "learn_explanation": "In 1803, the United States agreed to buy roughly 828,000 square miles of French territory in North America for about $15 million, doubling the young country's size. Napoleon, needing funds for war in Europe and having just lost his foothold in the Americas to the Haitian Revolution, abandoned his plans for a French empire on the continent. The purchase opened the way for rapid westward American expansion."
+  },
+  {
+    "id": "evt_1269",
+    "prompt": "A British archaeologist and his team break into a sealed tomb in the Valley of the Kings and find it remarkably intact, filled with golden treasures.",
+    "year": 1922,
+    "hints": [
+      "One nearby event: The Treaty of Versailles formally ends the First World War peace process. That was 3 years before this event.",
+      "One nearby event: Women gain the right to vote across the United States. That was 2 years before this event.",
+      "One nearby event: The Treaty of Lausanne recognizes the new Republic of Turkey. That was 1 year after this event."
+    ],
+    "tags": [
+      "Africa",
+      "Discovery"
+    ],
+    "bonus": {
+      "person": {
+        "prompt": "Bonus: Name the archaeologist who discovered Tutankhamun's tomb.",
+        "answers": [
+          "howard carter",
+          "carter"
+        ]
+      }
+    },
+    "learn_explanation": "In November 1922, archaeologist Howard Carter discovered the nearly intact tomb of the young pharaoh Tutankhamun in Egypt's Valley of the Kings. Unlike almost every other pharaonic tomb, it had never been thoroughly looted, so it was packed with golden artifacts, furniture, and the pharaoh's own mummy and burial mask. The find caused a worldwide sensation and fueled a wave of popular fascination with ancient Egypt that has never fully faded."
+  },
+  {
+    "id": "evt_1270",
+    "prompt": "British India is divided into two new independent countries along religious lines, triggering one of the largest mass migrations in history.",
+    "year": 1947,
+    "hints": [
+      "One nearby event: The United Nations is founded in the aftermath of the Second World War. That was 2 years before this event.",
+      "One nearby event: Mahatma Gandhi is assassinated in New Delhi. That was 1 year after this event.",
+      "One nearby event: The State of Israel declares independence. That was 1 year after this event."
+    ],
+    "tags": [
+      "India",
+      "Independence"
+    ],
+    "learn_explanation": "In August 1947, British India gained independence and was simultaneously partitioned into two new states, India and Pakistan, largely along religious lines. The partition triggered one of the largest mass migrations in human history, as roughly 10-15 million people crossed the new borders, and widespread communal violence killed hundreds of thousands. The partition's legacy continues to shape relations between India and Pakistan today."
+  },
+  {
+    "id": "evt_1271",
+    "prompt": "A French soldier rebuilding a fort in Egypt uncovers an inscribed slab that will eventually unlock the ability to read ancient Egyptian hieroglyphs.",
+    "year": 1799,
+    "hints": [
+      "One nearby event: The Treaty of Campo Formio ends the War of the First Coalition. That was 2 years before this event.",
+      "One nearby event: Napoleon's army invades Egypt. That was 1 year before this event.",
+      "One nearby event: The United States capital moves to Washington, D.C. That was 1 year after this event."
+    ],
+    "tags": [
+      "Africa",
+      "Discovery"
+    ],
+    "learn_explanation": "French soldiers rebuilding a fort near Rosetta, Egypt discovered an inscribed granite slab in 1799, during Napoleon's military campaign there. The Rosetta Stone carried the same decree in hieroglyphic, Demotic, and Greek script, and the Greek text eventually let scholars — above all Jean-François Champollion in the 1820s — decipher Egyptian hieroglyphs for the first time in over a thousand years, founding the modern study of ancient Egypt."
   }
 ]
