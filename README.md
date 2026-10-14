@@ -126,9 +126,11 @@ Config (env or `CONFIG_JSON`):
 Moderators can post one immediately with `/topic_now [channel]`, regardless
 of the schedule — handy for testing or for an impromptu topic.
 
-Any user can run **`/topic [tag] [era]`** at any time to get a discussion
-topic posted right in the channel they're in — this doesn't touch the daily
-schedule or count toward it, it's just "give the channel something to talk
-about." Optional `tag`/`era` filters narrow the pick to a theme; a per-user
-cooldown keeps it from being spammed. Unlike the scheduled post, `/topic`
-results aren't pinned.
+Any user can run **`/topic [tag] [era]`** (or the prefix-command equivalent
+**`!topic [tag] [era]`**, e.g. `!topic religion ancient`) at any time to get
+a discussion topic posted right in the channel they're in — this doesn't
+touch the daily schedule or count toward it, it's just "give the channel
+something to talk about." Optional `tag`/`era` filters narrow the pick to a
+theme; a per-user cooldown (shared between both command forms) keeps it from
+being spammed. Unlike the scheduled post, `/topic`/`!topic` results aren't
+pinned.

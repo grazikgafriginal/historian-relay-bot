@@ -176,6 +176,51 @@ class TopicOfDayCog(commands.Cog):
         else:
             await interaction.followup.send("Failed to post a topic — check the logs.", ephemeral=True)
 
+    def _parse_topic_args(self, args: str) -> Tuple[Optional[str], Optional[str]]:
+        """Match free-text tokens (e.g. "religion ancient") against the same
+        tag/era vocabulary the slash command's dropdowns use. Unrecognized
+        tokens are ignored rather than erroring, since this is just a casual
+        filter shortcut, not a strict parser."""
+        tokens = [t.strip().lower() for t in args.split() if t.strip()]
+        valid_tags = {c.value for c in TAG_CHOICES}
+        valid_eras = {c.value for c in ERA_CHOICES}
+        tag_val = next((t for t in tokens if t in valid_tags), None)
+        era_val = next((t for t in tokens if t in valid_eras), None)
+        return tag_val, era_val
+
+    async def _topic_request(
+        self,
+        *,
+        guild_id: int,
+        channel: Union[discord.TextChannel, discord.Thread],
+        user_id: int,
+        tag: Optional[str],
+        era: Optional[str],
+    ) -> Tuple[Optional[discord.Message], Optional[str]]:
+        """Shared by /topic and !topic. Returns (message, error) — exactly one is set."""
+        if not self._topics:
+            return None, "No topics are loaded — check historian_relay_bot/data/topics.json."
+
+        cooldown_key = (guild_id, user_id)
+        cooldown_seconds = max(0, int(self.bot.cfg.TOPIC_OF_DAY_USER_COOLDOWN_MINUTES)) * 60
+        now = int(time.time())
+        last_used = self._user_cooldown.get(cooldown_key)
+        if cooldown_seconds and last_used is not None and now - last_used < cooldown_seconds:
+            remaining = cooldown_seconds - (now - last_used)
+            mins = max(1, int(remaining // 60) + (1 if remaining % 60 else 0))
+            return None, f"You've requested a topic recently — try again in about **{mins} minute(s)**."
+
+        now_dt = datetime.datetime.now(datetime.timezone.utc)
+        msg = await self._post_topic(
+            channel, date_key=now_dt.strftime("%Y-%m-%d"), auto=False, tag=tag, era=era, pin=False
+        )
+        if msg:
+            self._user_cooldown[cooldown_key] = now
+            return msg, None
+
+        filt = " matching those filters" if (tag or era) else ""
+        return None, f"No topics{filt} are available right now."
+
     @app_commands.command(name="topic", description="Get a history topic to discuss, posted right here.")
     @app_commands.describe(tag="Optional topic filter", era="Optional era filter")
     @app_commands.choices(tag=TAG_CHOICES, era=ERA_CHOICES)
@@ -188,41 +233,35 @@ class TopicOfDayCog(commands.Cog):
         if not interaction.guild or not isinstance(interaction.channel, (discord.TextChannel, discord.Thread)):
             return await interaction.response.send_message("This can only be used in a server text channel.", ephemeral=True)
 
-        if not self._topics:
-            return await interaction.response.send_message(
-                "No topics are loaded — check historian_relay_bot/data/topics.json.", ephemeral=True
-            )
-
-        cooldown_key = (interaction.guild_id, interaction.user.id)
-        cooldown_seconds = max(0, int(self.bot.cfg.TOPIC_OF_DAY_USER_COOLDOWN_MINUTES)) * 60
-        now = int(time.time())
-        last_used = self._user_cooldown.get(cooldown_key)
-        if cooldown_seconds and last_used is not None and now - last_used < cooldown_seconds:
-            remaining = cooldown_seconds - (now - last_used)
-            mins = max(1, int(remaining // 60) + (1 if remaining % 60 else 0))
-            return await interaction.response.send_message(
-                f"You've requested a topic recently — try again in about **{mins} minute(s)**.", ephemeral=True
-            )
-
-        tag_val = tag.value if tag else None
-        era_val = era.value if era else None
-
         await interaction.response.defer(ephemeral=True)
-        now_dt = datetime.datetime.now(datetime.timezone.utc)
-        msg = await self._post_topic(
-            interaction.channel,
-            date_key=now_dt.strftime("%Y-%m-%d"),
-            auto=False,
-            tag=tag_val,
-            era=era_val,
-            pin=False,
+        msg, error = await self._topic_request(
+            guild_id=interaction.guild_id,
+            channel=interaction.channel,
+            user_id=interaction.user.id,
+            tag=tag.value if tag else None,
+            era=era.value if era else None,
         )
         if msg:
-            self._user_cooldown[cooldown_key] = now
             await interaction.followup.send(f"Posted: {msg.jump_url}", ephemeral=True)
         else:
-            filt = " matching those filters" if (tag_val or era_val) else ""
-            await interaction.followup.send(f"No topics{filt} are available right now.", ephemeral=True)
+            await interaction.followup.send(error, ephemeral=True)
+
+    @commands.command(name="topic")
+    async def topic_text_cmd(self, ctx: commands.Context, *, args: str = ""):
+        """!topic [tag] [era] — same as /topic, for people who'd rather type a prefix command."""
+        if not ctx.guild or not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
+            return
+
+        tag_val, era_val = self._parse_topic_args(args)
+        _msg, error = await self._topic_request(
+            guild_id=ctx.guild.id,
+            channel=ctx.channel,
+            user_id=ctx.author.id,
+            tag=tag_val,
+            era=era_val,
+        )
+        if error:
+            await ctx.send(error, delete_after=20)
 
 
 async def setup(bot: commands.Bot):
