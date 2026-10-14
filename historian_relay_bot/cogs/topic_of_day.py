@@ -4,13 +4,15 @@ import datetime
 import json
 import logging
 import random
+import time
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
+from historian_relay_bot.cogs.askhist import TAG_CHOICES, ERA_CHOICES
 from historian_relay_bot.utils.formatting import build_topic_of_day_embed
 
 log = logging.getLogger("historian_relay.topic_of_day")
@@ -27,6 +29,7 @@ class TopicOfDayCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self._topics: list[dict[str, Any]] = []
+        self._user_cooldown: Dict[Tuple[int, int], int] = {}  # (guild_id, user_id) -> last used ts
         self._load_dataset()
 
     def _is_mod(self, member: discord.Member) -> bool:
@@ -56,25 +59,40 @@ class TopicOfDayCog(commands.Cog):
     async def cog_unload(self) -> None:
         self._daily_loop.cancel()
 
-    async def _pick_topic(self, guild_id: int) -> Optional[dict[str, Any]]:
-        if not self._topics:
+    async def _pick_topic(
+        self, guild_id: int, *, tag: Optional[str] = None, era: Optional[str] = None
+    ) -> Optional[dict[str, Any]]:
+        candidates = self._topics
+        if tag:
+            candidates = [t for t in candidates if str(t.get("tag", "")).lower() == tag.lower()]
+        if era:
+            candidates = [t for t in candidates if str(t.get("era", "")).lower() == era.lower()]
+        if not candidates:
             return None
-        recent_ids = set(await self.bot.db.topic_log_recent_topic_ids(guild_id, max(0, len(self._topics) - 1)))
-        pool = [t for t in self._topics if t["id"] not in recent_ids]
+
+        recent_ids = set(await self.bot.db.topic_log_recent_topic_ids(guild_id, max(0, len(candidates) - 1)))
+        pool = [t for t in candidates if t["id"] not in recent_ids]
         if not pool:
-            pool = self._topics  # whole pool has cycled through — start over
+            pool = candidates  # whole (filtered) pool has cycled through — start over
         return random.choice(pool)
 
     async def _post_topic(
-        self, channel: Union[discord.TextChannel, discord.Thread], *, date_key: str, auto: bool
+        self,
+        channel: Union[discord.TextChannel, discord.Thread],
+        *,
+        date_key: str,
+        auto: bool,
+        tag: Optional[str] = None,
+        era: Optional[str] = None,
+        pin: bool = True,
     ) -> Optional[discord.Message]:
         guild = channel.guild
         if guild is None:
             return None
 
-        topic = await self._pick_topic(guild.id)
+        topic = await self._pick_topic(guild.id, tag=tag, era=era)
         if not topic:
-            log.warning("No Topic of the Day topics available for guild %s", guild.id)
+            log.warning("No matching Topic of the Day topics available for guild %s", guild.id)
             return None
 
         embed = build_topic_of_day_embed(topic, date_key)
@@ -89,10 +107,11 @@ class TopicOfDayCog(commands.Cog):
             auto=auto,
         )
 
-        try:
-            await msg.pin()
-        except Exception:
-            pass  # non-essential (e.g. channel already has 50 pins)
+        if pin:
+            try:
+                await msg.pin()
+            except Exception:
+                pass  # non-essential (e.g. channel already has 50 pins)
 
         return msg
 
@@ -156,6 +175,54 @@ class TopicOfDayCog(commands.Cog):
             await interaction.followup.send(f"Posted a topic in {target.mention}: {msg.jump_url}", ephemeral=True)
         else:
             await interaction.followup.send("Failed to post a topic — check the logs.", ephemeral=True)
+
+    @app_commands.command(name="topic", description="Get a history topic to discuss, posted right here.")
+    @app_commands.describe(tag="Optional topic filter", era="Optional era filter")
+    @app_commands.choices(tag=TAG_CHOICES, era=ERA_CHOICES)
+    async def topic(
+        self,
+        interaction: discord.Interaction,
+        tag: Optional[app_commands.Choice[str]] = None,
+        era: Optional[app_commands.Choice[str]] = None,
+    ):
+        if not interaction.guild or not isinstance(interaction.channel, (discord.TextChannel, discord.Thread)):
+            return await interaction.response.send_message("This can only be used in a server text channel.", ephemeral=True)
+
+        if not self._topics:
+            return await interaction.response.send_message(
+                "No topics are loaded — check historian_relay_bot/data/topics.json.", ephemeral=True
+            )
+
+        cooldown_key = (interaction.guild_id, interaction.user.id)
+        cooldown_seconds = max(0, int(self.bot.cfg.TOPIC_OF_DAY_USER_COOLDOWN_MINUTES)) * 60
+        now = int(time.time())
+        last_used = self._user_cooldown.get(cooldown_key)
+        if cooldown_seconds and last_used is not None and now - last_used < cooldown_seconds:
+            remaining = cooldown_seconds - (now - last_used)
+            mins = max(1, int(remaining // 60) + (1 if remaining % 60 else 0))
+            return await interaction.response.send_message(
+                f"You've requested a topic recently — try again in about **{mins} minute(s)**.", ephemeral=True
+            )
+
+        tag_val = tag.value if tag else None
+        era_val = era.value if era else None
+
+        await interaction.response.defer(ephemeral=True)
+        now_dt = datetime.datetime.now(datetime.timezone.utc)
+        msg = await self._post_topic(
+            interaction.channel,
+            date_key=now_dt.strftime("%Y-%m-%d"),
+            auto=False,
+            tag=tag_val,
+            era=era_val,
+            pin=False,
+        )
+        if msg:
+            self._user_cooldown[cooldown_key] = now
+            await interaction.followup.send(f"Posted: {msg.jump_url}", ephemeral=True)
+        else:
+            filt = " matching those filters" if (tag_val or era_val) else ""
+            await interaction.followup.send(f"No topics{filt} are available right now.", ephemeral=True)
 
 
 async def setup(bot: commands.Bot):

@@ -159,6 +159,7 @@ class BotConfig:
     TOPIC_OF_DAY_ENABLED: bool = True
     TOPIC_OF_DAY_CHANNEL_ID: Optional[int] = None  # unset = feature inert
     TOPIC_OF_DAY_HOUR_UTC: int = 14
+    TOPIC_OF_DAY_USER_COOLDOWN_MINUTES: int = 10  # per-user cooldown for the /topic command
 
 
 def load_config() -> BotConfig:
@@ -237,4 +238,5 @@ def load_config() -> BotConfig:
         TOPIC_OF_DAY_ENABLED=_get_bool("TOPIC_OF_DAY_ENABLED", bool(data.get("TOPIC_OF_DAY_ENABLED", True))),
         TOPIC_OF_DAY_CHANNEL_ID=_get_optional_int("TOPIC_OF_DAY_CHANNEL_ID") or (int(data["TOPIC_OF_DAY_CHANNEL_ID"]) if data.get("TOPIC_OF_DAY_CHANNEL_ID") else None),
         TOPIC_OF_DAY_HOUR_UTC=_get_int("TOPIC_OF_DAY_HOUR_UTC", int(data.get("TOPIC_OF_DAY_HOUR_UTC", 14))),
+        TOPIC_OF_DAY_USER_COOLDOWN_MINUTES=_get_int("TOPIC_OF_DAY_USER_COOLDOWN_MINUTES", int(data.get("TOPIC_OF_DAY_USER_COOLDOWN_MINUTES", 10))),
     )

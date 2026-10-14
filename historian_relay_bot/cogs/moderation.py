@@ -158,6 +158,7 @@ class ModerationCog(commands.Cog):
             f"**Enabled:** {cfg.TOPIC_OF_DAY_ENABLED}\n"
             f"**Channel:** {cfg.TOPIC_OF_DAY_CHANNEL_ID or '—'}\n"
             f"**Post hour (UTC):** {cfg.TOPIC_OF_DAY_HOUR_UTC}\n"
+            f"**/topic user cooldown:** {cfg.TOPIC_OF_DAY_USER_COOLDOWN_MINUTES} min\n"
         )
         await interaction.response.send_message(text, delete_after=20)
 
