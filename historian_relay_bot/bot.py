@@ -112,8 +112,14 @@ class HistorianRelayBot(commands.Bot):
         if self.cfg.TOPIC_OF_DAY_ENABLED:
             await self.load_extension("historian_relay_bot.cogs.topic_of_day")
 
+        await self.load_extension("historian_relay_bot.cogs.book_sources")
+
         # Sync commands (global sync can take time; for a single server consider guild-specific sync)
         await self.tree.sync()
+
+        # /submit is guild-scoped (see cogs/book_sources.py), so it needs its own guild sync.
+        if self.cfg.GUILD_ID:
+            await self.tree.sync(guild=discord.Object(id=self.cfg.GUILD_ID))
 
         if self.cfg.GUESSYEAR_ENABLED:
             await self.load_extension("historian_relay_bot.cogs.guessyear")

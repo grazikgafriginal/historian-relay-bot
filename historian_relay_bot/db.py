@@ -34,6 +34,32 @@ class QuestionRow:
     answered_by_user_id: Optional[str]
     answered_at: Optional[int]
 
+@dataclass(slots=True)
+class SourceSubmissionRow:
+    id: int
+    guild_id: str
+    user_id: str
+    title: str
+    authors: str
+    publisher: str
+    year: int
+    original_year: Optional[int]
+    topic: str
+    secondary_topic: Optional[str]
+    covers: str
+    type: str
+    link: Optional[str]
+    filename_author: Optional[str]
+    filename_short_title: Optional[str]
+    file_ext: Optional[str]
+    status: str
+    review_message_id: Optional[str]
+    forum_thread_id: Optional[str]
+    reviewer_id: Optional[str]
+    reject_reason: Optional[str]
+    created_at: int
+    decided_at: Optional[int]
+
 def now_ts() -> int:
     return int(time.time())
 
@@ -1725,3 +1751,168 @@ class Database:
         if row and int(row[1]) >= 5:
             return float(int(row[0])) / max(int(row[1]), 1)
         return None
+
+    # --------------------------
+    # Book source submissions (/submit)
+    # --------------------------
+
+    async def source_submission_create(
+        self,
+        *,
+        guild_id: int,
+        user_id: int,
+        title: str,
+        authors: str,
+        publisher: str,
+        year: int,
+        original_year: Optional[int],
+        topic: str,
+        secondary_topic: Optional[str],
+        covers: str,
+        type: str,
+        link: Optional[str],
+        filename_author: str,
+        filename_short_title: str,
+        file_ext: Optional[str],
+    ) -> int:
+        ts = now_ts()
+        async with self._lock:
+            cur = await self._conn.execute(
+                """
+                INSERT INTO source_submissions(
+                  guild_id, user_id, title, authors, publisher, year, original_year,
+                  topic, secondary_topic, covers, type, link,
+                  filename_author, filename_short_title, file_ext,
+                  status, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+                """,
+                (
+                    str(guild_id), str(user_id), title, authors, publisher, int(year),
+                    int(original_year) if original_year is not None else None,
+                    topic, secondary_topic, covers, type, link,
+                    filename_author, filename_short_title, file_ext,
+                    ts,
+                ),
+            )
+            await self._conn.commit()
+            return int(cur.lastrowid)
+
+    async def source_submission_get(self, guild_id: int, sub_id: int) -> Optional[SourceSubmissionRow]:
+        row = await self.fetchone(
+            "SELECT * FROM source_submissions WHERE guild_id=? AND id=?",
+            (str(guild_id), sub_id),
+        )
+        return SourceSubmissionRow(**dict(row)) if row else None
+
+    async def source_submission_set_review_message(self, guild_id: int, sub_id: int, review_message_id: int) -> None:
+        await self.execute(
+            "UPDATE source_submissions SET review_message_id=? WHERE guild_id=? AND id=?",
+            (str(review_message_id), str(guild_id), sub_id),
+        )
+        await self.commit()
+
+    async def source_submission_count_pending(self, guild_id: int, user_id: int) -> int:
+        row = await self.fetchone(
+            "SELECT COUNT(*) FROM source_submissions WHERE guild_id=? AND user_id=? AND status IN ('pending','approving')",
+            (str(guild_id), str(user_id)),
+        )
+        return int(row[0]) if row else 0
+
+    async def source_submission_list_active(self, guild_id: int) -> list[aiosqlite.Row]:
+        """Rows that count toward the duplicate-title check (not yet rejected)."""
+        return await self.fetchall(
+            "SELECT id, authors, title FROM source_submissions WHERE guild_id=? AND status IN ('pending','approving','approved')",
+            (str(guild_id),),
+        )
+
+    async def source_submission_try_start_approval(self, guild_id: int, sub_id: int, reviewer_id: int) -> bool:
+        """Atomically claim a pending submission for approval (pending -> approving)."""
+        assert self._conn
+        async with self._lock:
+            await self._conn.execute("BEGIN IMMEDIATE;")
+            row = await self.fetchone(
+                "SELECT status FROM source_submissions WHERE guild_id=? AND id=?",
+                (str(guild_id), sub_id),
+            )
+            if not row or row["status"] != "pending":
+                await self._conn.execute("ROLLBACK;")
+                return False
+            await self._conn.execute(
+                "UPDATE source_submissions SET status='approving', reviewer_id=? WHERE guild_id=? AND id=?",
+                (str(reviewer_id), str(guild_id), sub_id),
+            )
+            await self._conn.commit()
+            return True
+
+    async def source_submission_revert_to_pending(self, guild_id: int, sub_id: int) -> None:
+        """Undo a failed approval attempt (approving -> pending) so it can be retried."""
+        await self.execute(
+            "UPDATE source_submissions SET status='pending', reviewer_id=NULL WHERE guild_id=? AND id=? AND status='approving'",
+            (str(guild_id), sub_id),
+        )
+        await self.commit()
+
+    async def source_submission_mark_approved(
+        self, guild_id: int, sub_id: int, *, reviewer_id: int, forum_thread_id: int
+    ) -> None:
+        ts = now_ts()
+        await self.execute(
+            """
+            UPDATE source_submissions
+            SET status='approved', reviewer_id=?, forum_thread_id=?, decided_at=?
+            WHERE guild_id=? AND id=? AND status='approving'
+            """,
+            (str(reviewer_id), str(forum_thread_id), ts, str(guild_id), sub_id),
+        )
+        await self.commit()
+
+    async def source_submission_try_reject(self, guild_id: int, sub_id: int, reviewer_id: int, reason: str) -> bool:
+        """Atomically reject a pending submission (pending -> rejected)."""
+        assert self._conn
+        async with self._lock:
+            await self._conn.execute("BEGIN IMMEDIATE;")
+            row = await self.fetchone(
+                "SELECT status FROM source_submissions WHERE guild_id=? AND id=?",
+                (str(guild_id), sub_id),
+            )
+            if not row or row["status"] != "pending":
+                await self._conn.execute("ROLLBACK;")
+                return False
+            ts = now_ts()
+            await self._conn.execute(
+                """
+                UPDATE source_submissions
+                SET status='rejected', reviewer_id=?, reject_reason=?, decided_at=?
+                WHERE guild_id=? AND id=?
+                """,
+                (str(reviewer_id), reason, ts, str(guild_id), sub_id),
+            )
+            await self._conn.commit()
+            return True
+
+    async def source_submission_update_filename(
+        self, guild_id: int, sub_id: int, *, filename_author: str, filename_short_title: str
+    ) -> None:
+        await self.execute(
+            "UPDATE source_submissions SET filename_author=?, filename_short_title=? WHERE guild_id=? AND id=?",
+            (filename_author, filename_short_title, str(guild_id), sub_id),
+        )
+        await self.commit()
+
+    async def source_submission_list_restorable(self, guild_id: int) -> list[SourceSubmissionRow]:
+        """Pending submissions with a review message, for reattaching views after restart."""
+        rows = await self.fetchall(
+            "SELECT * FROM source_submissions WHERE guild_id=? AND status='pending' AND review_message_id IS NOT NULL",
+            (str(guild_id),),
+        )
+        return [SourceSubmissionRow(**dict(r)) for r in rows]
+
+    async def source_submission_cleanup_stuck_approving(self, guild_id: int) -> int:
+        """Revert any submission left in 'approving' by a crash/restart mid-approval back to 'pending'."""
+        assert self._conn
+        cur = await self._conn.execute(
+            "UPDATE source_submissions SET status='pending', reviewer_id=NULL WHERE guild_id=? AND status='approving'",
+            (str(guild_id),),
+        )
+        await self._conn.commit()
+        return cur.rowcount or 0

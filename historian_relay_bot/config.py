@@ -42,6 +42,13 @@ def _get_csv_ints(name: str, default: List[int]) -> List[int]:
             pass
     return out or default
 
+def _get_csv_strs(name: str, default: List[str]) -> List[str]:
+    raw = os.getenv(name)
+    if not raw:
+        return default
+    out = [p.strip().lower() for p in raw.split(",") if p.strip()]
+    return out or default
+
 def _get_optional_int(name: str) -> Optional[int]:
     raw = os.getenv(name)
     if raw is None or raw.strip() == "":
@@ -97,6 +104,12 @@ class BotConfig:
     QUEUE_CHANNEL_ID: Optional[int]
     VERIFIED_HISTORIAN_ROLE_ID: int
     MOD_ROLE_ID: int
+
+    # Book source submissions (/submit)
+    GUILD_ID: int
+    REVIEW_CHANNEL_ID: int
+    SOURCES_FORUM_CHANNEL_ID: int
+    REVIEWER_ROLE_ID: int
 
     LOG_CHANNEL_ID: Optional[int] = None
 
@@ -161,6 +174,13 @@ class BotConfig:
     TOPIC_OF_DAY_HOUR_UTC: int = 14
     TOPIC_OF_DAY_USER_COOLDOWN_MINUTES: int = 10  # per-user cooldown for the /topic command
 
+    # --------------------
+    # Book source submissions (/submit)
+    # --------------------
+    MAX_PENDING_PER_USER: int = 3
+    ALLOWED_EXTENSIONS: List[str] = field(default_factory=lambda: ["pdf", "epub"])
+    SOURCE_TOPIC_PREFIX: str = "WW2-"  # keep configurable in case other wars/eras are added later
+
 
 def load_config() -> BotConfig:
     """
@@ -195,6 +215,15 @@ def load_config() -> BotConfig:
     if not verified_role or not mod_role:
         raise RuntimeError("VERIFIED_HISTORIAN_ROLE_ID and MOD_ROLE_ID required.")
 
+    guild_id = env_or_json("GUILD_ID")
+    review_channel_id = env_or_json("REVIEW_CHANNEL_ID")
+    sources_forum_channel_id = env_or_json("SOURCES_FORUM_CHANNEL_ID")
+    reviewer_role_id = env_or_json("REVIEWER_ROLE_ID")
+    if not guild_id or not review_channel_id or not sources_forum_channel_id or not reviewer_role_id:
+        raise RuntimeError(
+            "GUILD_ID, REVIEW_CHANNEL_ID, SOURCES_FORUM_CHANNEL_ID and REVIEWER_ROLE_ID required (for /submit)."
+        )
+
     return BotConfig(
         DISCORD_TOKEN=str(token),
         SUBMISSION_CHANNEL_IDS=submission_ids,
@@ -202,6 +231,10 @@ def load_config() -> BotConfig:
         QUEUE_CHANNEL_ID=_get_optional_int("QUEUE_CHANNEL_ID") or (int(data["QUEUE_CHANNEL_ID"]) if data.get("QUEUE_CHANNEL_ID") else None),
         VERIFIED_HISTORIAN_ROLE_ID=int(verified_role),
         MOD_ROLE_ID=int(mod_role),
+        GUILD_ID=int(guild_id),
+        REVIEW_CHANNEL_ID=int(review_channel_id),
+        SOURCES_FORUM_CHANNEL_ID=int(sources_forum_channel_id),
+        REVIEWER_ROLE_ID=int(reviewer_role_id),
         LOG_CHANNEL_ID=_get_optional_int("LOG_CHANNEL_ID") or (int(data["LOG_CHANNEL_ID"]) if data.get("LOG_CHANNEL_ID") else None),
         APPROVAL_MODE=_get_bool("APPROVAL_MODE", bool(data.get("APPROVAL_MODE", False))),
         THREADS_ENABLED=_get_bool("THREADS_ENABLED", bool(data.get("THREADS_ENABLED", True))),
@@ -239,4 +272,8 @@ def load_config() -> BotConfig:
         TOPIC_OF_DAY_CHANNEL_ID=_get_optional_int("TOPIC_OF_DAY_CHANNEL_ID") or (int(data["TOPIC_OF_DAY_CHANNEL_ID"]) if data.get("TOPIC_OF_DAY_CHANNEL_ID") else None),
         TOPIC_OF_DAY_HOUR_UTC=_get_int("TOPIC_OF_DAY_HOUR_UTC", int(data.get("TOPIC_OF_DAY_HOUR_UTC", 14))),
         TOPIC_OF_DAY_USER_COOLDOWN_MINUTES=_get_int("TOPIC_OF_DAY_USER_COOLDOWN_MINUTES", int(data.get("TOPIC_OF_DAY_USER_COOLDOWN_MINUTES", 10))),
+
+        MAX_PENDING_PER_USER=_get_int("MAX_PENDING_PER_USER", int(data.get("MAX_PENDING_PER_USER", 3))),
+        ALLOWED_EXTENSIONS=_get_csv_strs("ALLOWED_EXTENSIONS", list(data.get("ALLOWED_EXTENSIONS", ["pdf", "epub"]) or ["pdf", "epub"])),
+        SOURCE_TOPIC_PREFIX=str(env_or_json("SOURCE_TOPIC_PREFIX", data.get("SOURCE_TOPIC_PREFIX", "WW2-"))),
     )

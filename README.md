@@ -32,6 +32,13 @@ Create `.env`:
 python -m historian_relay_bot.bot
 ```
 
+### Tests
+`pytest` (added as a dev-only dependency) covers the `/submit` filename and post-format
+pure functions:
+```bash
+pytest
+```
+
 ## Usage
 - `/askhist question:<text> tag:<optional> era:<optional>`
 - `/askhist_status id:<number>`
@@ -134,3 +141,48 @@ something to talk about." Optional `tag`/`era` filters narrow the pick to a
 theme; a per-user cooldown (shared between both command forms) keeps it from
 being spammed. Unlike the scheduled post, `/topic`/`!topic` results aren't
 pinned.
+
+## Book source submissions (/submit)
+Members submit book sources with **`/submit`** (a guild-scoped slash command —
+see `GUILD_ID` below). Moderators review each one in a private channel and,
+once approved, it's posted to a forum channel in a fixed format with the
+original file re-uploaded under a standardized filename.
+
+Flow:
+1. `/submit` validates the input (reporting every problem at once if there
+   are several) and checks the submitter isn't over their pending-submission
+   cap or re-submitting a duplicate (same normalized author surname + main
+   title).
+2. On success, the submission is saved as `pending` and posted to
+   `REVIEW_CHANNEL_ID` with a formatted preview, the file re-uploaded under
+   its generated filename (if one was attached), and **Approve** / **Reject**
+   / **Edit filename** buttons — restricted to `REVIEWER_ROLE_ID`.
+3. **Approve** posts it to `SOURCES_FORUM_CHANNEL_ID` with matching forum
+   tags, the formatted post content, and the file under its generated name;
+   **Reject** asks for a reason and DMs the submitter; **Edit filename** lets
+   a reviewer tweak the author/short-title parts before approval.
+4. Buttons keep working across restarts, and a submission can only be
+   decided once (guarded with atomic status transitions).
+
+### Config (env or `CONFIG_JSON`)
+- `GUILD_ID` (required) — the guild `/submit` is registered to.
+- `REVIEW_CHANNEL_ID` (required) — private text channel reviewers see submissions in.
+- `SOURCES_FORUM_CHANNEL_ID` (required) — forum channel approved sources are posted to.
+- `REVIEWER_ROLE_ID` (required) — role allowed to Approve/Reject/Edit filename.
+- `MAX_PENDING_PER_USER` (default `3`) — per-user cap on simultaneous pending submissions.
+- `ALLOWED_EXTENSIONS` (default `pdf,epub`) — allowed file extensions for the optional attachment.
+- `SOURCE_TOPIC_PREFIX` (default `WW2-`) — prefix used in generated filenames, post text and
+  forum-tag matching; kept configurable in case other wars/eras get their own topic sets later.
+
+### Bot permissions needed
+Send Messages, Attach Files, Embed Links, and permission to create posts in the forum channel
+(Create Posts / Send Messages in Threads).
+
+### Forum tag setup
+Create one forum tag per topic code, named exactly `<SOURCE_TOPIC_PREFIX><CODE>` (e.g. `WW2-ECON`,
+`WW2-WEST`, …) in `SOURCES_FORUM_CHANNEL_ID`. On startup the bot logs a warning for any topic code
+without a matching tag.
+
+### Railway deployment note
+SQLite (`DATABASE_PATH`) needs to live on a **mounted volume** — without one, the database (and
+every pending/approved submission) is lost on every redeploy.

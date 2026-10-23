@@ -254,3 +254,43 @@ CREATE TABLE IF NOT EXISTS topic_of_day_log (
 
 CREATE INDEX IF NOT EXISTS idx_topic_of_day_log_guild_date ON topic_of_day_log(guild_id, date_key);
 CREATE INDEX IF NOT EXISTS idx_topic_of_day_log_guild_posted ON topic_of_day_log(guild_id, posted_at);
+
+-- -------------------------
+-- Book source submissions (/submit)
+-- -------------------------
+
+CREATE TABLE IF NOT EXISTS source_submissions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+  guild_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+
+  title TEXT NOT NULL,
+  authors TEXT NOT NULL, -- ";"-joined full names, as submitted
+  publisher TEXT NOT NULL,
+  year INTEGER NOT NULL,
+  original_year INTEGER,
+  topic TEXT NOT NULL,
+  secondary_topic TEXT,
+  covers TEXT NOT NULL,
+  type TEXT NOT NULL,
+  link TEXT,
+
+  filename_author TEXT,
+  filename_short_title TEXT,
+  file_ext TEXT,
+
+  status TEXT NOT NULL DEFAULT 'pending', -- pending, approving, approved, rejected
+
+  review_message_id TEXT,
+  forum_thread_id TEXT,
+  reviewer_id TEXT,
+  reject_reason TEXT,
+
+  created_at INTEGER NOT NULL,
+  decided_at INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_source_submissions_guild_status ON source_submissions(guild_id, status);
+CREATE INDEX IF NOT EXISTS idx_source_submissions_user_status ON source_submissions(guild_id, user_id, status);
+CREATE INDEX IF NOT EXISTS idx_source_submissions_review_msg ON source_submissions(guild_id, review_message_id);

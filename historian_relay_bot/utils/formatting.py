@@ -92,6 +92,47 @@ def build_topic_of_day_embed(topic: dict, date_key: str) -> discord.Embed:
     return e
 
 
+def build_source_post_text(
+    *,
+    title: str,
+    authors: list[str],
+    is_edited: bool,
+    publisher: str,
+    year: int,
+    original_year: int | None,
+    topic: str,
+    secondary_topic: str | None,
+    covers: str,
+    work_type: str,
+    filename: str | None,
+    link: str | None,
+    submitted_by_user_id: int,
+) -> str:
+    lines = [f"📖 **{title}**"]
+
+    author_label = "Editor" if is_edited else "Author"
+    lines.append(f"**{author_label}:** {', '.join(authors)}")
+
+    published = f"{publisher}, {year}"
+    if original_year:
+        published += f" (original {original_year})"
+    lines.append(f"**Published:** {published}")
+
+    topic_line = f"{topic} · also {secondary_topic}" if secondary_topic else topic
+    lines.append(f"**Topic:** {topic_line}")
+
+    lines.append(f"**Covers:** {covers}")
+    lines.append(f"**Type:** {work_type}")
+
+    if filename:
+        lines.append(f"**File:** {filename}")
+    if link:
+        lines.append(f"**Link:** {link}")
+
+    lines.append(f"**Submitted by:** <@{submitted_by_user_id}>")
+    return "\n".join(lines)
+
+
 def build_historian_request_embed(
     *,
     question_text: str,
