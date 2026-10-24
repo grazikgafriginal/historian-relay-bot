@@ -55,6 +55,7 @@ class SourceSubmissionRow:
     status: str
     review_message_id: Optional[str]
     forum_thread_id: Optional[str]
+    forum_message_id: Optional[str]
     reviewer_id: Optional[str]
     reject_reason: Optional[str]
     created_at: int
@@ -108,6 +109,7 @@ class Database:
 
         # Post-migration guardrails (idempotent).
         await self._ensure_guessyear_constraints()
+        await self._ensure_source_submissions_constraints()
 
 
 
@@ -440,6 +442,23 @@ class Database:
             """
         )
         await self._conn.commit()
+
+    async def _ensure_source_submissions_constraints(self) -> None:
+        """Idempotent post-schema migration for source_submissions (added after initial release)."""
+        assert self._conn
+
+        row = await self.fetchone(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='source_submissions'"
+        )
+        if not row:
+            return
+
+        async with self._conn.execute("PRAGMA table_info('source_submissions')") as cur:
+            cols = {str(r[1]) for r in await cur.fetchall()}
+
+        if "forum_message_id" not in cols:
+            await self._conn.execute("ALTER TABLE source_submissions ADD COLUMN forum_message_id TEXT")
+            await self._conn.commit()
 
     async def fetchone(self, sql: str, params: Tuple[Any, ...] = ()) -> Optional[aiosqlite.Row]:
         assert self._conn
@@ -1853,16 +1872,16 @@ class Database:
         await self.commit()
 
     async def source_submission_mark_approved(
-        self, guild_id: int, sub_id: int, *, reviewer_id: int, forum_thread_id: int
+        self, guild_id: int, sub_id: int, *, reviewer_id: int, forum_thread_id: int, forum_message_id: int
     ) -> None:
         ts = now_ts()
         await self.execute(
             """
             UPDATE source_submissions
-            SET status='approved', reviewer_id=?, forum_thread_id=?, decided_at=?
+            SET status='approved', reviewer_id=?, forum_thread_id=?, forum_message_id=?, decided_at=?
             WHERE guild_id=? AND id=? AND status='approving'
             """,
-            (str(reviewer_id), str(forum_thread_id), ts, str(guild_id), sub_id),
+            (str(reviewer_id), str(forum_thread_id), str(forum_message_id), ts, str(guild_id), sub_id),
         )
         await self.commit()
 

@@ -145,8 +145,11 @@ pinned.
 ## Book source submissions (/submit)
 Members submit book sources with **`/submit`** (a guild-scoped slash command —
 see `GUILD_ID` below). Moderators review each one in a private channel and,
-once approved, it's posted to a forum channel in a fixed format with the
-original file re-uploaded under a standardized filename.
+once approved, it's posted into that topic's existing forum thread (e.g. a
+"GEN" thread, an "EAST" thread, …) as a new message in the fixed post format,
+with the original file re-uploaded under a standardized filename. No native
+Discord forum tags are used — the topic is just the thread it's posted into
+(and is also shown in the post's own `**Topic:**` line).
 
 Flow:
 1. `/submit` validates the input (reporting every problem at once if there
@@ -157,31 +160,48 @@ Flow:
    `REVIEW_CHANNEL_ID` with a formatted preview, the file re-uploaded under
    its generated filename (if one was attached), and **Approve** / **Reject**
    / **Edit filename** buttons — restricted to `REVIEWER_ROLE_ID`.
-3. **Approve** posts it to `SOURCES_FORUM_CHANNEL_ID` with matching forum
-   tags, the formatted post content, and the file under its generated name;
-   **Reject** asks for a reason and DMs the submitter; **Edit filename** lets
-   a reviewer tweak the author/short-title parts before approval.
+3. **Approve** finds the existing forum thread for the submission's topic
+   (see below) and posts the formatted content + file into it as a new
+   message; **Reject** asks for a reason and DMs the submitter; **Edit
+   filename** lets a reviewer tweak the author/short-title parts before
+   approval.
 4. Buttons keep working across restarts, and a submission can only be
    decided once (guarded with atomic status transitions).
+
+A submission only ever posts into its **primary** topic's thread — if a
+secondary topic is set, it's still shown in the post's `**Topic:** GEN ·
+also EAST` line but isn't cross-posted into the second thread.
+
+### Finding each topic's thread
+For each topic code (`GEN`, `ORIG`, `WEST`, `EAST`, `MED`, `PAC`, `NAVAL`,
+`AIR`, `ECON`, `OCC`, `DIPL`), the bot needs one destination forum thread
+inside `SOURCES_FORUM_CHANNEL_ID`. It resolves this two ways:
+1. `SOURCE_TOPIC_THREAD_IDS` (optional, most reliable) — explicit
+   `CODE:threadid` pairs, e.g. `GEN:123456789012345678,EAST:234567890123456789`.
+   Right-click a thread → Copy Thread ID (Developer Mode must be on).
+2. Otherwise, it searches the forum's active + archived threads for one
+   whose name contains that code as a whole word (case-insensitive) — so if
+   you already have threads named things like "📚 GEN" or "Eastern Front
+   (EAST)", no config is needed at all.
+
+If a topic has no match (or more than one, which is ambiguous), the bot logs
+a warning on startup, and Approve fails with a clear error telling the
+reviewer what's missing rather than posting anywhere wrong.
 
 ### Config (env or `CONFIG_JSON`)
 - `GUILD_ID` (required) — the guild `/submit` is registered to.
 - `REVIEW_CHANNEL_ID` (required) — private text channel reviewers see submissions in.
-- `SOURCES_FORUM_CHANNEL_ID` (required) — forum channel approved sources are posted to.
+- `SOURCES_FORUM_CHANNEL_ID` (required) — forum channel containing the per-topic threads.
 - `REVIEWER_ROLE_ID` (required) — role allowed to Approve/Reject/Edit filename.
+- `SOURCE_TOPIC_THREAD_IDS` (optional) — explicit topic → thread id mapping, see above.
 - `MAX_PENDING_PER_USER` (default `3`) — per-user cap on simultaneous pending submissions.
 - `ALLOWED_EXTENSIONS` (default `pdf,epub`) — allowed file extensions for the optional attachment.
-- `SOURCE_TOPIC_PREFIX` (default `WW2-`) — prefix used in generated filenames, post text and
-  forum-tag matching; kept configurable in case other wars/eras get their own topic sets later.
+- `SOURCE_TOPIC_PREFIX` (default `WW2-`) — prefix used only in generated filenames now (e.g.
+  `WW2-ECON_Tooze_2006_...`); kept configurable in case other wars/eras get added later.
 
 ### Bot permissions needed
-Send Messages, Attach Files, Embed Links, and permission to create posts in the forum channel
-(Create Posts / Send Messages in Threads).
-
-### Forum tag setup
-Create one forum tag per topic code, named exactly `<SOURCE_TOPIC_PREFIX><CODE>` (e.g. `WW2-ECON`,
-`WW2-WEST`, …) in `SOURCES_FORUM_CHANNEL_ID`. On startup the bot logs a warning for any topic code
-without a matching tag.
+Send Messages, Send Messages in Threads, Attach Files, Embed Links, Read Message History (needed
+to list archived threads when resolving a topic by name).
 
 ### Railway deployment note
 SQLite (`DATABASE_PATH`) needs to live on a **mounted volume** — without one, the database (and

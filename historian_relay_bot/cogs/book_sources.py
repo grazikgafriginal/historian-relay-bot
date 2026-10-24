@@ -5,6 +5,7 @@ import io
 import json
 import logging
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -14,7 +15,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from historian_relay_bot.utils.formatting import build_source_post_text, shorten_title
+from historian_relay_bot.utils.formatting import build_source_post_text
 from historian_relay_bot.utils.source_filename import (
     build_author_part,
     build_filename,
@@ -218,7 +219,7 @@ class BookSourcesCog(commands.Cog):
             self._recovery_task.cancel()
 
     # --------------------------
-    # Restart recovery + forum tag check
+    # Restart recovery + topic thread check
     # --------------------------
 
     async def _startup_recovery(self) -> None:
@@ -240,30 +241,70 @@ class BookSourcesCog(commands.Cog):
             except Exception:
                 log.exception("Book sources: startup recovery failed for guild %s", guild.id)
 
-        await self._check_forum_tags()
+        await self._check_topic_threads()
 
-    async def _check_forum_tags(self) -> None:
+    async def _check_topic_threads(self) -> None:
+        """Startup sanity check: log a warning for any topic code with no resolvable
+        destination thread, same spirit as the old forum-tag check this replaced."""
         try:
             forum = await self.bot.fetch_channel(self.bot.cfg.SOURCES_FORUM_CHANNEL_ID)
         except Exception:
-            log.warning("Book sources: could not fetch SOURCES_FORUM_CHANNEL_ID to check forum tags.")
+            log.warning("Book sources: could not fetch SOURCES_FORUM_CHANNEL_ID to check topic threads.")
             return
         if not isinstance(forum, discord.ForumChannel):
             log.warning("Book sources: SOURCES_FORUM_CHANNEL_ID is not a forum channel.")
             return
 
-        tag_names = {t.name for t in forum.available_tags}
         for code, _label in TOPIC_CODES:
-            expected = f"{self.bot.cfg.SOURCE_TOPIC_PREFIX}{code}"
-            if expected not in tag_names:
-                log.warning("Book sources: no forum tag named %r for topic code %r.", expected, code)
+            thread = await self._resolve_topic_thread(forum, code)
+            if thread is None:
+                log.warning(
+                    "Book sources: no forum thread found for topic %r — create one (named so it "
+                    "contains %r) or set SOURCE_TOPIC_THREAD_IDS.", code, code,
+                )
 
-    def _find_tag(self, forum: discord.ForumChannel, topic_code: str) -> Optional[discord.ForumTag]:
-        name = f"{self.bot.cfg.SOURCE_TOPIC_PREFIX}{topic_code}"
-        for tag in forum.available_tags:
-            if tag.name == name:
-                return tag
+    async def _find_topic_thread_by_name(self, forum: discord.ForumChannel, topic_code: str) -> Optional[discord.Thread]:
+        pattern = re.compile(rf"\b{re.escape(topic_code)}\b", re.IGNORECASE)
+        matches = [t for t in forum.threads if pattern.search(t.name)]
+        seen_ids = {t.id for t in matches}
+        try:
+            async for t in forum.archived_threads(limit=None):
+                if t.id not in seen_ids and pattern.search(t.name):
+                    matches.append(t)
+                    seen_ids.add(t.id)
+        except Exception:
+            log.warning("Book sources: failed to list archived threads while searching for topic %r.", topic_code)
+
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            log.warning(
+                "Book sources: multiple forum threads match topic %r (%s) — ambiguous, set "
+                "SOURCE_TOPIC_THREAD_IDS to disambiguate.", topic_code, ", ".join(t.name for t in matches),
+            )
         return None
+
+    async def _resolve_topic_thread(self, forum: discord.ForumChannel, topic_code: str) -> Optional[discord.Thread]:
+        """The era/topic thread approved books for this code get posted into.
+
+        Checks SOURCE_TOPIC_THREAD_IDS first (explicit, reliable), then falls back to
+        finding an existing thread in the forum whose name contains the topic code —
+        so a server with pre-existing era threads needs no config at all.
+        """
+        thread_id = self.bot.cfg.SOURCE_TOPIC_THREAD_IDS.get(topic_code)
+        if thread_id:
+            try:
+                ch = await self.bot.fetch_channel(thread_id)
+                if isinstance(ch, discord.Thread):
+                    return ch
+                log.warning("Book sources: SOURCE_TOPIC_THREAD_IDS[%r]=%s is not a thread.", topic_code, thread_id)
+            except Exception:
+                log.warning(
+                    "Book sources: configured thread id %s for topic %r could not be fetched.",
+                    thread_id, topic_code,
+                )
+
+        return await self._find_topic_thread_by_name(forum, topic_code)
 
     # --------------------------
     # /submit
@@ -530,53 +571,42 @@ class BookSourcesCog(commands.Cog):
             if not isinstance(forum, discord.ForumChannel):
                 raise RuntimeError("SOURCES_FORUM_CHANNEL_ID is not a forum channel.")
 
-            tags = []
-            primary_tag = self._find_tag(forum, row.topic)
-            if primary_tag:
-                tags.append(primary_tag)
-            if row.secondary_topic:
-                secondary_tag = self._find_tag(forum, row.secondary_topic)
-                if secondary_tag:
-                    tags.append(secondary_tag)
+            thread = await self._resolve_topic_thread(forum, row.topic)
+            if thread is None:
+                raise RuntimeError(
+                    f"No forum thread found for topic {row.topic} — create one (named so it contains "
+                    f"\"{row.topic}\") or set SOURCE_TOPIC_THREAD_IDS."
+                )
+            if thread.archived:
+                await thread.edit(archived=False)
 
-            authors = parse_authors(row.authors)
-            surname = build_surname(authors[0]) if authors else "Unknown"
-            post_title = shorten_title(f"{surname} ({row.year}) – {row.title}", 100)
             post_text = self._render_preview(row)
-
-            # ForumChannel.create_thread defaults `file` to a MISSING sentinel (not None),
-            # so only pass it when there actually is one.
-            create_kwargs = {"name": post_title, "content": post_text, "applied_tags": tags}
-            if discord_file is not None:
-                create_kwargs["file"] = discord_file
-
-            result = await forum.create_thread(**create_kwargs)
-            thread = result.thread
+            posted = await thread.send(content=post_text, file=discord_file)
         except Exception as e:
             await self.bot.db.source_submission_revert_to_pending(guild_id, sub_id)
             log.warning("Book sources: approval failed for submission #%s, reverted to pending: %s", sub_id, e)
-            return False, f"Approval failed and was rolled back — please retry (`{type(e).__name__}`)."
+            return False, f"Approval failed and was rolled back — please retry (`{type(e).__name__}`: {e})"
 
         await self.bot.db.source_submission_mark_approved(
-            guild_id, sub_id, reviewer_id=reviewer.id, forum_thread_id=thread.id
+            guild_id, sub_id, reviewer_id=reviewer.id, forum_thread_id=thread.id, forum_message_id=posted.id
         )
 
         dm_failed = False
         try:
             user = await self.bot.fetch_user(int(row.user_id))
-            await user.send(f"Your source submission **{row.title}** was approved! {thread.jump_url}")
+            await user.send(f"Your source submission **{row.title}** was approved! {posted.jump_url}")
         except Exception:
             dm_failed = True
 
         try:
-            note = f"\n\n✅ **Approved by {reviewer.mention} → {thread.jump_url}**"
+            note = f"\n\n✅ **Approved by {reviewer.mention} → {posted.jump_url}**"
             if dm_failed:
                 note += "\n*(Could not DM the submitter — their DMs may be closed.)*"
             await review_msg.edit(content=review_msg.content + note, view=None)
         except Exception:
             pass
 
-        return True, f"Approved. {thread.jump_url}"
+        return True, f"Approved. {posted.jump_url}"
 
     async def reject_submission(
         self, guild_id: int, sub_id: int, *, reviewer: discord.Member, reason: str

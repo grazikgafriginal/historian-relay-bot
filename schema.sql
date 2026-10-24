@@ -283,7 +283,8 @@ CREATE TABLE IF NOT EXISTS source_submissions (
   status TEXT NOT NULL DEFAULT 'pending', -- pending, approving, approved, rejected
 
   review_message_id TEXT,
-  forum_thread_id TEXT,
+  forum_thread_id TEXT, -- the shared era/topic thread the approved post went into
+  forum_message_id TEXT, -- the specific message posted for this submission within that thread
   reviewer_id TEXT,
   reject_reason TEXT,
 

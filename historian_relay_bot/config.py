@@ -4,7 +4,7 @@ import json
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 import datetime
 
 
@@ -48,6 +48,33 @@ def _get_csv_strs(name: str, default: List[str]) -> List[str]:
         return default
     out = [p.strip().lower() for p in raw.split(",") if p.strip()]
     return out or default
+
+def _get_topic_thread_ids(data: dict) -> Dict[str, int]:
+    """Parses "CODE:threadid,CODE:threadid,..." from env, or a {"CODE": threadid} dict
+    from CONFIG_JSON. Optional — when a topic code has no entry, book_sources.py falls
+    back to finding a forum thread whose name contains that code."""
+    out: Dict[str, int] = {}
+    raw = os.getenv("SOURCE_TOPIC_THREAD_IDS")
+    if raw:
+        for part in raw.split(","):
+            part = part.strip()
+            if not part or ":" not in part:
+                continue
+            code, _, id_str = part.partition(":")
+            try:
+                out[code.strip().upper()] = int(id_str.strip())
+            except ValueError:
+                continue
+        return out
+
+    raw_json = data.get("SOURCE_TOPIC_THREAD_IDS")
+    if isinstance(raw_json, dict):
+        for code, v in raw_json.items():
+            try:
+                out[str(code).strip().upper()] = int(v)
+            except (TypeError, ValueError):
+                continue
+    return out
 
 def _get_optional_int(name: str) -> Optional[int]:
     raw = os.getenv(name)
@@ -181,6 +208,11 @@ class BotConfig:
     ALLOWED_EXTENSIONS: List[str] = field(default_factory=lambda: ["pdf", "epub"])
     SOURCE_TOPIC_PREFIX: str = "WW2-"  # keep configurable in case other wars/eras are added later
 
+    # Optional: topic code -> existing forum thread id, for posting approved books into
+    # that era's thread. When a code has no entry, the bot searches the forum's threads
+    # for a name match instead (see book_sources.py's _resolve_topic_thread).
+    SOURCE_TOPIC_THREAD_IDS: Dict[str, int] = field(default_factory=dict)
+
 
 def load_config() -> BotConfig:
     """
@@ -276,4 +308,5 @@ def load_config() -> BotConfig:
         MAX_PENDING_PER_USER=_get_int("MAX_PENDING_PER_USER", int(data.get("MAX_PENDING_PER_USER", 3))),
         ALLOWED_EXTENSIONS=_get_csv_strs("ALLOWED_EXTENSIONS", list(data.get("ALLOWED_EXTENSIONS", ["pdf", "epub"]) or ["pdf", "epub"])),
         SOURCE_TOPIC_PREFIX=str(env_or_json("SOURCE_TOPIC_PREFIX", data.get("SOURCE_TOPIC_PREFIX", "WW2-"))),
+        SOURCE_TOPIC_THREAD_IDS=_get_topic_thread_ids(data),
     )
