@@ -56,6 +56,22 @@ TYPE_CHOICES = [app_commands.Choice(name=t, value=t) for t in TYPE_LABELS]
 SOURCE_TYPE_EDITED_VOLUME = "Edited volume"
 
 
+def _not_forum_channel_hint(ch: Optional[discord.abc.Snowflake]) -> str:
+    """A specific, actionable message for the #1 way to misconfigure
+    SOURCES_FORUM_CHANNEL_ID: pointing it at one of the era posts (which are
+    threads under the hood) instead of the forum channel that contains them."""
+    if isinstance(ch, discord.Thread):
+        parent_hint = ""
+        if isinstance(ch.parent, discord.ForumChannel):
+            parent_hint = f" Its parent forum channel's id is {ch.parent.id} — use that instead."
+        return (
+            f"SOURCES_FORUM_CHANNEL_ID ({ch.id}) points at a post/thread (\"{ch.name}\") inside a "
+            f"forum, not the forum channel itself.{parent_hint}"
+        )
+    kind = type(ch).__name__ if ch is not None else "unknown"
+    return f"SOURCES_FORUM_CHANNEL_ID does not point at a forum channel (it resolved to a {kind})."
+
+
 def _resolve_guild_id() -> Optional[int]:
     """Mirrors config.py's env-or-CONFIG_JSON resolution for one setting.
 
@@ -252,7 +268,7 @@ class BookSourcesCog(commands.Cog):
             log.warning("Book sources: could not fetch SOURCES_FORUM_CHANNEL_ID to check topic threads.")
             return
         if not isinstance(forum, discord.ForumChannel):
-            log.warning("Book sources: SOURCES_FORUM_CHANNEL_ID is not a forum channel.")
+            log.warning("Book sources: %s", _not_forum_channel_hint(forum))
             return
 
         for code, _label in TOPIC_CODES:
@@ -569,7 +585,7 @@ class BookSourcesCog(commands.Cog):
 
             forum = await self.bot.fetch_channel(self.bot.cfg.SOURCES_FORUM_CHANNEL_ID)
             if not isinstance(forum, discord.ForumChannel):
-                raise RuntimeError("SOURCES_FORUM_CHANNEL_ID is not a forum channel.")
+                raise RuntimeError(_not_forum_channel_hint(forum))
 
             thread = await self._resolve_topic_thread(forum, row.topic)
             if thread is None:
