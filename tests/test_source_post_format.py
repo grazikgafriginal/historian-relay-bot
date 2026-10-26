@@ -18,7 +18,7 @@ def test_basic_format_without_file_or_link():
         submitted_by_user_id=123456789,
     )
     expected = (
-        "\U0001F4D6 **The Wages of Destruction: The Making and Breaking of the Nazi Economy**\n"
+        "## \U0001F4D6 **The Wages of Destruction: The Making and Breaking of the Nazi Economy**\n"
         "**Author:** Adam Tooze\n"
         "**Published:** Penguin, 2006\n"
         "**Topic:** ECON\n"
@@ -52,7 +52,7 @@ def test_original_year_secondary_topic_file_and_link_all_shown():
     assert "**Topic:** WEST · also EAST" in text
     assert "**File:** WW2-WEST_Author-Author_2020_Some-Title.pdf" in text
     assert "**Link:** https://example.com/book" in text
-    assert text.startswith("\U0001F4D6 **Some Title**")
+    assert text.startswith("## \U0001F4D6 **Some Title**")
     assert text.endswith("**Submitted by:** <@42>")
 
 

@@ -108,7 +108,7 @@ def build_source_post_text(
     link: str | None,
     submitted_by_user_id: int,
 ) -> str:
-    lines = [f"📖 **{title}**"]
+    lines = [f"## 📖 **{title}**"]
 
     author_label = "Editor" if is_edited else "Author"
     lines.append(f"**{author_label}:** {', '.join(authors)}")
