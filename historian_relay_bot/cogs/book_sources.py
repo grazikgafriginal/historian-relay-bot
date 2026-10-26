@@ -247,13 +247,24 @@ class BookSourcesCog(commands.Cog):
                 if not rows:
                     continue
                 review_ch = await self.bot.fetch_channel(self.bot.cfg.REVIEW_CHANNEL_ID)
+                restored, failed = 0, 0
                 for row in rows:
                     try:
                         msg = await review_ch.fetch_message(int(row.review_message_id))
                         await msg.edit(view=SourceReviewView(self, row.id))
+                        restored += 1
                         await asyncio.sleep(0.2)
-                    except Exception:
-                        continue
+                    except Exception as e:
+                        failed += 1
+                        log.warning(
+                            "Book sources: failed to re-attach review buttons for submission #%s "
+                            "(review_message_id=%s) in guild %s: %s",
+                            row.id, row.review_message_id, guild.id, e,
+                        )
+                log.info(
+                    "Book sources: startup recovery for guild %s — %d review message(s) re-attached, %d failed.",
+                    guild.id, restored, failed,
+                )
             except Exception:
                 log.exception("Book sources: startup recovery failed for guild %s", guild.id)
 
