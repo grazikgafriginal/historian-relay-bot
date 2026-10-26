@@ -5,7 +5,6 @@ import io
 import json
 import logging
 import os
-import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -56,20 +55,18 @@ TYPE_CHOICES = [app_commands.Choice(name=t, value=t) for t in TYPE_LABELS]
 SOURCE_TYPE_EDITED_VOLUME = "Edited volume"
 
 
-def _not_forum_channel_hint(ch: Optional[discord.abc.Snowflake]) -> str:
-    """A specific, actionable message for the #1 way to misconfigure
-    SOURCES_FORUM_CHANNEL_ID: pointing it at one of the era posts (which are
-    threads under the hood) instead of the forum channel that contains them."""
-    if isinstance(ch, discord.Thread):
-        parent_hint = ""
-        if isinstance(ch.parent, discord.ForumChannel):
-            parent_hint = f" Its parent forum channel's id is {ch.parent.id} — use that instead."
+def _not_thread_hint(ch: Optional[discord.abc.Snowflake]) -> str:
+    """A specific, actionable message for the most likely way to misconfigure
+    SOURCES_THREAD_ID: pointing it at the parent forum channel itself instead
+    of the specific post/thread inside it that approved books get posted into."""
+    if isinstance(ch, discord.ForumChannel):
         return (
-            f"SOURCES_FORUM_CHANNEL_ID ({ch.id}) points at a post/thread (\"{ch.name}\") inside a "
-            f"forum, not the forum channel itself.{parent_hint}"
+            f"SOURCES_THREAD_ID ({ch.id}) points at the forum channel itself (\"{ch.name}\"), not a "
+            f"specific post/thread inside it. Open the thread approved books should post into and use "
+            f"ITS id instead."
         )
     kind = type(ch).__name__ if ch is not None else "unknown"
-    return f"SOURCES_FORUM_CHANNEL_ID does not point at a forum channel (it resolved to a {kind})."
+    return f"SOURCES_THREAD_ID does not point at a thread (it resolved to a {kind})."
 
 
 def _resolve_guild_id() -> Optional[int]:
@@ -235,7 +232,7 @@ class BookSourcesCog(commands.Cog):
             self._recovery_task.cancel()
 
     # --------------------------
-    # Restart recovery + topic thread check
+    # Restart recovery + destination thread check
     # --------------------------
 
     async def _startup_recovery(self) -> None:
@@ -268,70 +265,18 @@ class BookSourcesCog(commands.Cog):
             except Exception:
                 log.exception("Book sources: startup recovery failed for guild %s", guild.id)
 
-        await self._check_topic_threads()
+        await self._check_destination_thread()
 
-    async def _check_topic_threads(self) -> None:
-        """Startup sanity check: log a warning for any topic code with no resolvable
-        destination thread, same spirit as the old forum-tag check this replaced."""
+    async def _check_destination_thread(self) -> None:
+        """Startup sanity check: log a clear warning if SOURCES_THREAD_ID doesn't
+        resolve to an actual thread, same spirit as the old forum-tag check."""
         try:
-            forum = await self.bot.fetch_channel(self.bot.cfg.SOURCES_FORUM_CHANNEL_ID)
+            thread = await self.bot.fetch_channel(self.bot.cfg.SOURCES_THREAD_ID)
         except Exception:
-            log.warning("Book sources: could not fetch SOURCES_FORUM_CHANNEL_ID to check topic threads.")
+            log.warning("Book sources: could not fetch SOURCES_THREAD_ID.")
             return
-        if not isinstance(forum, discord.ForumChannel):
-            log.warning("Book sources: %s", _not_forum_channel_hint(forum))
-            return
-
-        for code, _label in TOPIC_CODES:
-            thread = await self._resolve_topic_thread(forum, code)
-            if thread is None:
-                log.warning(
-                    "Book sources: no forum thread found for topic %r — create one (named so it "
-                    "contains %r) or set SOURCE_TOPIC_THREAD_IDS.", code, code,
-                )
-
-    async def _find_topic_thread_by_name(self, forum: discord.ForumChannel, topic_code: str) -> Optional[discord.Thread]:
-        pattern = re.compile(rf"\b{re.escape(topic_code)}\b", re.IGNORECASE)
-        matches = [t for t in forum.threads if pattern.search(t.name)]
-        seen_ids = {t.id for t in matches}
-        try:
-            async for t in forum.archived_threads(limit=None):
-                if t.id not in seen_ids and pattern.search(t.name):
-                    matches.append(t)
-                    seen_ids.add(t.id)
-        except Exception:
-            log.warning("Book sources: failed to list archived threads while searching for topic %r.", topic_code)
-
-        if len(matches) == 1:
-            return matches[0]
-        if len(matches) > 1:
-            log.warning(
-                "Book sources: multiple forum threads match topic %r (%s) — ambiguous, set "
-                "SOURCE_TOPIC_THREAD_IDS to disambiguate.", topic_code, ", ".join(t.name for t in matches),
-            )
-        return None
-
-    async def _resolve_topic_thread(self, forum: discord.ForumChannel, topic_code: str) -> Optional[discord.Thread]:
-        """The era/topic thread approved books for this code get posted into.
-
-        Checks SOURCE_TOPIC_THREAD_IDS first (explicit, reliable), then falls back to
-        finding an existing thread in the forum whose name contains the topic code —
-        so a server with pre-existing era threads needs no config at all.
-        """
-        thread_id = self.bot.cfg.SOURCE_TOPIC_THREAD_IDS.get(topic_code)
-        if thread_id:
-            try:
-                ch = await self.bot.fetch_channel(thread_id)
-                if isinstance(ch, discord.Thread):
-                    return ch
-                log.warning("Book sources: SOURCE_TOPIC_THREAD_IDS[%r]=%s is not a thread.", topic_code, thread_id)
-            except Exception:
-                log.warning(
-                    "Book sources: configured thread id %s for topic %r could not be fetched.",
-                    thread_id, topic_code,
-                )
-
-        return await self._find_topic_thread_by_name(forum, topic_code)
+        if not isinstance(thread, discord.Thread):
+            log.warning("Book sources: %s", _not_thread_hint(thread))
 
     # --------------------------
     # /submit
@@ -594,16 +539,9 @@ class BookSourcesCog(commands.Cog):
                 )
                 discord_file = discord.File(io.BytesIO(data), filename=generated_name)
 
-            forum = await self.bot.fetch_channel(self.bot.cfg.SOURCES_FORUM_CHANNEL_ID)
-            if not isinstance(forum, discord.ForumChannel):
-                raise RuntimeError(_not_forum_channel_hint(forum))
-
-            thread = await self._resolve_topic_thread(forum, row.topic)
-            if thread is None:
-                raise RuntimeError(
-                    f"No forum thread found for topic {row.topic} — create one (named so it contains "
-                    f"\"{row.topic}\") or set SOURCE_TOPIC_THREAD_IDS."
-                )
+            thread = await self.bot.fetch_channel(self.bot.cfg.SOURCES_THREAD_ID)
+            if not isinstance(thread, discord.Thread):
+                raise RuntimeError(_not_thread_hint(thread))
             if thread.archived:
                 await thread.edit(archived=False)
 
