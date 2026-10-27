@@ -270,7 +270,8 @@ CREATE TABLE IF NOT EXISTS source_submissions (
   publisher TEXT NOT NULL,
   year INTEGER NOT NULL,
   original_year INTEGER,
-  topic TEXT NOT NULL,
+  era TEXT NOT NULL DEFAULT 'WORLDWARS', -- era code (see book_sources.py's ERA_DEFS); picks the destination thread
+  topic TEXT NOT NULL, -- WW2 sub-topic code; '' (not used) outside the WORLDWARS era
   secondary_topic TEXT,
   covers TEXT NOT NULL,
   type TEXT NOT NULL,

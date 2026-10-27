@@ -9,6 +9,7 @@ def test_basic_format_without_file_or_link():
         publisher="Penguin",
         year=2006,
         original_year=None,
+        era_label="World Wars (1914-1945)",
         topic="ECON",
         secondary_topic=None,
         covers="Germany, 1933–1945",
@@ -21,6 +22,7 @@ def test_basic_format_without_file_or_link():
         "## \U0001F4D6 **The Wages of Destruction: The Making and Breaking of the Nazi Economy**\n"
         "**Author:** Adam Tooze\n"
         "**Published:** Penguin, 2006\n"
+        "**Era:** World Wars (1914-1945)\n"
         "**Topic:** ECON\n"
         "**Covers:** Germany, 1933–1945\n"
         "**Type:** Academic monograph\n"
@@ -33,8 +35,9 @@ def test_edited_volume_uses_editor_label():
     text = build_source_post_text(
         title="The Economics of World War II", authors=["Mark Harrison"], is_edited=True,
         publisher="Cambridge University Press", year=1998, original_year=None,
-        topic="ECON", secondary_topic=None, covers="Six great powers compared",
-        work_type="Edited volume", filename=None, link=None, submitted_by_user_id=1,
+        era_label="World Wars (1914-1945)", topic="ECON", secondary_topic=None,
+        covers="Six great powers compared", work_type="Edited volume",
+        filename=None, link=None, submitted_by_user_id=1,
     )
     assert "**Editor:** Mark Harrison" in text
     assert "**Author:**" not in text
@@ -44,7 +47,7 @@ def test_original_year_secondary_topic_file_and_link_all_shown():
     text = build_source_post_text(
         title="Some Title", authors=["A Author", "B Author"], is_edited=False,
         publisher="Some Press", year=2020, original_year=1955,
-        topic="WEST", secondary_topic="EAST", covers="Europe",
+        era_label="World Wars (1914-1945)", topic="WEST", secondary_topic="EAST", covers="Europe",
         work_type="Reference work", filename="WW2-WEST_Author-Author_2020_Some-Title.pdf",
         link="https://example.com/book", submitted_by_user_id=42,
     )
@@ -59,8 +62,8 @@ def test_original_year_secondary_topic_file_and_link_all_shown():
 def test_file_and_link_omitted_when_absent():
     text = build_source_post_text(
         title="T", authors=["A"], is_edited=False, publisher="P", year=2000,
-        original_year=None, topic="GEN", secondary_topic=None, covers="X",
-        work_type="Article", filename=None, link=None, submitted_by_user_id=1,
+        original_year=None, era_label="World Wars (1914-1945)", topic="GEN", secondary_topic=None,
+        covers="X", work_type="Article", filename=None, link=None, submitted_by_user_id=1,
     )
     assert "**File:**" not in text
     assert "**Link:**" not in text
@@ -69,8 +72,28 @@ def test_file_and_link_omitted_when_absent():
 def test_multiple_authors_joined_with_comma():
     text = build_source_post_text(
         title="T", authors=["A B", "C D", "E F"], is_edited=False,
-        publisher="P", year=2000, original_year=None, topic="GEN",
-        secondary_topic=None, covers="X", work_type="Article",
+        publisher="P", year=2000, original_year=None, era_label="World Wars (1914-1945)",
+        topic="GEN", secondary_topic=None, covers="X", work_type="Article",
         filename=None, link=None, submitted_by_user_id=1,
     )
     assert "**Author:** A B, C D, E F" in text
+
+
+def test_non_worldwars_era_has_no_topic_line():
+    text = build_source_post_text(
+        title="A Cold War Book", authors=["Someone"], is_edited=False,
+        publisher="P", year=1991, original_year=None, era_label="Cold War (1945-1991)",
+        topic=None, secondary_topic=None, covers="NATO vs Warsaw Pact",
+        work_type="Article", filename=None, link=None, submitted_by_user_id=1,
+    )
+    assert "**Era:** Cold War (1945-1991)" in text
+    assert "**Topic:**" not in text
+
+
+def test_empty_string_topic_also_omits_topic_line():
+    text = build_source_post_text(
+        title="T", authors=["A"], is_edited=False, publisher="P", year=2000,
+        original_year=None, era_label="Medieval", topic="", secondary_topic=None,
+        covers="X", work_type="Article", filename=None, link=None, submitted_by_user_id=1,
+    )
+    assert "**Topic:**" not in text

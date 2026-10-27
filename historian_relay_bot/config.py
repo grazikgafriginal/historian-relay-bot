@@ -4,7 +4,7 @@ import json
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 import datetime
 
 
@@ -48,6 +48,33 @@ def _get_csv_strs(name: str, default: List[str]) -> List[str]:
         return default
     out = [p.strip().lower() for p in raw.split(",") if p.strip()]
     return out or default
+
+def _get_era_thread_ids(data: dict) -> Dict[str, int]:
+    """Parses "CODE:threadid,CODE:threadid,..." from env, or a {"CODE": threadid} dict
+    from CONFIG_JSON — one destination forum thread per era code (see book_sources.py's
+    ERA_DEFS). Required: /submit can't resolve a destination without it."""
+    out: Dict[str, int] = {}
+    raw = os.getenv("ERA_THREAD_IDS")
+    if raw:
+        for part in raw.split(","):
+            part = part.strip()
+            if not part or ":" not in part:
+                continue
+            code, _, id_str = part.partition(":")
+            try:
+                out[code.strip().upper()] = int(id_str.strip())
+            except ValueError:
+                continue
+        return out
+
+    raw_json = data.get("ERA_THREAD_IDS")
+    if isinstance(raw_json, dict):
+        for code, v in raw_json.items():
+            try:
+                out[str(code).strip().upper()] = int(v)
+            except (TypeError, ValueError):
+                continue
+    return out
 
 def _get_optional_int(name: str) -> Optional[int]:
     raw = os.getenv(name)
@@ -108,7 +135,6 @@ class BotConfig:
     # Book source submissions (/submit)
     GUILD_ID: int
     REVIEW_CHANNEL_ID: int
-    SOURCES_THREAD_ID: int  # the single forum thread approved books are posted into
     REVIEWER_ROLE_ID: int
 
     LOG_CHANNEL_ID: Optional[int] = None
@@ -179,7 +205,11 @@ class BotConfig:
     # --------------------
     MAX_PENDING_PER_USER: int = 3
     ALLOWED_EXTENSIONS: List[str] = field(default_factory=lambda: ["pdf", "epub"])
-    SOURCE_TOPIC_PREFIX: str = "WW2-"  # keep configurable in case other wars/eras are added later
+    SOURCE_TOPIC_PREFIX: str = "WW2-"  # filename prefix for the WORLDWARS era's sub-topic codes
+
+    # Required: era code -> destination forum thread id (see book_sources.py's ERA_DEFS
+    # for the full list of era codes). "CODE:threadid,CODE:threadid,...".
+    ERA_THREAD_IDS: Dict[str, int] = field(default_factory=dict)
 
 
 def load_config() -> BotConfig:
@@ -217,12 +247,15 @@ def load_config() -> BotConfig:
 
     guild_id = env_or_json("GUILD_ID")
     review_channel_id = env_or_json("REVIEW_CHANNEL_ID")
-    sources_thread_id = env_or_json("SOURCES_THREAD_ID")
     reviewer_role_id = env_or_json("REVIEWER_ROLE_ID")
-    if not guild_id or not review_channel_id or not sources_thread_id or not reviewer_role_id:
+    if not guild_id or not review_channel_id or not reviewer_role_id:
         raise RuntimeError(
-            "GUILD_ID, REVIEW_CHANNEL_ID, SOURCES_THREAD_ID and REVIEWER_ROLE_ID required (for /submit)."
+            "GUILD_ID, REVIEW_CHANNEL_ID and REVIEWER_ROLE_ID required (for /submit)."
         )
+
+    era_thread_ids = _get_era_thread_ids(data)
+    if not era_thread_ids:
+        raise RuntimeError("ERA_THREAD_IDS required (for /submit) — at least one era -> thread id mapping.")
 
     return BotConfig(
         DISCORD_TOKEN=str(token),
@@ -233,7 +266,6 @@ def load_config() -> BotConfig:
         MOD_ROLE_ID=int(mod_role),
         GUILD_ID=int(guild_id),
         REVIEW_CHANNEL_ID=int(review_channel_id),
-        SOURCES_THREAD_ID=int(sources_thread_id),
         REVIEWER_ROLE_ID=int(reviewer_role_id),
         LOG_CHANNEL_ID=_get_optional_int("LOG_CHANNEL_ID") or (int(data["LOG_CHANNEL_ID"]) if data.get("LOG_CHANNEL_ID") else None),
         APPROVAL_MODE=_get_bool("APPROVAL_MODE", bool(data.get("APPROVAL_MODE", False))),
@@ -276,4 +308,5 @@ def load_config() -> BotConfig:
         MAX_PENDING_PER_USER=_get_int("MAX_PENDING_PER_USER", int(data.get("MAX_PENDING_PER_USER", 3))),
         ALLOWED_EXTENSIONS=_get_csv_strs("ALLOWED_EXTENSIONS", list(data.get("ALLOWED_EXTENSIONS", ["pdf", "epub"]) or ["pdf", "epub"])),
         SOURCE_TOPIC_PREFIX=str(env_or_json("SOURCE_TOPIC_PREFIX", data.get("SOURCE_TOPIC_PREFIX", "WW2-"))),
+        ERA_THREAD_IDS=era_thread_ids,
     )

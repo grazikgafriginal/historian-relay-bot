@@ -75,8 +75,13 @@ def build_short_title(title: str) -> str:
     return "-".join(out)
 
 
-def build_filename(*, prefix: str, topic_code: str, author_part: str, year: int, short_title_part: str, ext: str) -> str:
-    return f"{prefix}{topic_code}_{author_part}_{year}_{short_title_part}.{ext.lstrip('.')}"
+def build_filename(
+    *, prefix: str, author_part: str, year: int, short_title_part: str, ext: str, topic_code: str | None = None
+) -> str:
+    """WORLDWARS-era files are "<prefix><TOPIC>_<Author>_<Year>_<Title>.<ext>"; every other
+    era has no sub-topic, so topic_code is omitted: "<prefix><Author>_<Year>_<Title>.<ext>"."""
+    topic_segment = f"{topic_code}_" if topic_code else ""
+    return f"{prefix}{topic_segment}{author_part}_{year}_{short_title_part}.{ext.lstrip('.')}"
 
 
 def is_valid_filename_part(s: str) -> bool:

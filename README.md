@@ -144,13 +144,33 @@ pinned.
 
 ## Book source submissions (/submit)
 Members submit book sources with **`/submit`** (a guild-scoped slash command —
-see `GUILD_ID` below). Moderators review each one in a private channel and,
-once approved, it's posted into one shared forum thread (`SOURCES_THREAD_ID`,
-e.g. a "World wars (1914–1945)" post) as a new message in the fixed post
-format, with the original file re-uploaded under a standardized filename. No
-native Discord forum tags are used — the topic code (`GEN`, `EAST`, `ECON`,
-…) is purely informational, shown in the post's own `**Topic:**` line; it
-doesn't pick which thread the post goes into.
+see `GUILD_ID` below), picking which historical **era** the source covers.
+Moderators review each one in a private channel and, once approved, it's
+posted into that era's existing forum thread as a new message in the fixed
+post format, with the original file re-uploaded under a standardized
+filename. No native Discord forum tags are used — the thread itself is the
+category.
+
+### Eras
+| Era code | Label | Filename prefix |
+|---|---|---|
+| `BRONZE` | Bronze Age (c. 3000 BCE – c. 1050 BCE) | `BRONZE-` |
+| `IRON` | Iron Age (c. 1050 BCE – c. 500 CE) | `IRON-` |
+| `ARCHAIC` | Archaic Greece (776 BCE – 476 CE) | `ARCHAIC-` |
+| `CLASSICAL` | Classical Antiquity (480 BCE – 476 CE) | `CLASSICAL-` |
+| `MIGRATION` | Migration Period (300 – 700) | `MIGRATION-` |
+| `MEDIEVAL` | Middle Ages (476 – 1453) | `MEDIEVAL-` |
+| `EARLYMODERN` | Early modern period (1453 – 1789) | `EARLYMODERN-` |
+| `LONG19` | Long nineteenth century (1789 – 1914) | `LONG19-` |
+| `WORLDWARS` | World Wars (1914 – 1945) | `SOURCE_TOPIC_PREFIX` (default `WW2-`) |
+| `COLDWAR` | Cold War (1945 – 1991) | `COLDWAR-` |
+| `POSTMOD` | Postmodernity (1991 – present) | `POSTMOD-` |
+
+Only the `WORLDWARS` era has the WW2 sub-topic dropdown (`GEN`, `EAST`,
+`ECON`, …, shown in the post's `**Topic:**` line) — every other era is a
+single flat category, and `/submit` rejects the topic options if they're set
+for a non-`WORLDWARS` era. Add new eras in `ERA_DEFS` at the top of
+`cogs/book_sources.py`.
 
 Flow:
 1. `/submit` validates the input (reporting every problem at once if there
@@ -161,27 +181,29 @@ Flow:
    `REVIEW_CHANNEL_ID` with a formatted preview, the file re-uploaded under
    its generated filename (if one was attached), and **Approve** / **Reject**
    / **Edit filename** buttons — restricted to `REVIEWER_ROLE_ID`.
-3. **Approve** posts the formatted content + file into `SOURCES_THREAD_ID`
-   as a new message; **Reject** asks for a reason and DMs the submitter;
-   **Edit filename** lets a reviewer tweak the author/short-title parts
-   before approval.
+3. **Approve** posts the formatted content + file into that era's thread
+   (`ERA_THREAD_IDS`) as a new message; **Reject** asks for a reason and DMs
+   the submitter; **Edit filename** lets a reviewer tweak the
+   author/short-title parts before approval.
 4. Buttons keep working across restarts, and a submission can only be
    decided once (guarded with atomic status transitions).
 
 ### Config (env or `CONFIG_JSON`)
 - `GUILD_ID` (required) — the guild `/submit` is registered to.
 - `REVIEW_CHANNEL_ID` (required) — private text channel reviewers see submissions in.
-- `SOURCES_THREAD_ID` (required) — the forum **post/thread** (not the parent forum channel)
-  approved books get posted into. Developer Mode on → right-click the thread → Copy Thread ID.
+- `ERA_THREAD_IDS` (required) — one destination thread per era code, as `CODE:threadid` pairs
+  separated by commas, e.g. `WORLDWARS:1553771786796011600,COLDWAR:...,MEDIEVAL:...` — all 11
+  eras need an entry. Each value is the forum **post/thread itself** (not the parent forum
+  channel). Developer Mode on → right-click the thread → Copy Thread ID.
 - `REVIEWER_ROLE_ID` (required) — role allowed to Approve/Reject/Edit filename.
 - `MAX_PENDING_PER_USER` (default `3`) — per-user cap on simultaneous pending submissions.
 - `ALLOWED_EXTENSIONS` (default `pdf,epub`) — allowed file extensions for the optional attachment.
-- `SOURCE_TOPIC_PREFIX` (default `WW2-`) — prefix used in generated filenames (e.g.
-  `WW2-ECON_Tooze_2006_...`); kept configurable in case other wars/eras get their own thread later.
+- `SOURCE_TOPIC_PREFIX` (default `WW2-`) — filename prefix for the `WORLDWARS` era specifically
+  (e.g. `WW2-ECON_Tooze_2006_...`); every other era's prefix is fixed in `ERA_DEFS`.
 
-If `SOURCES_THREAD_ID` is misconfigured (e.g. set to the parent forum channel instead of a
-specific post), the bot logs a specific, actionable warning on startup and Approve fails with
-the same message instead of posting anywhere wrong.
+If an `ERA_THREAD_IDS` entry is missing or misconfigured (e.g. set to the parent forum channel
+instead of a specific post), the bot logs a specific, actionable warning on startup for that era,
+and Approve fails with the same message instead of posting anywhere wrong.
 
 ### Bot permissions needed
 Send Messages, Send Messages in Threads, Attach Files, Embed Links.

@@ -44,6 +44,7 @@ class SourceSubmissionRow:
     publisher: str
     year: int
     original_year: Optional[int]
+    era: str
     topic: str
     secondary_topic: Optional[str]
     covers: str
@@ -458,6 +459,13 @@ class Database:
 
         if "forum_message_id" not in cols:
             await self._conn.execute("ALTER TABLE source_submissions ADD COLUMN forum_message_id TEXT")
+            await self._conn.commit()
+
+        if "era" not in cols:
+            # Every row that predates multi-era support was a World Wars submission.
+            await self._conn.execute(
+                "ALTER TABLE source_submissions ADD COLUMN era TEXT NOT NULL DEFAULT 'WORLDWARS'"
+            )
             await self._conn.commit()
 
     async def fetchone(self, sql: str, params: Tuple[Any, ...] = ()) -> Optional[aiosqlite.Row]:
@@ -1785,6 +1793,7 @@ class Database:
         publisher: str,
         year: int,
         original_year: Optional[int],
+        era: str,
         topic: str,
         secondary_topic: Optional[str],
         covers: str,
@@ -1800,15 +1809,15 @@ class Database:
                 """
                 INSERT INTO source_submissions(
                   guild_id, user_id, title, authors, publisher, year, original_year,
-                  topic, secondary_topic, covers, type, link,
+                  era, topic, secondary_topic, covers, type, link,
                   filename_author, filename_short_title, file_ext,
                   status, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
                 """,
                 (
                     str(guild_id), str(user_id), title, authors, publisher, int(year),
                     int(original_year) if original_year is not None else None,
-                    topic, secondary_topic, covers, type, link,
+                    era, topic, secondary_topic, covers, type, link,
                     filename_author, filename_short_title, file_ext,
                     ts,
                 ),

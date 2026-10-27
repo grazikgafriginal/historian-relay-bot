@@ -100,7 +100,8 @@ def build_source_post_text(
     publisher: str,
     year: int,
     original_year: int | None,
-    topic: str,
+    era_label: str,
+    topic: str | None,
     secondary_topic: str | None,
     covers: str,
     work_type: str,
@@ -118,8 +119,11 @@ def build_source_post_text(
         published += f" (original {original_year})"
     lines.append(f"**Published:** {published}")
 
-    topic_line = f"{topic} · also {secondary_topic}" if secondary_topic else topic
-    lines.append(f"**Topic:** {topic_line}")
+    lines.append(f"**Era:** {era_label}")
+
+    if topic:
+        topic_line = f"{topic} · also {secondary_topic}" if secondary_topic else topic
+        lines.append(f"**Topic:** {topic_line}")
 
     lines.append(f"**Covers:** {covers}")
     lines.append(f"**Type:** {work_type}")

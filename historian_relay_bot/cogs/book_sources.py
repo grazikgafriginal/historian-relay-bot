@@ -43,6 +43,27 @@ TOPIC_CODES = [
 ]
 TOPIC_CHOICES = [app_commands.Choice(name=label, value=code) for code, label in TOPIC_CODES]
 
+# One destination thread per era (code, Discord choice label, filename prefix). The
+# WW2 sub-topic dropdown above only applies to WORLDWARS; every other era is a single
+# flat category — "covers" already carries the specific scope in free text.
+WORLDWARS_ERA = "WORLDWARS"
+ERA_DEFS = [
+    ("BRONZE", "Bronze Age (c. 3000 BCE – c. 1050 BCE)", "BRONZE-"),
+    ("IRON", "Iron Age (c. 1050 BCE – c. 500 CE)", "IRON-"),
+    ("ARCHAIC", "Archaic Greece (776 BCE – 476 CE)", "ARCHAIC-"),
+    ("CLASSICAL", "Classical Antiquity (480 BCE – 476 CE)", "CLASSICAL-"),
+    ("MIGRATION", "Migration Period (300 – 700)", "MIGRATION-"),
+    ("MEDIEVAL", "Middle Ages (476 – 1453)", "MEDIEVAL-"),
+    ("EARLYMODERN", "Early modern period (1453 – 1789)", "EARLYMODERN-"),
+    ("LONG19", "Long nineteenth century (1789 – 1914)", "LONG19-"),
+    (WORLDWARS_ERA, "World Wars (1914 – 1945)", None),  # prefix comes from SOURCE_TOPIC_PREFIX instead
+    ("COLDWAR", "Cold War (1945 – 1991)", "COLDWAR-"),
+    ("POSTMOD", "Postmodernity (1991 – present)", "POSTMOD-"),
+]
+ERA_CHOICES = [app_commands.Choice(name=label, value=code) for code, label, _prefix in ERA_DEFS]
+ERA_LABELS = {code: label for code, label, _prefix in ERA_DEFS}
+ERA_PREFIXES = {code: prefix for code, _label, prefix in ERA_DEFS if prefix is not None}
+
 TYPE_LABELS = [
     "General history",
     "Academic monograph",
@@ -55,18 +76,18 @@ TYPE_CHOICES = [app_commands.Choice(name=t, value=t) for t in TYPE_LABELS]
 SOURCE_TYPE_EDITED_VOLUME = "Edited volume"
 
 
-def _not_thread_hint(ch: Optional[discord.abc.Snowflake]) -> str:
-    """A specific, actionable message for the most likely way to misconfigure
-    SOURCES_THREAD_ID: pointing it at the parent forum channel itself instead
+def _not_thread_hint(ch: Optional[discord.abc.Snowflake], *, config_hint: str) -> str:
+    """A specific, actionable message for the most likely way to misconfigure an
+    ERA_THREAD_IDS entry: pointing it at the parent forum channel itself instead
     of the specific post/thread inside it that approved books get posted into."""
     if isinstance(ch, discord.ForumChannel):
         return (
-            f"SOURCES_THREAD_ID ({ch.id}) points at the forum channel itself (\"{ch.name}\"), not a "
+            f"{config_hint} ({ch.id}) points at the forum channel itself (\"{ch.name}\"), not a "
             f"specific post/thread inside it. Open the thread approved books should post into and use "
             f"ITS id instead."
         )
     kind = type(ch).__name__ if ch is not None else "unknown"
-    return f"SOURCES_THREAD_ID does not point at a thread (it resolved to a {kind})."
+    return f"{config_hint} does not point at a thread (it resolved to a {kind})."
 
 
 def _resolve_guild_id() -> Optional[int]:
@@ -265,18 +286,36 @@ class BookSourcesCog(commands.Cog):
             except Exception:
                 log.exception("Book sources: startup recovery failed for guild %s", guild.id)
 
-        await self._check_destination_thread()
+        await self._check_destination_threads()
 
-    async def _check_destination_thread(self) -> None:
-        """Startup sanity check: log a clear warning if SOURCES_THREAD_ID doesn't
-        resolve to an actual thread, same spirit as the old forum-tag check."""
+    async def _check_destination_threads(self) -> None:
+        """Startup sanity check: log a clear warning for any era with no resolvable
+        destination thread, same spirit as the old forum-tag check."""
+        for code, _label, _prefix in ERA_DEFS:
+            _thread, err = await self._resolve_era_thread(code)
+            if err:
+                log.warning("Book sources: %s", err)
+
+    def _prefix_for_era(self, era_code: str) -> str:
+        if era_code == WORLDWARS_ERA:
+            return self.bot.cfg.SOURCE_TOPIC_PREFIX
+        return ERA_PREFIXES.get(era_code, f"{era_code}-")
+
+    async def _resolve_era_thread(self, era_code: str) -> tuple[Optional[discord.Thread], Optional[str]]:
+        """Returns (thread, error_message) — exactly one is set."""
+        thread_id = self.bot.cfg.ERA_THREAD_IDS.get(era_code)
+        if not thread_id:
+            return None, f"No destination thread configured for era {era_code!r} — add it to ERA_THREAD_IDS."
+
         try:
-            thread = await self.bot.fetch_channel(self.bot.cfg.SOURCES_THREAD_ID)
+            thread = await self.bot.fetch_channel(thread_id)
         except Exception:
-            log.warning("Book sources: could not fetch SOURCES_THREAD_ID.")
-            return
+            return None, f"ERA_THREAD_IDS[{era_code!r}]={thread_id} could not be fetched."
+
         if not isinstance(thread, discord.Thread):
-            log.warning("Book sources: %s", _not_thread_hint(thread))
+            return None, _not_thread_hint(thread, config_hint=f"ERA_THREAD_IDS[{era_code!r}]")
+
+        return thread, None
 
     # --------------------------
     # /submit
@@ -290,7 +329,8 @@ class BookSourcesCog(commands.Cog):
         publisher: str,
         year: int,
         covers: str,
-        topic: str,
+        era: str,
+        topic: Optional[str],
         secondary_topic: Optional[str],
         original_year: Optional[int],
         file: Optional[discord.Attachment],
@@ -326,8 +366,16 @@ class BookSourcesCog(commands.Cog):
         elif len(covers) > 80:
             errors.append("Covers must be 80 characters or fewer.")
 
-        if secondary_topic is not None and secondary_topic == topic:
-            errors.append("Secondary topic must differ from the primary topic.")
+        if era == WORLDWARS_ERA:
+            if not topic:
+                errors.append("Topic is required for World Wars submissions.")
+            elif secondary_topic is not None and secondary_topic == topic:
+                errors.append("Secondary topic must differ from the primary topic.")
+        else:
+            if topic:
+                errors.append("Topic only applies to World Wars submissions — leave it blank for this era.")
+            if secondary_topic:
+                errors.append("Secondary topic only applies to World Wars submissions — leave it blank for this era.")
 
         if file is not None:
             ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
@@ -375,15 +423,15 @@ class BookSourcesCog(commands.Cog):
             fa = filename_author if filename_author is not None else row.filename_author
             fst = filename_short_title if filename_short_title is not None else row.filename_short_title
             filename = build_filename(
-                prefix=self.bot.cfg.SOURCE_TOPIC_PREFIX, topic_code=row.topic,
+                prefix=self._prefix_for_era(row.era), topic_code=row.topic,
                 author_part=fa, year=row.year, short_title_part=fst, ext=row.file_ext,
             )
 
         return build_source_post_text(
             title=row.title, authors=authors, is_edited=is_edited,
             publisher=row.publisher, year=row.year, original_year=row.original_year,
-            topic=row.topic, secondary_topic=row.secondary_topic, covers=row.covers,
-            work_type=row.type, filename=filename, link=row.link,
+            era_label=ERA_LABELS.get(row.era, row.era), topic=row.topic, secondary_topic=row.secondary_topic,
+            covers=row.covers, work_type=row.type, filename=filename, link=row.link,
             submitted_by_user_id=int(row.user_id),
         )
 
@@ -393,15 +441,16 @@ class BookSourcesCog(commands.Cog):
         author='Full name(s). Separate multiple people with ";"',
         publisher="Publisher",
         year="Year of the edition being submitted",
-        topic="Primary topic",
+        era="Historical era this source covers",
         covers='Short scope, e.g. "Germany, 1933–1945" (max 80 chars)',
         type_="Type of work",
-        secondary_topic="Optional secondary topic (must differ from the primary topic)",
+        topic="World Wars only: primary topic",
+        secondary_topic="World Wars only: optional secondary topic (must differ from the primary topic)",
         original_year="Optional: original publication year, for translations/later editions",
         file="Optional: the book file (must be an allowed extension and within the server's upload limit)",
         link="Optional: a link to the source",
     )
-    @app_commands.choices(topic=TOPIC_CHOICES, secondary_topic=TOPIC_CHOICES, type_=TYPE_CHOICES)
+    @app_commands.choices(era=ERA_CHOICES, topic=TOPIC_CHOICES, secondary_topic=TOPIC_CHOICES, type_=TYPE_CHOICES)
     @app_commands.rename(type_="type")
     async def submit(
         self,
@@ -410,9 +459,10 @@ class BookSourcesCog(commands.Cog):
         author: str,
         publisher: str,
         year: int,
-        topic: app_commands.Choice[str],
+        era: app_commands.Choice[str],
         covers: str,
         type_: app_commands.Choice[str],
+        topic: Optional[app_commands.Choice[str]] = None,
         secondary_topic: Optional[app_commands.Choice[str]] = None,
         original_year: Optional[int] = None,
         file: Optional[discord.Attachment] = None,
@@ -422,11 +472,13 @@ class BookSourcesCog(commands.Cog):
             return await interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
 
         authors = parse_authors(author)
+        era_val = era.value
+        topic_val = topic.value if topic else None
         secondary_topic_val = secondary_topic.value if secondary_topic else None
 
         errors = self._validate_submission(
             title=title, authors=authors, publisher=publisher, year=year, covers=covers,
-            topic=topic.value, secondary_topic=secondary_topic_val,
+            era=era_val, topic=topic_val, secondary_topic=secondary_topic_val,
             original_year=original_year, file=file, link=link, guild=interaction.guild,
         )
         if errors:
@@ -468,7 +520,8 @@ class BookSourcesCog(commands.Cog):
             publisher=publisher.strip(),
             year=year,
             original_year=original_year,
-            topic=topic.value,
+            era=era_val,
+            topic=topic_val or "",  # column is NOT NULL; "" means "no topic" (non-World-Wars eras)
             secondary_topic=secondary_topic_val,
             covers=covers.strip(),
             type=type_.value,
@@ -486,7 +539,7 @@ class BookSourcesCog(commands.Cog):
             discord_file = None
             if file_bytes is not None:
                 generated_name = build_filename(
-                    prefix=self.bot.cfg.SOURCE_TOPIC_PREFIX, topic_code=row.topic,
+                    prefix=self._prefix_for_era(row.era), topic_code=row.topic,
                     author_part=row.filename_author, year=row.year,
                     short_title_part=row.filename_short_title, ext=row.file_ext,
                 )
@@ -533,15 +586,15 @@ class BookSourcesCog(commands.Cog):
                     raise RuntimeError("Expected attachment missing from the review message.")
                 data = await review_msg.attachments[0].read()
                 generated_name = build_filename(
-                    prefix=self.bot.cfg.SOURCE_TOPIC_PREFIX, topic_code=row.topic,
+                    prefix=self._prefix_for_era(row.era), topic_code=row.topic,
                     author_part=row.filename_author, year=row.year,
                     short_title_part=row.filename_short_title, ext=row.file_ext,
                 )
                 discord_file = discord.File(io.BytesIO(data), filename=generated_name)
 
-            thread = await self.bot.fetch_channel(self.bot.cfg.SOURCES_THREAD_ID)
-            if not isinstance(thread, discord.Thread):
-                raise RuntimeError(_not_thread_hint(thread))
+            thread, err = await self._resolve_era_thread(row.era)
+            if thread is None:
+                raise RuntimeError(err)
             if thread.archived:
                 await thread.edit(archived=False)
 
