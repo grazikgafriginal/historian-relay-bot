@@ -166,11 +166,10 @@ category.
 | `COLDWAR` | Cold War (1945 – 1991) | `COLDWAR-` |
 | `POSTMOD` | Postmodernity (1991 – present) | `POSTMOD-` |
 
-Only the `WORLDWARS` era has the WW2 sub-topic dropdown (`GEN`, `EAST`,
-`ECON`, …, shown in the post's `**Topic:**` line) — every other era is a
-single flat category, and `/submit` rejects the topic options if they're set
-for a non-`WORLDWARS` era. Add new eras in `ERA_DEFS` at the top of
-`cogs/book_sources.py`.
+The WW2 sub-topic dropdown (`GEN`, `EAST`, `ECON`, …) is available for every
+era, not just `WORLDWARS` — it's entirely optional, shown in the post's
+`**Topic:**` line whenever set, and never required or rejected based on era.
+Add new eras in `ERA_DEFS` at the top of `cogs/book_sources.py`.
 
 Flow:
 1. `/submit` validates the input (reporting every problem at once if there

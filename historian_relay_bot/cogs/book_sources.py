@@ -366,16 +366,10 @@ class BookSourcesCog(commands.Cog):
         elif len(covers) > 80:
             errors.append("Covers must be 80 characters or fewer.")
 
-        if era == WORLDWARS_ERA:
-            if not topic:
-                errors.append("Topic is required for World Wars submissions.")
-            elif secondary_topic is not None and secondary_topic == topic:
-                errors.append("Secondary topic must differ from the primary topic.")
-        else:
-            if topic:
-                errors.append("Topic only applies to World Wars submissions — leave it blank for this era.")
-            if secondary_topic:
-                errors.append("Secondary topic only applies to World Wars submissions — leave it blank for this era.")
+        # Topic/secondary_topic are optional for every era (not just WORLDWARS) — just
+        # metadata shown in the post's **Topic:** line and the generated filename when set.
+        if topic and secondary_topic is not None and secondary_topic == topic:
+            errors.append("Secondary topic must differ from the primary topic.")
 
         if file is not None:
             ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
@@ -444,8 +438,8 @@ class BookSourcesCog(commands.Cog):
         era="Historical era this source covers",
         covers='Short scope, e.g. "Germany, 1933–1945" (max 80 chars)',
         type_="Type of work",
-        topic="World Wars only: primary topic",
-        secondary_topic="World Wars only: optional secondary topic (must differ from the primary topic)",
+        topic="Optional: a topic tag for this source",
+        secondary_topic="Optional: a second topic tag (must differ from the primary topic)",
         original_year="Optional: original publication year, for translations/later editions",
         file="Optional: the book file (must be an allowed extension and within the server's upload limit)",
         link="Optional: a link to the source",
