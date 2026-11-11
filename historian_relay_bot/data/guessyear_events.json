@@ -27651,5 +27651,1134 @@
       }
     },
     "learn_explanation": "The Treaty of Versailles, signed in June 1919 in the Hall of Mirrors at the Palace of Versailles, formally ended the state of war between Germany and the Allied powers. Its harsh terms — territorial losses, a disarmed military, and heavy reparations — placed blame for the war squarely on Germany and are widely seen as having fueled the resentment that contributed to the rise of Nazism two decades later."
+  },
+  {
+    "id": "evt_1288",
+    "prompt": "Germany inflicts a catastrophic defeat on invading Russian forces in East Prussia, encircling and destroying an entire army and launching two commanders to fame.",
+    "year": 1914,
+    "hints": [
+      "One nearby event: A global conflict begins after the assassination of an archduke in Sarajevo. That was the same year as this event.",
+      "One nearby event: Allied armies halt a German advance along a river just short of Paris. That was the same year as this event.",
+      "One nearby event: A years-long battle begins around a fortified French city on the Meuse river. That was 2 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "august",
+          "aug"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "paul von hindenburg",
+          "hindenburg",
+          "erich ludendorff",
+          "ludendorff"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Tannenberg (August 1914) saw German forces encircle and destroy a Russian army advancing into East Prussia, one of the most complete victories of the war. It made national heroes of commanders Paul von Hindenburg and Erich Ludendorff, who would later dominate German strategy and, eventually, German politics itself."
+  },
+  {
+    "id": "evt_1289",
+    "prompt": "Japanese and British forces capture a German-held port city and naval base in China after a siege, extending the war to East Asia.",
+    "year": 1914,
+    "hints": [
+      "One nearby event: A global conflict begins after the assassination of an archduke in Sarajevo. That was the same year as this event.",
+      "One nearby event: Allied armies halt a German advance along a river just short of Paris. That was the same year as this event.",
+      "One nearby event: The largest naval battle of the war is fought in the North Sea. That was 2 years after this event."
+    ],
+    "tags": [
+      "Asia",
+      "War",
+      "World War I",
+      "Colonial"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      }
+    },
+    "learn_explanation": "The Siege of Tsingtao (1914) saw Japan, allied with Britain, capture Germany's main naval base and colonial holding in China. It was one of the first Allied victories of the war and marked Japan's entry into the conflict, extending fighting well beyond Europe from the very first months."
+  },
+  {
+    "id": "evt_1290",
+    "prompt": "German forces capture a heavily fortified Belgian port city after a siege, forcing Belgian and British defenders to retreat and completing the occupation of most of Belgium.",
+    "year": 1914,
+    "hints": [
+      "One nearby event: A global conflict begins after the assassination of an archduke in Sarajevo. That was the same year as this event.",
+      "One nearby event: The largest naval battle of the war is fought in the North Sea. That was 2 years after this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was 4 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      }
+    },
+    "learn_explanation": "The fall of Antwerp (October 1914) completed Germany's occupation of almost all of Belgium in the war's opening months. The Belgian government and much of its army escaped to continue resisting from a small strip of unoccupied territory, and Belgium's wartime suffering became a major piece of Allied propaganda."
+  },
+  {
+    "id": "evt_1291",
+    "prompt": "The Ottoman Empire joins the Central Powers, launching naval attacks on Russian Black Sea ports and opening new fronts in the Caucasus and the Middle East.",
+    "year": 1914,
+    "hints": [
+      "One nearby event: A global conflict begins after the assassination of an archduke in Sarajevo. That was the same year as this event.",
+      "One nearby event: Allied forces land on a peninsula in the Ottoman Empire. That was 1 year after this event.",
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was 4 years after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War",
+      "World War I",
+      "Diplomacy"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      }
+    },
+    "learn_explanation": "The Ottoman Empire entered the war on the side of Germany and Austria-Hungary in late October 1914, after its navy shelled Russian Black Sea ports. This opened fronts in the Caucasus, Mesopotamia, and the Sinai, and eventually led to campaigns like Gallipoli as the Allies sought to knock the Ottomans out of the war."
+  },
+  {
+    "id": "evt_1292",
+    "prompt": "Fierce fighting in Flanders halts the last German attempt at a rapid breakthrough in the west, and both sides begin to dig the trench lines that will define years of fighting.",
+    "year": 1914,
+    "hints": [
+      "One nearby event: Allied armies halt a German advance along a river just short of Paris. That was the same year as this event.",
+      "One nearby event: German forces first use poison gas on a large scale near a Belgian town. That was 1 year after this event.",
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was 2 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      }
+    },
+    "learn_explanation": "The First Battle of Ypres (October–November 1914) was the last major clash of the war's mobile opening phase. Neither side could break through, and both armies began digging in — the start of a trench line that would stretch from the English Channel to Switzerland for the rest of the war."
+  },
+  {
+    "id": "evt_1293",
+    "prompt": "A German naval squadron defeats a British force off the coast of Chile, Britain's first naval defeat in more than a century.",
+    "year": 1914,
+    "hints": [
+      "One nearby event: A global conflict begins after the assassination of an archduke in Sarajevo. That was the same year as this event.",
+      "One nearby event: The largest naval battle of the war is fought in the North Sea. That was 2 years after this event.",
+      "One nearby event: Allied forces land on a peninsula in the Ottoman Empire. That was 1 year after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Americas",
+      "War",
+      "World War I",
+      "Naval"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "maximilian von spee",
+          "von spee",
+          "spee"
+        ]
+      }
+    },
+    "learn_explanation": "At the Battle of Coronel (November 1914), a German East Asia Squadron under Admiral Maximilian von Spee sank two British cruisers off the coast of Chile. It was Britain's first defeat at sea in over a hundred years, and the Royal Navy moved quickly to hunt down and destroy Spee's squadron in response."
+  },
+  {
+    "id": "evt_1294",
+    "prompt": "A Royal Navy squadron avenges an earlier defeat by destroying most of a German East Asia squadron near a British South Atlantic colony.",
+    "year": 1914,
+    "hints": [
+      "One nearby event: A global conflict begins after the assassination of an archduke in Sarajevo. That was the same year as this event.",
+      "One nearby event: The largest naval battle of the war is fought in the North Sea. That was 2 years after this event.",
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was 2 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Americas",
+      "War",
+      "World War I",
+      "Naval"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "december",
+          "dec"
+        ]
+      }
+    },
+    "learn_explanation": "At the Battle of the Falkland Islands (December 1914), a reinforced Royal Navy squadron destroyed most of Admiral von Spee's German East Asia Squadron, avenging the earlier defeat at Coronel. The victory removed the last major German surface threat to Allied shipping outside European waters."
+  },
+  {
+    "id": "evt_1295",
+    "prompt": "Along parts of the Western Front, German, British, and French soldiers informally lay down arms, exchange gifts, and reportedly play football in no-man's-land.",
+    "year": 1914,
+    "hints": [
+      "One nearby event: Allied armies halt a German advance along a river just short of Paris. That was the same year as this event.",
+      "One nearby event: A global conflict begins after the assassination of an archduke in Sarajevo. That was the same year as this event.",
+      "One nearby event: German forces first use poison gas on a large scale near a Belgian town. That was 1 year after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I",
+      "Culture"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "december",
+          "dec"
+        ]
+      }
+    },
+    "learn_explanation": "The Christmas Truce of 1914 saw unofficial, spontaneous ceasefires break out along stretches of the Western Front, with soldiers from opposing armies exchanging greetings, carols, and small gifts, and reportedly playing informal football matches. Commanders on both sides moved to prevent such fraternization from happening again in later years of the war."
+  },
+  {
+    "id": "evt_1296",
+    "prompt": "An Ottoman offensive into the Caucasus against Russia collapses in freezing winter conditions, destroying much of the attacking army and discrediting the war minister who planned it.",
+    "year": 1915,
+    "hints": [
+      "One nearby event: Allied forces land on a peninsula in the Ottoman Empire. That was the same year as this event.",
+      "One nearby event: A global conflict begins after the assassination of an archduke in Sarajevo. That was 1 year before this event.",
+      "One nearby event: German forces first use poison gas on a large scale near a Belgian town. That was the same year as this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "january",
+          "jan"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "enver pasha",
+          "enver"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Sarikamish (December 1914–January 1915) was a disastrous Ottoman offensive into the Russian Caucasus, planned by War Minister Enver Pasha. Poor planning and brutal winter conditions destroyed much of the attacking force, and the defeat is sometimes cited among the factors behind the Ottoman government's subsequent persecution of its Armenian population."
+  },
+  {
+    "id": "evt_1297",
+    "prompt": "Ottoman authorities begin mass arrests, deportations, and killings of an ethnic and religious minority, in a campaign that will claim the lives of an estimated one million or more people.",
+    "year": 1915,
+    "hints": [
+      "One nearby event: German forces first use poison gas on a large scale near a Belgian town. That was the same year as this event.",
+      "One nearby event: A British ocean liner is sunk by a German submarine off the Irish coast. That was the same year as this event.",
+      "One nearby event: Allied forces land on a peninsula in the Ottoman Empire. That was the same year as this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "april",
+          "apr"
+        ]
+      }
+    },
+    "learn_explanation": "Beginning in April 1915, Ottoman authorities carried out the systematic deportation and mass killing of Armenians, an event now recognized by most historians and many governments as genocide. It remains one of the most devastating atrocities of the war and a deeply contested subject in Turkish–Armenian relations to this day."
+  },
+  {
+    "id": "evt_1298",
+    "prompt": "A European kingdom abandons its prior alliance with Germany and Austria-Hungary and joins the Allies instead, opening a new mountain front after being secretly promised territorial gains.",
+    "year": 1915,
+    "hints": [
+      "One nearby event: German forces first use poison gas on a large scale near a Belgian town. That was the same year as this event.",
+      "One nearby event: A British ocean liner is sunk by a German submarine off the Irish coast. That was the same year as this event.",
+      "One nearby event: Allied forces land on a peninsula in the Ottoman Empire. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I",
+      "Diplomacy"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "may",
+          "may"
+        ]
+      }
+    },
+    "learn_explanation": "Italy entered the war on the Allied side in May 1915, switching sides after having been formally allied with Germany and Austria-Hungary before the war. A secret treaty promised Italy Austro-Hungarian territory in exchange, and Italy opened a grueling new front in the Alps that would see repeated, costly battles along the Isonzo river."
+  },
+  {
+    "id": "evt_1299",
+    "prompt": "Britain uses poison gas in battle for the first time, in a large offensive in northern France that gains little ground at heavy cost.",
+    "year": 1915,
+    "hints": [
+      "One nearby event: German forces first use poison gas on a large scale near a Belgian town. That was the same year as this event.",
+      "One nearby event: A years-long battle begins around a fortified French city on the Meuse river. That was 1 year after this event.",
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was 1 year after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "september",
+          "sept"
+        ]
+      }
+    },
+    "learn_explanation": "At the Battle of Loos (September 1915), Britain used poison gas in combat for the first time, having criticized Germany's earlier use of it at Ypres. Shifting winds blew some of the gas back onto British troops, and the offensive gained little ground relative to its heavy casualties."
+  },
+  {
+    "id": "evt_1300",
+    "prompt": "Germany executes a British nurse by firing squad for helping Allied soldiers escape occupied Belgium, provoking international outrage and becoming a powerful piece of Allied propaganda.",
+    "year": 1915,
+    "hints": [
+      "One nearby event: A British ocean liner is sunk by a German submarine off the Irish coast. That was the same year as this event.",
+      "One nearby event: Allied forces land on a peninsula in the Ottoman Empire. That was the same year as this event.",
+      "One nearby event: A years-long battle begins around a fortified French city on the Meuse river. That was 1 year after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "edith cavell",
+          "cavell"
+        ]
+      }
+    },
+    "learn_explanation": "Edith Cavell, a British nurse working in German-occupied Belgium, was executed in October 1915 for helping hundreds of Allied soldiers escape to neutral territory. Her execution caused international outrage, particularly in Britain and the United States, and she became an enduring symbol of wartime sacrifice."
+  },
+  {
+    "id": "evt_1301",
+    "prompt": "A besieged British-Indian garrison in Mesopotamia surrenders to Ottoman forces after months of siege, one of the worst defeats suffered by the British Army in the war.",
+    "year": 1916,
+    "hints": [
+      "One nearby event: A years-long battle begins around a fortified French city on the Meuse river. That was the same year as this event.",
+      "One nearby event: The largest naval battle of the war is fought in the North Sea. That was the same year as this event.",
+      "One nearby event: Allied forces land on a peninsula in the Ottoman Empire. That was 1 year before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "april",
+          "apr"
+        ]
+      }
+    },
+    "learn_explanation": "The Siege of Kut (1915–1916) ended in April 1916 when a besieged British-Indian force surrendered to Ottoman troops in Mesopotamia, after relief attempts failed. Thousands of prisoners died in harsh captivity afterward, and the defeat was a serious blow to British prestige, later avenged by the capture of Baghdad."
+  },
+  {
+    "id": "evt_1302",
+    "prompt": "Britain and France secretly agree on how to divide up Ottoman territory in the Middle East after the war, an agreement whose borders still shape the region today.",
+    "year": 1916,
+    "hints": [
+      "One nearby event: A years-long battle begins around a fortified French city on the Meuse river. That was the same year as this event.",
+      "One nearby event: The largest naval battle of the war is fought in the North Sea. That was the same year as this event.",
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was the same year as this event."
+    ],
+    "tags": [
+      "Middle East",
+      "Europe",
+      "Diplomacy",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "may",
+          "may"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "mark sykes",
+          "sykes",
+          "georges picot",
+          "picot"
+        ]
+      }
+    },
+    "learn_explanation": "The Sykes-Picot Agreement (May 1916) was a secret arrangement between Britain and France, negotiated by diplomats Mark Sykes and François Georges-Picot, dividing Ottoman Middle Eastern territory into future spheres of influence. Its disclosure after the Russian Revolution embarrassed the Allies and fueled lasting distrust among Arab nationalists who had been promised independence."
+  },
+  {
+    "id": "evt_1303",
+    "prompt": "Arab forces rise up against Ottoman rule with British support, a revolt that will later be immortalized by a British liaison officer who becomes known by a desert nickname.",
+    "year": 1916,
+    "hints": [
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was the same year as this event.",
+      "One nearby event: Tanks are used in combat for the first time. That was the same year as this event.",
+      "One nearby event: The largest naval battle of the war is fought in the North Sea. That was the same year as this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "t.e. lawrence",
+          "lawrence of arabia",
+          "lawrence"
+        ]
+      }
+    },
+    "learn_explanation": "The Arab Revolt began in June 1916, as Arab forces under Sharif Hussein of Mecca rose against Ottoman rule with British backing. British officer T.E. Lawrence, later known as 'Lawrence of Arabia,' served as a liaison and became internationally famous for his role in the campaign."
+  },
+  {
+    "id": "evt_1304",
+    "prompt": "A Russian general launches one of the most successful Allied offensives of the war against Austria-Hungary, inflicting huge casualties but exhausting Russia's own army in the process.",
+    "year": 1916,
+    "hints": [
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was the same year as this event.",
+      "One nearby event: Tanks are used in combat for the first time. That was the same year as this event.",
+      "One nearby event: A years-long battle begins around a fortified French city on the Meuse river. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "Russia",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "aleksei brusilov",
+          "brusilov"
+        ]
+      }
+    },
+    "learn_explanation": "The Brusilov Offensive (June 1916), led by Russian general Aleksei Brusilov, was one of the most successful Allied operations of the war, badly damaging Austria-Hungary's army. But the offensive's enormous casualties also exhausted Russian forces and contributed to the discontent that fed into the revolutions of the following year."
+  },
+  {
+    "id": "evt_1305",
+    "prompt": "Fighting around a fortified French city finally subsides after ten months, with roughly 300,000 dead on both sides combined and almost no change in the front line.",
+    "year": 1916,
+    "hints": [
+      "One nearby event: A years-long battle begins around a fortified French city on the Meuse river. That was the same year as this event.",
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was the same year as this event.",
+      "One nearby event: The largest naval battle of the war is fought in the North Sea. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "december",
+          "dec"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Verdun finally wound down in December 1916 after ten grinding months, with roughly 300,000 combined dead and the front line barely changed from where it began. It remains one of the longest and most costly single battles in history and a lasting symbol of the war's futility."
+  },
+  {
+    "id": "evt_1306",
+    "prompt": "British forces capture a major Mesopotamian city from the Ottomans, avenging an earlier humiliating siege and surrender nearby.",
+    "year": 1917,
+    "hints": [
+      "One nearby event: Germany resumes unrestricted submarine warfare against merchant shipping. That was the same year as this event.",
+      "One nearby event: A secret German telegram proposing an alliance with Mexico is published. That was the same year as this event.",
+      "One nearby event: The United States declares war on Germany. That was the same year as this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "march",
+          "mar"
+        ]
+      }
+    },
+    "learn_explanation": "British and Indian forces captured Baghdad from the Ottomans in March 1917, avenging the earlier surrender at Kut. The capture boosted British morale in the Mesopotamian campaign and tightened the pressure on Ottoman forces across multiple Middle Eastern fronts."
+  },
+  {
+    "id": "evt_1307",
+    "prompt": "A failed French offensive with heavy losses triggers widespread mutinies in the French army, with many soldiers refusing further attacks while still willing to defend their trenches.",
+    "year": 1917,
+    "hints": [
+      "One nearby event: Germany resumes unrestricted submarine warfare against merchant shipping. That was the same year as this event.",
+      "One nearby event: The United States declares war on Germany. That was the same year as this event.",
+      "One nearby event: A revolution in Russia leads to the overthrow of the imperial government. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "april",
+          "apr"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "robert nivelle",
+          "nivelle"
+        ]
+      }
+    },
+    "learn_explanation": "The Nivelle Offensive (April 1917), named for French general Robert Nivelle, failed to achieve its promised breakthrough and caused huge casualties. The failure triggered widespread mutinies in the French army; soldiers refused further offensives, though many remained willing to hold defensive positions, and General Philippe Pétain restored order partly by addressing troops' grievances."
+  },
+  {
+    "id": "evt_1308",
+    "prompt": "Troops from a British dominion, fighting together as a single corps for the first time, capture a heavily fortified ridge in northern France that previous Allied attacks had failed to take.",
+    "year": 1917,
+    "hints": [
+      "One nearby event: Germany resumes unrestricted submarine warfare against merchant shipping. That was the same year as this event.",
+      "One nearby event: A secret German telegram proposing an alliance with Mexico is published. That was the same year as this event.",
+      "One nearby event: The United States declares war on Germany. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "april",
+          "apr"
+        ]
+      }
+    },
+    "learn_explanation": "At the Battle of Vimy Ridge (April 1917), the four divisions of the Canadian Corps fought together for the first time and captured a ridge that earlier French and British attacks had failed to hold. The victory is often cited as a formative moment in Canadian national identity."
+  },
+  {
+    "id": "evt_1309",
+    "prompt": "A months-long Allied offensive in Flanders becomes infamous for churning the battlefield into deep mud, making movement and even recovering the wounded extremely difficult.",
+    "year": 1917,
+    "hints": [
+      "One nearby event: The United States declares war on Germany. That was the same year as this event.",
+      "One nearby event: A revolution in Russia leads to the overthrow of the imperial government. That was the same year as this event.",
+      "One nearby event: Bolshevik revolutionaries seize power in Russia's capital. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      }
+    },
+    "learn_explanation": "The Third Battle of Ypres, often called Passchendaele (July–November 1917), became a byword for the horror of the Western Front. Heavy rains turned the low-lying battlefield into a sea of mud, and the offensive advanced only a few miles at enormous cost before being called off."
+  },
+  {
+    "id": "evt_1310",
+    "prompt": "Arab forces guided by a British liaison officer launch a surprise overland assault on a Red Sea port, capturing it from the landward side where its Ottoman defenses were weakest.",
+    "year": 1917,
+    "hints": [
+      "One nearby event: A revolution in Russia leads to the overthrow of the imperial government. That was the same year as this event.",
+      "One nearby event: Bolshevik revolutionaries seize power in Russia's capital. That was the same year as this event.",
+      "One nearby event: The United States declares war on Germany. That was the same year as this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "t.e. lawrence",
+          "lawrence of arabia",
+          "lawrence"
+        ]
+      }
+    },
+    "learn_explanation": "The capture of Aqaba (July 1917) saw Arab Revolt fighters, guided by T.E. Lawrence, cross harsh desert terrain to attack the port from inland, where Ottoman guns faced the wrong way. The victory opened a supply line for the Arab Revolt and boosted Lawrence's standing with British commanders."
+  },
+  {
+    "id": "evt_1311",
+    "prompt": "A combined Austro-Hungarian and German offensive shatters Italian lines in the Alps, forcing a huge retreat and becoming a byword in Italian for a catastrophic defeat.",
+    "year": 1917,
+    "hints": [
+      "One nearby event: Bolshevik revolutionaries seize power in Russia's capital. That was the same year as this event.",
+      "One nearby event: The United States declares war on Germany. That was the same year as this event.",
+      "One nearby event: Germany resumes unrestricted submarine warfare against merchant shipping. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Caporetto (October 1917) saw combined German and Austro-Hungarian forces break through Italian lines, forcing a retreat of over 100 kilometers. The defeat was so severe that 'Caporetto' entered the Italian language as a word for any sudden, catastrophic collapse."
+  },
+  {
+    "id": "evt_1312",
+    "prompt": "France executes a Dutch exotic dancer by firing squad after convicting her of spying for Germany, in a case whose evidence remains disputed to this day.",
+    "year": 1917,
+    "hints": [
+      "One nearby event: Bolshevik revolutionaries seize power in Russia's capital. That was the same year as this event.",
+      "One nearby event: A secret German telegram proposing an alliance with Mexico is published. That was the same year as this event.",
+      "One nearby event: Germany resumes unrestricted submarine warfare against merchant shipping. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "mata hari"
+        ]
+      }
+    },
+    "learn_explanation": "Mata Hari, a Dutch exotic dancer, was executed by French firing squad in October 1917 after being convicted of spying for Germany. Historians have long debated how much genuine espionage she actually carried out, and her case remains one of the most famous and contested of the war."
+  },
+  {
+    "id": "evt_1313",
+    "prompt": "Britain launches a surprise attack using massed tanks for the first time, briefly breaking through German lines in northern France before a strong counterattack erases most of the gains.",
+    "year": 1917,
+    "hints": [
+      "One nearby event: Tanks are used in combat for the first time. That was 1 year before this event.",
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was 1 year before this event.",
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was 1 year after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I",
+      "Technology"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Cambrai (November 1917) saw Britain use massed tanks together for the first time, achieving a surprising initial breakthrough in German lines. A strong German counterattack soon recovered most of the lost ground, but the battle demonstrated the tank's growing potential as a weapon of war."
+  },
+  {
+    "id": "evt_1314",
+    "prompt": "A British general accepts the surrender of a religiously significant city, entering on foot out of respect, after Ottoman forces withdraw without a fight to save it from destruction.",
+    "year": 1917,
+    "hints": [
+      "One nearby event: Bolshevik revolutionaries seize power in Russia's capital. That was the same year as this event.",
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was 1 year after this event.",
+      "One nearby event: Tanks are used in combat for the first time. That was 1 year before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "december",
+          "dec"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "edmund allenby",
+          "allenby"
+        ]
+      }
+    },
+    "learn_explanation": "British general Edmund Allenby accepted the surrender of Jerusalem in December 1917, entering the city on foot rather than on horseback out of respect for its religious significance. The capture was a major propaganda victory for the Allies after a string of setbacks elsewhere in 1917."
+  },
+  {
+    "id": "evt_1315",
+    "prompt": "Taking advantage of revolutionary chaos in Russia, a Nordic territory formerly part of the Russian Empire declares itself an independent nation.",
+    "year": 1917,
+    "hints": [
+      "One nearby event: Bolshevik revolutionaries seize power in Russia's capital. That was the same year as this event.",
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was 1 year after this event.",
+      "One nearby event: Tanks are used in combat for the first time. That was 1 year before this event."
+    ],
+    "tags": [
+      "Europe",
+      "Politics",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "december",
+          "dec"
+        ]
+      }
+    },
+    "learn_explanation": "Finland declared independence from Russia in December 1917, taking advantage of the chaos following the Bolshevik seizure of power. It was one of several nations that emerged or re-emerged from the collapse of the Russian, German, Austro-Hungarian, and Ottoman empires in the war's final years."
+  },
+  {
+    "id": "evt_1316",
+    "prompt": "The President of the United States outlines a set of principles for a just and lasting peace, including the creation of a league of nations, in a speech to Congress.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was the same year as this event.",
+      "One nearby event: Bolshevik revolutionaries seize power in Russia's capital. That was 1 year before this event.",
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event."
+    ],
+    "tags": [
+      "Americas",
+      "Politics",
+      "Diplomacy",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "january",
+          "jan"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "woodrow wilson",
+          "wilson"
+        ]
+      }
+    },
+    "learn_explanation": "In January 1918, President Woodrow Wilson presented his Fourteen Points to Congress, outlining principles for peace including self-determination, open diplomacy, and a future league of nations. The speech shaped Allied war aims and later debates at the Paris Peace Conference, though many of its ideals were only partly realized."
+  },
+  {
+    "id": "evt_1317",
+    "prompt": "Facing military collapse and abandoned by a defeated Russia, a Balkan kingdom is forced to sign a harsh peace treaty with the Central Powers, ceding territory and economic control.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was the same year as this event.",
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "Diplomacy",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "may",
+          "may"
+        ]
+      }
+    },
+    "learn_explanation": "The Treaty of Bucharest (May 1918) forced Romania, isolated after Russia's exit from the war, to accept harsh terms from the Central Powers, including territorial losses and control over its oil and agriculture. The treaty was annulled within months after Germany's own defeat later that year."
+  },
+  {
+    "id": "evt_1318",
+    "prompt": "Germany launches a massive series of offensives on the Western Front using troops freed from the east, in a last gamble to win the war before American reinforcements arrive in force.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was the same year as this event.",
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "march",
+          "mar"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "erich ludendorff",
+          "ludendorff"
+        ]
+      }
+    },
+    "learn_explanation": "Germany's Spring Offensive, or Kaiserschlacht (March 1918), used divisions freed up by Russia's exit from the war in a last attempt at victory before American troops could arrive in large numbers. Planned largely by Erich Ludendorff, it made dramatic early gains but ultimately exhausted German forces without achieving a decisive breakthrough."
+  },
+  {
+    "id": "evt_1319",
+    "prompt": "American troops, including Marines, fight one of their first major engagements of the war in a forest in northern France, suffering heavy losses but helping halt a German advance.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event.",
+      "One nearby event: A peace treaty formally ending the war with Germany is signed at a French palace. That was 1 year after this event."
+    ],
+    "tags": [
+      "Americas",
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Belleau Wood (June 1918) was one of the first major engagements for American troops, including U.S. Marines, who helped stop a German advance toward Paris. The battle, fought at heavy cost, became a foundational part of Marine Corps tradition and marked the growing impact of fresh American forces on the war."
+  },
+  {
+    "id": "evt_1320",
+    "prompt": "A German offensive along the same river where the war's course was decided four years earlier is halted, and the Allies launch a counterattack that permanently seizes the initiative.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: Allied armies halt a German advance along a river just short of Paris. That was 4 years before this event.",
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      }
+    },
+    "learn_explanation": "The Second Battle of the Marne (July 1918) stopped the last major German offensive of the war and let the Allies launch a counterattack that never let up again. Coming just weeks before the Hundred Days Offensive, it is often seen as the true turning point that set up Germany's final defeat."
+  },
+  {
+    "id": "evt_1321",
+    "prompt": "A British-led offensive in Ottoman-held Palestine, combining infantry, cavalry, and aircraft, routs Ottoman and German forces and effectively knocks the Ottoman army out of the fight.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event.",
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was the same year as this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "september",
+          "sept"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "edmund allenby",
+          "allenby"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Megiddo (September 1918), led by General Edmund Allenby, combined infantry, cavalry, and aircraft to rout Ottoman and German forces in Palestine. The decisive victory effectively ended organized Ottoman resistance and paved the way for the Ottoman Empire's own armistice weeks later."
+  },
+  {
+    "id": "evt_1322",
+    "prompt": "A devastating second wave of a global influenza pandemic begins spreading rapidly among troops and civilians, eventually killing far more people worldwide than the war itself.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event.",
+      "One nearby event: A peace treaty formally ending the war with Germany is signed at a French palace. That was 1 year after this event."
+    ],
+    "tags": [
+      "World War I",
+      "Health",
+      "Disaster"
+    ],
+    "bonus": {},
+    "learn_explanation": "The 1918 influenza pandemic, often called the 'Spanish flu,' spread rapidly among troop movements and crowded wartime conditions, killing tens of millions of people worldwide — likely more than died in the war itself. Wartime censorship in many combatant nations suppressed early reporting on its severity, while neutral Spain's uncensored press gave the pandemic its misleading name."
+  },
+  {
+    "id": "evt_1323",
+    "prompt": "The Ottoman Empire signs an armistice aboard a British warship, ending its participation in the war just weeks before Germany itself requests a ceasefire.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event.",
+      "One nearby event: A peace treaty formally ending the war with Germany is signed at a French palace. That was 1 year after this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War",
+      "World War I",
+      "Diplomacy"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      }
+    },
+    "learn_explanation": "The Armistice of Mudros (October 1918), signed aboard a British warship near the Greek island of Lemnos, ended Ottoman participation in the war. It came after the collapse of Ottoman forces at Megiddo and elsewhere, and paved the way for the eventual partition of Ottoman territory among the Allies."
+  },
+  {
+    "id": "evt_1324",
+    "prompt": "A decisive Italian-led offensive shatters the already-crumbling Austro-Hungarian army, hastening the collapse of a centuries-old empire just before the war's end.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event.",
+      "One nearby event: Bolshevik revolutionaries seize power in Russia's capital. That was 1 year before this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "october",
+          "oct"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Vittorio Veneto (October–November 1918) saw Italian forces decisively defeat the already-crumbling Austro-Hungarian army. The victory hastened the final collapse of the centuries-old Habsburg monarchy, which dissolved into several new states within days, and Austria-Hungary sought an armistice soon after."
+  },
+  {
+    "id": "evt_1325",
+    "prompt": "Austria-Hungary signs an armistice ending its part in the war, days before its centuries-old monarchy dissolves into several independent states.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event.",
+      "One nearby event: A peace treaty formally ending the war with Germany is signed at a French palace. That was 1 year after this event.",
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I",
+      "Diplomacy"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      }
+    },
+    "learn_explanation": "The Armistice of Villa Giusti (November 1918) ended Austria-Hungary's participation in the war, just days before the war itself ended on the Western Front. The ancient Habsburg monarchy, already fracturing under the strain of defeat and nationalist uprisings, dissolved into Austria, Hungary, Czechoslovakia, and other successor states within days."
+  },
+  {
+    "id": "evt_1326",
+    "prompt": "Facing mutiny, revolution, and military defeat, the German Emperor abdicates and flees into exile, and Germany is declared a republic just two days before the war's guns fall silent.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event.",
+      "One nearby event: A peace treaty formally ending the war with Germany is signed at a French palace. That was 1 year after this event.",
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "Politics",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "wilhelm ii",
+          "kaiser wilhelm ii",
+          "kaiser wilhelm"
+        ]
+      }
+    },
+    "learn_explanation": "Kaiser Wilhelm II abdicated in November 1918 amid naval mutinies, revolutionary unrest, and certain military defeat, fleeing into exile in the Netherlands. Germany was declared a republic the same day, just two days before the Armistice ended the fighting — bringing a definitive end to the German Empire that had only been founded in 1871."
+  },
+  {
+    "id": "evt_1327",
+    "prompt": "An undefeated German colonial commander in East Africa finally lays down arms weeks after fighting has already ended in Europe, having waged a long guerrilla campaign that tied up vastly larger Allied forces.",
+    "year": 1918,
+    "hints": [
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event.",
+      "One nearby event: A peace treaty formally ending the war with Germany is signed at a French palace. That was 1 year after this event.",
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was the same year as this event."
+    ],
+    "tags": [
+      "Africa",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this happen?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name a person associated with this event.",
+        "answers": [
+          "paul von lettow-vorbeck",
+          "lettow-vorbeck",
+          "von lettow-vorbeck"
+        ]
+      }
+    },
+    "learn_explanation": "Paul von Lettow-Vorbeck led a small German colonial force on a remarkably effective guerrilla campaign across East Africa throughout the war, tying down Allied forces many times larger than his own. Undefeated in the field, he only surrendered in late November 1918, weeks after the Armistice in Europe, once news of Germany's surrender finally reached him."
   }
 ]
