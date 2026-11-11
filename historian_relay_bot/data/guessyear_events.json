@@ -13,13 +13,6 @@
       "Medieval"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did William, Duke of Normandy, win the Battle of Hastings?",
-        "answers": [
-          "october",
-          "oct"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a leader associated with the Norman Conquest of England.",
         "answers": [
@@ -200,13 +193,6 @@
       "War"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month were the battles of Lexington and Concord fought?",
-        "answers": [
-          "april",
-          "apr"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a figure associated with the opening of the American Revolutionary War.",
         "answers": [
@@ -595,13 +581,6 @@
       "War"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did Germany invade Poland in 1939?",
-        "answers": [
-          "september",
-          "sep"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a leader associated with the outbreak of World War II in Europe.",
         "answers": [
@@ -626,13 +605,6 @@
       "Pacific"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did the attack on Pearl Harbor occur?",
-        "answers": [
-          "december",
-          "dec"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a leader associated with the attack on Pearl Harbor.",
         "answers": [
@@ -675,12 +647,6 @@
       "War"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did Germany surrender and World War II end in Europe?",
-        "answers": [
-          "may"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a commander or leader associated with the end of World War II in Europe.",
         "answers": [
@@ -922,13 +888,6 @@
       "Space"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did humans first land on the Moon?",
-        "answers": [
-          "july",
-          "jul"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name an astronaut associated with the first Moon landing.",
         "answers": [
@@ -1694,13 +1653,6 @@
       "Politics"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was the U.S. Declaration of Independence adopted?",
-        "answers": [
-          "july",
-          "jul"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a figure associated with the Declaration of Independence.",
         "answers": [
@@ -18766,13 +18718,6 @@
       "Medieval"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did plague-carrying ships first arrive at the Sicilian port of Messina, bringing the Black Death to Europe?",
-        "answers": [
-          "october",
-          "oct"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the Italian writer who described survivors of the plague in his famous story collection set in Florence.",
         "answers": [
@@ -18798,12 +18743,6 @@
       "War"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did Constantinople fall to Ottoman forces in 1453?",
-        "answers": [
-          "may"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the Ottoman sultan who led the conquest of Constantinople.",
         "answers": [
@@ -18855,13 +18794,6 @@
       "Politics"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was the Declaration of Independence formally adopted in 1776?",
-        "answers": [
-          "july",
-          "jul"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the principal author of the Declaration of Independence.",
         "answers": [
@@ -18887,13 +18819,6 @@
       "War"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was the Bastille stormed in 1789?",
-        "answers": [
-          "july",
-          "jul"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the French king who was later executed during this revolution.",
         "answers": [
@@ -18919,13 +18844,6 @@
       "War"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was the Battle of Waterloo fought in 1815?",
-        "answers": [
-          "june",
-          "jun"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the British commander who led the coalition forces to victory at Waterloo.",
         "answers": [
@@ -18952,13 +18870,6 @@
       "Technology"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did the Wright Brothers make their first powered flight in 1903?",
-        "answers": [
-          "december",
-          "dec"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name either of the brothers who made the first powered flight.",
         "answers": [
@@ -18986,13 +18897,6 @@
       "Technology"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did humans first walk on the Moon in 1969?",
-        "answers": [
-          "july",
-          "jul"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the first human to walk on the Moon.",
         "answers": [
@@ -19018,13 +18922,6 @@
       "Politics"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did the Berlin Wall open in 1989?",
-        "answers": [
-          "november",
-          "nov"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the Soviet leader whose reform policies helped make this event possible.",
         "answers": [
@@ -19617,13 +19514,6 @@
       "Science"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did Roald Amundsen's expedition reach the South Pole?",
-        "answers": [
-          "december",
-          "dec"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the explorer who led the first confirmed expedition to the South Pole.",
         "answers": [
@@ -19683,13 +19573,6 @@
       "Protest"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did Gandhi begin the Salt March?",
-        "answers": [
-          "march",
-          "mar"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the leader associated with the Salt March.",
         "answers": [
@@ -20284,13 +20167,6 @@
       "Politics"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was the Gunpowder Plot discovered?",
-        "answers": [
-          "november",
-          "nov"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a conspirator or ruler associated with the Gunpowder Plot.",
         "answers": [
@@ -20453,13 +20329,6 @@
       "Politics"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did the July Revolution take place?",
-        "answers": [
-          "july",
-          "jul"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a French ruler associated with the July Revolution.",
         "answers": [
@@ -20785,13 +20654,6 @@
       "Atrocity"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did the Nanjing Massacre begin?",
-        "answers": [
-          "december",
-          "dec"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a figure associated with the Nanjing Massacre era.",
         "answers": [
@@ -20913,12 +20775,6 @@
       "War"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was the State of Israel proclaimed?",
-        "answers": [
-          "may"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the leader who proclaimed the State of Israel.",
         "answers": [
@@ -21086,13 +20942,6 @@
       "Diplomacy"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did the Yom Kippur War begin?",
-        "answers": [
-          "october",
-          "oct"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a leader associated with the Yom Kippur War.",
         "answers": [
@@ -27228,14 +27077,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was this battle fought?",
-        "answers": [
-          "september",
-          "sept",
-          "sep"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the French general credited with halting the German advance here.",
         "answers": [
@@ -27260,15 +27101,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this gas attack take place?",
-        "answers": [
-          "april",
-          "apr"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Second Battle of Ypres (April 1915) saw German troops release chlorine gas against French and Algerian colonial troops near Ypres, Belgium — the first mass use of chemical weapons in the war. The surprise attack opened a gap in the Allied line, though German forces failed to fully exploit it. Poison gas quickly became a regular, feared feature of First World War battlefields on both sides."
   },
   {
@@ -27287,14 +27120,7 @@
       "World War I",
       "Naval"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was this ship sunk?",
-        "answers": [
-          "may"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The RMS Lusitania was torpedoed by a German U-boat in May 1915, killing nearly 1,200 people, including well over a hundred Americans. The sinking caused outrage in the United States and became one of the events that gradually pushed American public opinion away from neutrality, though the U.S. would not enter the war for almost two more years."
   },
   {
@@ -27336,15 +27162,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this battle begin?",
-        "answers": [
-          "february",
-          "feb"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Battle of Verdun (February–December 1916) was fought between French and German forces around the city of Verdun and became a symbol of attrition warfare's horror. German commanders aimed to 'bleed France white'; instead both sides suffered roughly 300,000 dead combined. French general Philippe Pétain's defense of Verdun made him a national hero."
   },
   {
@@ -27362,14 +27180,7 @@
       "World War I",
       "Naval"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was this battle fought?",
-        "answers": [
-          "may"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Battle of Jutland (31 May – 1 June 1916) pitted Britain's Grand Fleet against Germany's High Seas Fleet in the only major fleet-to-fleet clash of the war. Britain lost more ships and men, but the German fleet retreated to port and avoided another major engagement for the rest of the war, leaving Britain in control of the North Sea."
   },
   {
@@ -27386,15 +27197,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this offensive begin?",
-        "answers": [
-          "july",
-          "jul"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Battle of the Somme opened on 1 July 1916 with roughly 57,000 British casualties on its first day alone — the worst single-day loss in British Army history. The offensive ground on for months, eventually advancing only a few miles at enormous cost to both sides, and became emblematic of the grinding, industrialized slaughter of the Western Front."
   },
   {
@@ -27412,16 +27215,7 @@
       "World War I",
       "Technology"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month were tanks first used in battle?",
-        "answers": [
-          "september",
-          "sept",
-          "sep"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "Britain introduced the tank to break the stalemate of trench warfare, first deploying a small number in combat at Flers-Courcelette during the Battle of the Somme (September 1916). Early tanks were slow and unreliable, but the shock of the new weapon — and its rapid development over the rest of the war — made it a lasting symbol of industrialized, mechanized warfare."
   },
   {
@@ -27439,15 +27233,7 @@
       "World War I",
       "Naval"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did Germany announce this policy?",
-        "answers": [
-          "february",
-          "feb"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "In February 1917, Germany gambled that unrestricted submarine warfare could cut off Britain's supplies before the United States could meaningfully enter the war. The policy sank enormous amounts of shipping but also helped push the still-neutral United States toward declaring war on Germany just two months later."
   },
   {
@@ -27467,13 +27253,6 @@
       "Diplomacy"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was this telegram made public in the US?",
-        "answers": [
-          "march",
-          "mar"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Which country was Germany trying to recruit as an ally against the United States?",
         "answers": [
@@ -27499,13 +27278,6 @@
       "Politics"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did the US declare war?",
-        "answers": [
-          "april",
-          "apr"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Who was President of the United States at the time?",
         "answers": [
@@ -27533,13 +27305,6 @@
       "Politics"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did the Bolsheviks seize power (Gregorian calendar)?",
-        "answers": [
-          "november",
-          "nov"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name the Bolshevik leader who returned from exile to lead the revolution.",
         "answers": [
@@ -27565,15 +27330,7 @@
       "World War I",
       "Diplomacy"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was this treaty signed?",
-        "answers": [
-          "march",
-          "mar"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Treaty of Brest-Litovsk (March 1918) ended Russia's participation in the First World War. Facing a collapsing army, the new Bolshevik government accepted harsh terms, ceding Poland, the Baltic states, Finland, and Ukraine to German control. The treaty freed German troops to reinforce the Western Front, though the gains were reversed within the year by Germany's own defeat."
   },
   {
@@ -27590,15 +27347,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this offensive begin?",
-        "answers": [
-          "august",
-          "aug"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Battle of Amiens (8 August 1918) opened the Allied Hundred Days Offensive, a sustained series of attacks that broke German lines on the Western Front for good. German commander Erich Ludendorff called the opening day 'the black day of the German Army.' The offensive continued until Germany requested an armistice just over three months later."
   },
   {
@@ -27615,15 +27364,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was the armistice signed?",
-        "answers": [
-          "november",
-          "nov"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Armistice of 11 November 1918, signed in a railway carriage in the Forest of Compiègne, ended active fighting in the First World War. Combat stopped at 11:00 a.m. Paris time — the eleventh hour of the eleventh day of the eleventh month — a moment still marked today as Armistice Day, Remembrance Day, or Veterans Day. A final peace treaty would not be signed for another seven months."
   },
   {
@@ -27641,15 +27382,7 @@
       "World War I",
       "Diplomacy"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month was this treaty signed?",
-        "answers": [
-          "june",
-          "jun"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Treaty of Versailles, signed in June 1919 in the Hall of Mirrors at the Palace of Versailles, formally ended the state of war between Germany and the Allied powers. Its harsh terms — territorial losses, a disarmed military, and heavy reparations — placed blame for the war squarely on Germany and are widely seen as having fueled the resentment that contributed to the rise of Nazism two decades later."
   },
   {
@@ -27667,13 +27400,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "august",
-          "aug"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -27726,15 +27452,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "october",
-          "oct"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The fall of Antwerp (October 1914) completed Germany's occupation of almost all of Belgium in the war's opening months. The Belgian government and much of its army escaped to continue resisting from a small strip of unoccupied territory, and Belgium's wartime suffering became a major piece of Allied propaganda."
   },
   {
@@ -27752,15 +27470,7 @@
       "World War I",
       "Diplomacy"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "october",
-          "oct"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Ottoman Empire entered the war on the side of Germany and Austria-Hungary in late October 1914, after its navy shelled Russian Black Sea ports. This opened fronts in the Caucasus, Mesopotamia, and the Sinai, and eventually led to campaigns like Gallipoli as the Allies sought to knock the Ottomans out of the war."
   },
   {
@@ -27777,15 +27487,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "november",
-          "nov"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The First Battle of Ypres (October–November 1914) was the last major clash of the war's mobile opening phase. Neither side could break through, and both armies began digging in — the start of a trench line that would stretch from the English Channel to Switzerland for the rest of the war."
   },
   {
@@ -27805,13 +27507,6 @@
       "Naval"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "november",
-          "nov"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -27839,15 +27534,7 @@
       "World War I",
       "Naval"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "december",
-          "dec"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "At the Battle of the Falkland Islands (December 1914), a reinforced Royal Navy squadron destroyed most of Admiral von Spee's German East Asia Squadron, avenging the earlier defeat at Coronel. The victory removed the last major German surface threat to Allied shipping outside European waters."
   },
   {
@@ -27892,13 +27579,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "january",
-          "jan"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -27923,15 +27603,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "april",
-          "apr"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "Beginning in April 1915, Ottoman authorities carried out the systematic deportation and mass killing of Armenians, an event now recognized by most historians and many governments as genocide. It remains one of the most devastating atrocities of the war and a deeply contested subject in Turkish–Armenian relations to this day."
   },
   {
@@ -27949,15 +27621,7 @@
       "World War I",
       "Diplomacy"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "may",
-          "may"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "Italy entered the war on the Allied side in May 1915, switching sides after having been formally allied with Germany and Austria-Hungary before the war. A secret treaty promised Italy Austro-Hungarian territory in exchange, and Italy opened a grueling new front in the Alps that would see repeated, costly battles along the Isonzo river."
   },
   {
@@ -27974,15 +27638,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "september",
-          "sept"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "At the Battle of Loos (September 1915), Britain used poison gas in combat for the first time, having criticized Germany's earlier use of it at Ypres. Shifting winds blew some of the gas back onto British troops, and the offensive gained little ground relative to its heavy casualties."
   },
   {
@@ -28000,13 +27656,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "october",
-          "oct"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28031,15 +27680,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "april",
-          "apr"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Siege of Kut (1915–1916) ended in April 1916 when a besieged British-Indian force surrendered to Ottoman troops in Mesopotamia, after relief attempts failed. Thousands of prisoners died in harsh captivity afterward, and the defeat was a serious blow to British prestige, later avenged by the capture of Baghdad."
   },
   {
@@ -28058,13 +27699,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "may",
-          "may"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28092,13 +27726,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "june",
-          "jun"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28126,13 +27753,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "june",
-          "jun"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28157,15 +27777,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "december",
-          "dec"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Battle of Verdun finally wound down in December 1916 after ten grinding months, with roughly 300,000 combined dead and the front line barely changed from where it began. It remains one of the longest and most costly single battles in history and a lasting symbol of the war's futility."
   },
   {
@@ -28182,15 +27794,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "march",
-          "mar"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "British and Indian forces captured Baghdad from the Ottomans in March 1917, avenging the earlier surrender at Kut. The capture boosted British morale in the Mesopotamian campaign and tightened the pressure on Ottoman forces across multiple Middle Eastern fronts."
   },
   {
@@ -28208,13 +27812,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "april",
-          "apr"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28239,15 +27836,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "april",
-          "apr"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "At the Battle of Vimy Ridge (April 1917), the four divisions of the Canadian Corps fought together for the first time and captured a ridge that earlier French and British attacks had failed to hold. The victory is often cited as a formative moment in Canadian national identity."
   },
   {
@@ -28264,15 +27853,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "july",
-          "jul"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Third Battle of Ypres, often called Passchendaele (July–November 1917), became a byword for the horror of the Western Front. Heavy rains turned the low-lying battlefield into a sea of mud, and the offensive advanced only a few miles at enormous cost before being called off."
   },
   {
@@ -28290,13 +27871,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "july",
-          "jul"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28322,15 +27896,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "october",
-          "oct"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Battle of Caporetto (October 1917) saw combined German and Austro-Hungarian forces break through Italian lines, forcing a retreat of over 100 kilometers. The defeat was so severe that 'Caporetto' entered the Italian language as a word for any sudden, catastrophic collapse."
   },
   {
@@ -28348,13 +27914,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "october",
-          "oct"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28379,15 +27938,7 @@
       "World War I",
       "Technology"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "november",
-          "nov"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Battle of Cambrai (November 1917) saw Britain use massed tanks together for the first time, achieving a surprising initial breakthrough in German lines. A strong German counterattack soon recovered most of the lost ground, but the battle demonstrated the tank's growing potential as a weapon of war."
   },
   {
@@ -28405,13 +27956,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "december",
-          "dec"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28436,15 +27980,7 @@
       "Politics",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "december",
-          "dec"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "Finland declared independence from Russia in December 1917, taking advantage of the chaos following the Bolshevik seizure of power. It was one of several nations that emerged or re-emerged from the collapse of the Russian, German, Austro-Hungarian, and Ottoman empires in the war's final years."
   },
   {
@@ -28463,13 +27999,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "january",
-          "jan"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28494,15 +28023,7 @@
       "Diplomacy",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "may",
-          "may"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Treaty of Bucharest (May 1918) forced Romania, isolated after Russia's exit from the war, to accept harsh terms from the Central Powers, including territorial losses and control over its oil and agriculture. The treaty was annulled within months after Germany's own defeat later that year."
   },
   {
@@ -28520,13 +28041,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "march",
-          "mar"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28552,15 +28066,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "june",
-          "jun"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Battle of Belleau Wood (June 1918) was one of the first major engagements for American troops, including U.S. Marines, who helped stop a German advance toward Paris. The battle, fought at heavy cost, became a foundational part of Marine Corps tradition and marked the growing impact of fresh American forces on the war."
   },
   {
@@ -28577,15 +28083,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "july",
-          "jul"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Second Battle of the Marne (July 1918) stopped the last major German offensive of the war and let the Allies launch a counterattack that never let up again. Coming just weeks before the Hundred Days Offensive, it is often seen as the true turning point that set up Germany's final defeat."
   },
   {
@@ -28603,13 +28101,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "september",
-          "sept"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28652,15 +28143,7 @@
       "World War I",
       "Diplomacy"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "october",
-          "oct"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Armistice of Mudros (October 1918), signed aboard a British warship near the Greek island of Lemnos, ended Ottoman participation in the war. It came after the collapse of Ottoman forces at Megiddo and elsewhere, and paved the way for the eventual partition of Ottoman territory among the Allies."
   },
   {
@@ -28677,15 +28160,7 @@
       "War",
       "World War I"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "october",
-          "oct"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Battle of Vittorio Veneto (October–November 1918) saw Italian forces decisively defeat the already-crumbling Austro-Hungarian army. The victory hastened the final collapse of the centuries-old Habsburg monarchy, which dissolved into several new states within days, and Austria-Hungary sought an armistice soon after."
   },
   {
@@ -28703,15 +28178,7 @@
       "World War I",
       "Diplomacy"
     ],
-    "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "november",
-          "nov"
-        ]
-      }
-    },
+    "bonus": {},
     "learn_explanation": "The Armistice of Villa Giusti (November 1918) ended Austria-Hungary's participation in the war, just days before the war itself ended on the Western Front. The ancient Habsburg monarchy, already fracturing under the strain of defeat and nationalist uprisings, dissolved into Austria, Hungary, Czechoslovakia, and other successor states within days."
   },
   {
@@ -28730,13 +28197,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "november",
-          "nov"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
@@ -28763,13 +28223,6 @@
       "World War I"
     ],
     "bonus": {
-      "month": {
-        "prompt": "Bonus: In which month did this happen?",
-        "answers": [
-          "november",
-          "nov"
-        ]
-      },
       "person": {
         "prompt": "Bonus: Name a person associated with this event.",
         "answers": [
