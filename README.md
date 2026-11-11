@@ -107,14 +107,20 @@ Moderators (`MOD_ROLE_ID`) can also forward *any* message via the
 **Ask Historians** message context-menu action (right-click a message →
 Apps → Ask Historians) — useful for a question that wasn't addressed to the
 bot, or where the asker forgot to mention it. Moderators bypass the
-cooldown/cap below.
+cooldown/cap below. **This action always stays available regardless of
+`ASKHIST_MENTION_ENABLED`** — it's a deliberate per-message judgment call by
+a moderator, not automatic detection, so it isn't affected by that setting.
 
 Anti-spam, so the Historian role can't be repeatedly pinged:
 - A given question can only be forwarded once (further mentions/escalation attempts on an already-escalated question are rejected).
 - Per-user cooldown + daily cap on triggering a forward.
 
 Config (env or `CONFIG_JSON`):
-- `ASKHIST_MENTION_ENABLED` (default `true`) — feature on/off switch.
+- `ASKHIST_MENTION_ENABLED` (default `true`) — on/off switch for the **automatic @mention
+  trigger only** (the moderator context-menu action is unaffected either way). Since an
+  @mention alone doesn't guarantee the message is actually a real historical question, this
+  can produce false positives; turn it off if that becomes a problem while keeping the
+  context-menu action for moderators to escalate things manually.
 - `ASKHIST_MENTION_COOLDOWN_MINUTES` (default `60`) — per-user cooldown between forwards triggered by mention.
 - `ASKHIST_MENTION_MAX_PER_DAY` (default `3`) — per-user daily cap on forwards triggered by mention.
 

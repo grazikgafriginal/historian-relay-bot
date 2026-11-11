@@ -13,14 +13,16 @@ log = logging.getLogger("historian_relay.askhist_mention")
 
 
 class AskHistorianMentionCog(commands.Cog):
-    """Forwards a message to the Historians of the House when the bot is @-mentioned.
+    """Forwards a message to the Historians of the House when the bot is @-mentioned,
+    and/or via a moderator's manual "Ask Historians" message context-menu action.
 
-    Replaces the old passive "watch a channel, wait, then nag" flow: an
-    @mention is itself the explicit signal that a question needs a
-    Historian's attention, so the message is forwarded immediately — no
-    timer, no in-channel reminder, no DM. Moderators can also forward any
-    message via the "Ask Historians" message context-menu action, independent
-    of mentions.
+    The two triggers are independent and separately togglable: the automatic
+    @mention trigger is gated by ASKHIST_MENTION_ENABLED (it can produce false
+    positives on non-questions, since an @mention alone doesn't guarantee real
+    question text); the context-menu action always stays available to
+    moderators regardless, since it's a deliberate per-message judgment call
+    rather than automatic detection. This cog is always loaded so the
+    context-menu command stays registered either way.
 
     Both triggers call HistorianRelayBot.escalate_to_historians() (bot.py),
     the single implementation responsible for pinging + tracking a Historian
@@ -75,15 +77,15 @@ class AskHistorianMentionCog(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot or not message.guild:
             return
-        if not self.bot.cfg.ASKHIST_MENTION_ENABLED:
-            return
 
-        # Reply-based resolution tracking for already-escalated questions —
-        # independent of whether this message also mentions the bot.
+        # Reply-based resolution tracking for already-escalated questions — independent
+        # of whether this message also mentions the bot, and independent of
+        # ASKHIST_MENTION_ENABLED below (requests raised via the moderator context-menu
+        # action still need their replies tracked even with auto-mention off).
         if message.reference and message.reference.message_id:
             await self._handle_possible_reply(message)
 
-        if self.bot.user in message.mentions:
+        if self.bot.cfg.ASKHIST_MENTION_ENABLED and self.bot.user in message.mentions:
             await self._forward_on_mention(message)
 
     def _strip_mention(self, content: str) -> str:

@@ -106,8 +106,10 @@ class HistorianRelayBot(commands.Bot):
         await self.load_extension("historian_relay_bot.cogs.moderation")
         await self.load_extension("historian_relay_bot.cogs.suggest")
 
-        if self.cfg.ASKHIST_MENTION_ENABLED:
-            await self.load_extension("historian_relay_bot.cogs.askhist_mention")
+        # Always loaded (not gated by ASKHIST_MENTION_ENABLED): the moderator
+        # "Ask Historians" context-menu action lives here too and stays available
+        # regardless of whether the automatic @mention trigger is enabled.
+        await self.load_extension("historian_relay_bot.cogs.askhist_mention")
 
         if self.cfg.TOPIC_OF_DAY_ENABLED:
             await self.load_extension("historian_relay_bot.cogs.topic_of_day")
