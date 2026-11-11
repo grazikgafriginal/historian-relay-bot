@@ -219,6 +219,7 @@ CATEGORY_DEFINITIONS: List[Dict[str, Any]] = [
     {"key": "law", "label": "Law", "emoji": "📜", "description": "Laws and legal change", "tags": {"Law", "Rights", "Constitution"}},
     {"key": "disaster", "label": "Disaster", "emoji": "🌋", "description": "Disasters and crises", "tags": {"Disaster"}},
     {"key": "cold_war", "label": "Cold War", "emoji": "🧊", "description": "Superpower rivalry", "tags": {"Cold War"}},
+    {"key": "world_war_1", "label": "World War I", "emoji": "🎖️", "description": "The Great War, 1914–1918", "tags": {"World War I"}},
     {"key": "technology", "label": "Technology", "emoji": "⚙️", "description": "Inventions and tech change", "tags": {"Technology", "Communication", "Publishing", "Invention"}},
     {"key": "space", "label": "Space", "emoji": "🚀", "description": "Spaceflight and astronomy", "tags": {"Space"}},
     {"key": "civil_rights", "label": "Civil Rights", "emoji": "✊", "description": "Rights movements", "tags": {"Civil Rights", "Rights"}},

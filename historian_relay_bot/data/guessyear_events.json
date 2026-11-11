@@ -449,7 +449,8 @@
     ],
     "tags": [
       "Europe",
-      "War"
+      "War",
+      "World War I"
     ],
     "learn_explanation": "The assassination of Archduke Franz Ferdinand in Sarajevo in June 1914 triggered a crisis that escalated because Europe's alliance system, mobilization plans, and imperial rivalries were already dangerously tense. What might have remained a Balkan conflict turned into World War I once Austria-Hungary, Germany, Russia, France, and Britain were drawn in. Industrial firepower and trench warfare then made the conflict vastly more destructive than leaders expected."
   },
@@ -6965,7 +6966,8 @@
     ],
     "tags": [
       "Europe",
-      "War"
+      "War",
+      "World War I"
     ],
     "learn_explanation": "The assassination of Archduke Franz Ferdinand in Sarajevo in June 1914 triggered a crisis that escalated because Europe's alliance system, mobilization plans, and imperial rivalries were already dangerously tense. What might have remained a Balkan conflict turned into World War I once Austria-Hungary, Germany, Russia, France, and Britain were drawn in. Industrial firepower and trench warfare then made the conflict vastly more destructive than leaders expected."
   },
@@ -27210,5 +27212,444 @@
       "Discovery"
     ],
     "learn_explanation": "French soldiers rebuilding a fort near Rosetta, Egypt discovered an inscribed granite slab in 1799, during Napoleon's military campaign there. The Rosetta Stone carried the same decree in hieroglyphic, Demotic, and Greek script, and the Greek text eventually let scholars — above all Jean-François Champollion in the 1820s — decipher Egyptian hieroglyphs for the first time in over a thousand years, founding the modern study of ancient Egypt."
+  },
+  {
+    "id": "evt_1272",
+    "year": 1914,
+    "prompt": "Allied armies halt a German advance along a river just short of Paris, ending hopes of a quick victory in the west and setting the stage for trench warfare.",
+    "hints": [
+      "One nearby event: A global conflict begins after the assassination of an archduke in Sarajevo. That was the same year as this event.",
+      "One nearby event: Germany resumes unrestricted submarine warfare against merchant shipping. That was 3 years after this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was 4 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was this battle fought?",
+        "answers": [
+          "september",
+          "sept",
+          "sep"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the French general credited with halting the German advance here.",
+        "answers": [
+          "joseph joffre",
+          "joffre"
+        ]
+      }
+    },
+    "learn_explanation": "The First Battle of the Marne (September 1914) stopped the German army's advance into France just northeast of Paris. French and British forces, reinforced partly by troops rushed to the front in Paris taxicabs, forced a German withdrawal. The battle ended Germany's hopes of a fast, decisive victory and both sides dug in, beginning more than three years of trench warfare on the Western Front."
+  },
+  {
+    "id": "evt_1273",
+    "year": 1915,
+    "prompt": "German forces release clouds of chlorine gas against Allied trenches near a Belgian town, marking the first large-scale use of chemical weapons in the war.",
+    "hints": [
+      "One nearby event: Allied armies halt a German advance along a river just short of Paris. That was 1 year before this event.",
+      "One nearby event: A British ocean liner is sunk by a German submarine off the Irish coast. That was the same year as this event.",
+      "One nearby event: Allied forces land on a peninsula in the Ottoman Empire. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this gas attack take place?",
+        "answers": [
+          "april",
+          "apr"
+        ]
+      }
+    },
+    "learn_explanation": "The Second Battle of Ypres (April 1915) saw German troops release chlorine gas against French and Algerian colonial troops near Ypres, Belgium — the first mass use of chemical weapons in the war. The surprise attack opened a gap in the Allied line, though German forces failed to fully exploit it. Poison gas quickly became a regular, feared feature of First World War battlefields on both sides."
+  },
+  {
+    "id": "evt_1274",
+    "year": 1915,
+    "prompt": "A British ocean liner is sunk by a German submarine off the Irish coast, killing well over a thousand passengers, including many Americans.",
+    "hints": [
+      "One nearby event: German forces first use poison gas on a large scale near a Belgian town. That was the same year as this event.",
+      "One nearby event: The United States declares war on Germany. That was 2 years after this event.",
+      "One nearby event: Allied forces land on a peninsula in the Ottoman Empire. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "Americas",
+      "War",
+      "World War I",
+      "Naval"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was this ship sunk?",
+        "answers": [
+          "may"
+        ]
+      }
+    },
+    "learn_explanation": "The RMS Lusitania was torpedoed by a German U-boat in May 1915, killing nearly 1,200 people, including well over a hundred Americans. The sinking caused outrage in the United States and became one of the events that gradually pushed American public opinion away from neutrality, though the U.S. would not enter the war for almost two more years."
+  },
+  {
+    "id": "evt_1275",
+    "year": 1915,
+    "prompt": "Allied troops, including large contingents from Australia and New Zealand, land on a peninsula in the Ottoman Empire in a costly campaign to open a route to Russia.",
+    "hints": [
+      "One nearby event: German forces first use poison gas on a large scale near a Belgian town. That was the same year as this event.",
+      "One nearby event: A years-long battle begins around a fortified French city on the Meuse river. That was 1 year after this event.",
+      "One nearby event: A global conflict begins after the assassination of an archduke in Sarajevo. That was 1 year before this event."
+    ],
+    "tags": [
+      "Middle East",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the landings begin?",
+        "answers": [
+          "april",
+          "apr"
+        ]
+      }
+    },
+    "learn_explanation": "The Gallipoli campaign (1915) was an Allied attempt to seize the Dardanelles strait and knock the Ottoman Empire out of the war. Landings by British, French, Indian, and ANZAC (Australian and New Zealand) troops met fierce Ottoman resistance under commanders including Mustafa Kemal, later known as Atatürk. The costly, unsuccessful campaign ended in an Allied withdrawal and remains central to Australian and New Zealand national memory."
+  },
+  {
+    "id": "evt_1276",
+    "year": 1916,
+    "prompt": "A years-long battle begins around a fortified French city on the Meuse river, becoming one of the longest and costliest battles in the war.",
+    "hints": [
+      "One nearby event: Allied forces land on a peninsula in the Ottoman Empire. That was 1 year before this event.",
+      "One nearby event: The largest naval battle of the war is fought in the North Sea. That was the same year as this event.",
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this battle begin?",
+        "answers": [
+          "february",
+          "feb"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Verdun (February–December 1916) was fought between French and German forces around the city of Verdun and became a symbol of attrition warfare's horror. German commanders aimed to 'bleed France white'; instead both sides suffered roughly 300,000 dead combined. French general Philippe Pétain's defense of Verdun made him a national hero."
+  },
+  {
+    "id": "evt_1277",
+    "year": 1916,
+    "prompt": "The largest naval battle of the war is fought in the North Sea between the British and German fleets.",
+    "hints": [
+      "One nearby event: A years-long battle begins around a fortified French city on the Meuse river. That was the same year as this event.",
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was the same year as this event.",
+      "One nearby event: Tanks are used in combat for the first time. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I",
+      "Naval"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was this battle fought?",
+        "answers": [
+          "may"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Jutland (31 May – 1 June 1916) pitted Britain's Grand Fleet against Germany's High Seas Fleet in the only major fleet-to-fleet clash of the war. Britain lost more ships and men, but the German fleet retreated to port and avoided another major engagement for the rest of the war, leaving Britain in control of the North Sea."
+  },
+  {
+    "id": "evt_1278",
+    "year": 1916,
+    "prompt": "A major Allied offensive begins along a river in northern France, opening with the bloodiest single day in British military history.",
+    "hints": [
+      "One nearby event: The largest naval battle of the war is fought in the North Sea. That was the same year as this event.",
+      "One nearby event: Tanks are used in combat for the first time. That was the same year as this event.",
+      "One nearby event: A years-long battle begins around a fortified French city on the Meuse river. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this offensive begin?",
+        "answers": [
+          "july",
+          "jul"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of the Somme opened on 1 July 1916 with roughly 57,000 British casualties on its first day alone — the worst single-day loss in British Army history. The offensive ground on for months, eventually advancing only a few miles at enormous cost to both sides, and became emblematic of the grinding, industrialized slaughter of the Western Front."
+  },
+  {
+    "id": "evt_1279",
+    "year": 1916,
+    "prompt": "Armored tracked vehicles are used in combat for the first time, during fighting as part of a major offensive in northern France.",
+    "hints": [
+      "One nearby event: A major Allied offensive begins along a river in northern France, including the bloodiest single day in British military history. That was the same year as this event.",
+      "One nearby event: Germany resumes unrestricted submarine warfare against merchant shipping. That was 1 year after this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was 2 years after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I",
+      "Technology"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month were tanks first used in battle?",
+        "answers": [
+          "september",
+          "sept",
+          "sep"
+        ]
+      }
+    },
+    "learn_explanation": "Britain introduced the tank to break the stalemate of trench warfare, first deploying a small number in combat at Flers-Courcelette during the Battle of the Somme (September 1916). Early tanks were slow and unreliable, but the shock of the new weapon — and its rapid development over the rest of the war — made it a lasting symbol of industrialized, mechanized warfare."
+  },
+  {
+    "id": "evt_1280",
+    "year": 1917,
+    "prompt": "Germany resumes unrestricted submarine warfare, authorizing its U-boats to sink merchant and passenger ships without warning in an effort to starve Britain into surrender.",
+    "hints": [
+      "One nearby event: Tanks are used in combat for the first time. That was 1 year before this event.",
+      "One nearby event: The United States declares war on Germany. That was the same year as this event.",
+      "One nearby event: A revolution in Russia leads to the overthrow of the imperial government. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I",
+      "Naval"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did Germany announce this policy?",
+        "answers": [
+          "february",
+          "feb"
+        ]
+      }
+    },
+    "learn_explanation": "In February 1917, Germany gambled that unrestricted submarine warfare could cut off Britain's supplies before the United States could meaningfully enter the war. The policy sank enormous amounts of shipping but also helped push the still-neutral United States toward declaring war on Germany just two months later."
+  },
+  {
+    "id": "evt_1281",
+    "year": 1917,
+    "prompt": "A secret diplomatic telegram proposing a military alliance against the United States, intercepted and decoded by British intelligence, is published and inflames American opinion.",
+    "hints": [
+      "One nearby event: Germany resumes unrestricted submarine warfare against merchant shipping. That was the same year as this event.",
+      "One nearby event: The United States declares war on Germany. That was the same year as this event.",
+      "One nearby event: A revolution in Russia leads to the overthrow of the imperial government. That was the same year as this event."
+    ],
+    "tags": [
+      "Americas",
+      "Europe",
+      "War",
+      "World War I",
+      "Diplomacy"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was this telegram made public in the US?",
+        "answers": [
+          "march",
+          "mar"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Which country was Germany trying to recruit as an ally against the United States?",
+        "answers": [
+          "mexico"
+        ]
+      }
+    },
+    "learn_explanation": "The Zimmermann Telegram was a 1917 German proposal to Mexico, offering support to reclaim Texas, New Mexico, and Arizona if Mexico joined Germany in a war against the United States. British codebreakers intercepted and decrypted the message, and its publication in American newspapers in March 1917 helped turn US public opinion decisively toward entering the war."
+  },
+  {
+    "id": "evt_1282",
+    "year": 1917,
+    "prompt": "The United States formally enters the war against Germany, ending its official neutrality.",
+    "hints": [
+      "One nearby event: A secret German telegram proposing an alliance with Mexico is published. That was the same year as this event.",
+      "One nearby event: A revolution in Russia leads to the overthrow of the imperial government. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was 1 year after this event."
+    ],
+    "tags": [
+      "Americas",
+      "War",
+      "World War I",
+      "Politics"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the US declare war?",
+        "answers": [
+          "april",
+          "apr"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Who was President of the United States at the time?",
+        "answers": [
+          "woodrow wilson",
+          "wilson"
+        ]
+      }
+    },
+    "learn_explanation": "The United States declared war on Germany on 6 April 1917, driven by unrestricted submarine warfare, the Zimmermann Telegram, and years of German attacks on American shipping. It took over a year for American troops to arrive in large numbers, but fresh US manpower and resources proved decisive in tipping the war's final balance against Germany."
+  },
+  {
+    "id": "evt_1283",
+    "year": 1917,
+    "prompt": "Bolshevik revolutionaries led by a returned exile seize power in Russia's capital, soon pulling Russia out of the war entirely.",
+    "hints": [
+      "One nearby event: A revolution in Russia leads to the overthrow of the imperial government. That was the same year as this event.",
+      "One nearby event: The United States declares war on Germany. That was the same year as this event.",
+      "One nearby event: Russia signs a treaty ceding vast territory to Germany and exits the war. That was 1 year after this event."
+    ],
+    "tags": [
+      "Europe",
+      "Russia",
+      "Revolution",
+      "World War I",
+      "Politics"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did the Bolsheviks seize power (Gregorian calendar)?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      },
+      "person": {
+        "prompt": "Bonus: Name the Bolshevik leader who returned from exile to lead the revolution.",
+        "answers": [
+          "vladimir lenin",
+          "lenin"
+        ]
+      }
+    },
+    "learn_explanation": "Several months after the Tsar's abdication, Vladimir Lenin's Bolsheviks seized power in Petrograd in the October Revolution (October by the old Julian calendar Russia still used; November by the modern Gregorian calendar). The new Soviet government moved quickly to negotiate an exit from the war, fulfilling a key revolutionary promise of 'peace, land, and bread.'"
+  },
+  {
+    "id": "evt_1284",
+    "year": 1918,
+    "prompt": "Soviet Russia signs a treaty ceding vast territories in Eastern Europe to the Central Powers, formally exiting the war.",
+    "hints": [
+      "One nearby event: Bolshevik revolutionaries seize power in Russia's capital. That was 1 year before this event.",
+      "One nearby event: A major Allied counteroffensive begins, turning the tide decisively against Germany. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event."
+    ],
+    "tags": [
+      "Europe",
+      "Russia",
+      "World War I",
+      "Diplomacy"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was this treaty signed?",
+        "answers": [
+          "march",
+          "mar"
+        ]
+      }
+    },
+    "learn_explanation": "The Treaty of Brest-Litovsk (March 1918) ended Russia's participation in the First World War. Facing a collapsing army, the new Bolshevik government accepted harsh terms, ceding Poland, the Baltic states, Finland, and Ukraine to German control. The treaty freed German troops to reinforce the Western Front, though the gains were reversed within the year by Germany's own defeat."
+  },
+  {
+    "id": "evt_1285",
+    "year": 1918,
+    "prompt": "A major Allied counteroffensive begins near a French city, opening what Germany's own commander calls 'the black day of the German Army' and turning the tide decisively against Germany.",
+    "hints": [
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was the same year as this event.",
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was the same year as this event.",
+      "One nearby event: A peace treaty formally ending the war with Germany is signed at a French palace. That was 1 year after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month did this offensive begin?",
+        "answers": [
+          "august",
+          "aug"
+        ]
+      }
+    },
+    "learn_explanation": "The Battle of Amiens (8 August 1918) opened the Allied Hundred Days Offensive, a sustained series of attacks that broke German lines on the Western Front for good. German commander Erich Ludendorff called the opening day 'the black day of the German Army.' The offensive continued until Germany requested an armistice just over three months later."
+  },
+  {
+    "id": "evt_1286",
+    "year": 1918,
+    "prompt": "Fighting on the Western Front ends at the eleventh hour of the eleventh day of the eleventh month, as Germany signs an armistice with the Allies.",
+    "hints": [
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was the same year as this event.",
+      "One nearby event: Soviet Russia signs a treaty ceding vast territory to Germany and exits the war. That was the same year as this event.",
+      "One nearby event: A peace treaty formally ending the war with Germany is signed at a French palace. That was 1 year after this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was the armistice signed?",
+        "answers": [
+          "november",
+          "nov"
+        ]
+      }
+    },
+    "learn_explanation": "The Armistice of 11 November 1918, signed in a railway carriage in the Forest of Compiègne, ended active fighting in the First World War. Combat stopped at 11:00 a.m. Paris time — the eleventh hour of the eleventh day of the eleventh month — a moment still marked today as Armistice Day, Remembrance Day, or Veterans Day. A final peace treaty would not be signed for another seven months."
+  },
+  {
+    "id": "evt_1287",
+    "year": 1919,
+    "prompt": "A peace treaty formally ending the war with Germany is signed at a French palace, imposing territorial losses, military limits, and reparations on the defeated power.",
+    "hints": [
+      "One nearby event: Fighting on the Western Front ends with an armistice. That was 1 year before this event.",
+      "One nearby event: A major Allied counteroffensive begins near a French city, turning the tide decisively against Germany. That was 1 year before this event.",
+      "One nearby event: Bolshevik revolutionaries seize power in Russia's capital. That was 2 years before this event."
+    ],
+    "tags": [
+      "Europe",
+      "War",
+      "World War I",
+      "Diplomacy"
+    ],
+    "bonus": {
+      "month": {
+        "prompt": "Bonus: In which month was this treaty signed?",
+        "answers": [
+          "june",
+          "jun"
+        ]
+      }
+    },
+    "learn_explanation": "The Treaty of Versailles, signed in June 1919 in the Hall of Mirrors at the Palace of Versailles, formally ended the state of war between Germany and the Allied powers. Its harsh terms — territorial losses, a disarmed military, and heavy reparations — placed blame for the war squarely on Germany and are widely seen as having fueled the resentment that contributed to the rise of Nazism two decades later."
   }
 ]
