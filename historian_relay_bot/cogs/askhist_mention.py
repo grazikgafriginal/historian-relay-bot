@@ -16,13 +16,9 @@ class AskHistorianMentionCog(commands.Cog):
     """Forwards a message to the Historians of the House when the bot is @-mentioned,
     and/or via a moderator's manual "Ask Historians" message context-menu action.
 
-    The two triggers are independent and separately togglable: the automatic
-    @mention trigger is gated by ASKHIST_MENTION_ENABLED (it can produce false
-    positives on non-questions, since an @mention alone doesn't guarantee real
-    question text); the context-menu action always stays available to
-    moderators regardless, since it's a deliberate per-message judgment call
-    rather than automatic detection. This cog is always loaded so the
-    context-menu command stays registered either way.
+    The whole cog is gated by ASKHIST_MENTION_ENABLED (bot.py only loads it when
+    true) — when disabled, none of this runs: no automatic @mention forwarding,
+    no moderator context-menu action, and no reply-based resolution tracking.
 
     Both triggers call HistorianRelayBot.escalate_to_historians() (bot.py),
     the single implementation responsible for pinging + tracking a Historian
@@ -78,14 +74,12 @@ class AskHistorianMentionCog(commands.Cog):
         if message.author.bot or not message.guild:
             return
 
-        # Reply-based resolution tracking for already-escalated questions — independent
-        # of whether this message also mentions the bot, and independent of
-        # ASKHIST_MENTION_ENABLED below (requests raised via the moderator context-menu
-        # action still need their replies tracked even with auto-mention off).
+        # Reply-based resolution tracking for already-escalated questions —
+        # independent of whether this message also mentions the bot.
         if message.reference and message.reference.message_id:
             await self._handle_possible_reply(message)
 
-        if self.bot.cfg.ASKHIST_MENTION_ENABLED and self.bot.user in message.mentions:
+        if self.bot.user in message.mentions:
             await self._forward_on_mention(message)
 
     def _strip_mention(self, content: str) -> str:
