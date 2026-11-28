@@ -66,7 +66,11 @@ guess by typing 1066 etc
 - Restart recovery: bot re-edits tracked queue/hist messages to reattach views.
 
 ## Ask Historians via mention
-@-mention the bot together with a question anywhere in the server and it's
+**Disabled by default** (`ASKHIST_MENTION_ENABLED=false`) — an `@mention` alone doesn't
+guarantee the message is an actual historical question, so this produced false-positive
+forwards in practice. Set `ASKHIST_MENTION_ENABLED=true` to turn it back on.
+
+When enabled: @-mention the bot together with a question anywhere in the server and it's
 forwarded to the Historians immediately — no waiting, no in-channel reminder,
 no DM. The mention itself is the explicit signal; there's no passive
 channel-watching or heuristic question-detection to get wrong.
@@ -114,9 +118,9 @@ Anti-spam, so the Historian role can't be repeatedly pinged:
 - Per-user cooldown + daily cap on triggering a forward.
 
 Config (env or `CONFIG_JSON`):
-- `ASKHIST_MENTION_ENABLED` (default `true`) — feature on/off switch. When `false`, nothing
-  in this section runs: no automatic @mention forwarding, no moderator context-menu action,
-  and no reply-based resolution tracking.
+- `ASKHIST_MENTION_ENABLED` (default `false`) — feature on/off switch. When `false`
+  (the default), nothing in this section runs: no automatic @mention forwarding, no
+  moderator context-menu action, and no reply-based resolution tracking.
 - `ASKHIST_MENTION_COOLDOWN_MINUTES` (default `60`) — per-user cooldown between forwards triggered by mention.
 - `ASKHIST_MENTION_MAX_PER_DAY` (default `3`) — per-user daily cap on forwards triggered by mention.
 

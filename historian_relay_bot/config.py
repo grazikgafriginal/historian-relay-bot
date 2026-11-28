@@ -188,7 +188,7 @@ class BotConfig:
     # Ask Historians forwarding (triggered by @mentioning the bot, or by a
     # moderator's "Ask Historians" context-menu action)
     # --------------------
-    ASKHIST_MENTION_ENABLED: bool = True
+    ASKHIST_MENTION_ENABLED: bool = False
     ASKHIST_MENTION_COOLDOWN_MINUTES: int = 60  # per-user cooldown for triggering "Ask Historians"
     ASKHIST_MENTION_MAX_PER_DAY: int = 3  # per-user daily cap for triggering "Ask Historians"
 
@@ -296,7 +296,7 @@ def load_config() -> BotConfig:
         GUESSYEAR_STREAK_REMINDER_HOUR_UTC=_get_int("GUESSYEAR_STREAK_REMINDER_HOUR_UTC", int(data.get("GUESSYEAR_STREAK_REMINDER_HOUR_UTC", 21))),
         GUESSYEAR_STREAK_REMINDER_DAY_UTC=_get_int("GUESSYEAR_STREAK_REMINDER_DAY_UTC", int(data.get("GUESSYEAR_STREAK_REMINDER_DAY_UTC", 3))),
 
-        ASKHIST_MENTION_ENABLED=_get_bool("ASKHIST_MENTION_ENABLED", bool(data.get("ASKHIST_MENTION_ENABLED", True))),
+        ASKHIST_MENTION_ENABLED=_get_bool("ASKHIST_MENTION_ENABLED", bool(data.get("ASKHIST_MENTION_ENABLED", False))),
         ASKHIST_MENTION_COOLDOWN_MINUTES=_get_int("ASKHIST_MENTION_COOLDOWN_MINUTES", int(data.get("ASKHIST_MENTION_COOLDOWN_MINUTES", 60))),
         ASKHIST_MENTION_MAX_PER_DAY=_get_int("ASKHIST_MENTION_MAX_PER_DAY", int(data.get("ASKHIST_MENTION_MAX_PER_DAY", 3))),
 
